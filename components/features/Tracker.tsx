@@ -154,18 +154,18 @@ export const Tracker: React.FC = () => {
 
   const MuscleMap = () => {
     const frontMuscles = [
-      { id: 'chest', path: 'M 100 80 Q 150 70 200 80 L 200 120 Q 150 130 100 120 Z' },
-      { id: 'shoulders', path: 'M 70 80 Q 85 70 100 80 L 100 100 Q 85 110 70 100 Z M 200 80 Q 215 70 230 80 L 230 100 Q 215 110 200 100 Z' },
-      { id: 'quads', path: 'M 110 200 L 145 200 L 145 300 L 110 300 Z M 155 200 L 190 200 L 190 300 L 155 300 Z' },
-      { id: 'biceps', path: 'M 82 110 L 98 110 L 98 160 L 82 160 Z M 202 110 L 218 110 L 218 160 L 202 160 Z' },
+      { id: 'Chest', path: 'M 100 80 Q 150 70 200 80 L 200 120 Q 150 130 100 120 Z' },
+      { id: 'Shoulders', path: 'M 70 80 Q 85 70 100 80 L 100 100 Q 85 110 70 100 Z M 200 80 Q 215 70 230 80 L 230 100 Q 215 110 200 100 Z' },
+      { id: 'Quads', path: 'M 110 200 L 145 200 L 145 300 L 110 300 Z M 155 200 L 190 200 L 190 300 L 155 300 Z' },
+      { id: 'Biceps', path: 'M 82 110 L 98 110 L 98 160 L 82 160 Z M 202 110 L 218 110 L 218 160 L 202 160 Z' },
     ];
 
     const rearMuscles = [
-      { id: 'back', path: 'M 100 80 L 200 80 L 180 160 L 150 170 L 120 160 Z' },
-      { id: 'glutes', path: 'M 115 175 L 145 175 L 145 210 L 115 210 Z M 155 175 L 185 175 L 185 210 L 155 210 Z' },
-      { id: 'hamstrings', path: 'M 110 215 L 145 215 L 145 290 L 110 290 Z M 155 215 L 190 215 L 190 290 L 155 290 Z' },
-      { id: 'calves', path: 'M 115 300 L 140 300 L 140 370 L 115 370 Z M 160 300 L 185 300 L 185 370 L 160 370 Z' },
-      { id: 'triceps', path: 'M 75 105 L 90 105 L 90 155 L 75 155 Z M 210 105 L 225 105 L 225 155 L 210 155 Z' },
+      { id: 'Back', path: 'M 100 80 L 200 80 L 180 160 L 150 170 L 120 160 Z' },
+      { id: 'Glutes', path: 'M 115 175 L 145 175 L 145 210 L 115 210 Z M 155 175 L 185 175 L 185 210 L 155 210 Z' },
+      { id: 'Hamstrings', path: 'M 110 215 L 145 215 L 145 290 L 110 290 Z M 155 215 L 190 215 L 190 290 L 155 290 Z' },
+      { id: 'Calves', path: 'M 115 300 L 140 300 L 140 370 L 115 370 Z M 160 300 L 185 300 L 185 370 L 160 370 Z' },
+      { id: 'Triceps', path: 'M 75 105 L 90 105 L 90 155 L 75 155 Z M 210 105 L 225 105 L 225 155 L 210 155 Z' },
     ];
 
     const Skeleton = ({ muscles, label }: { muscles: any[], label: string }) => (

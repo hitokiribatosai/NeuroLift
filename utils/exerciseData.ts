@@ -8,7 +8,9 @@ export const getLocalizedMuscleName = (muscle: string, lang: Language): string =
     "Hamstrings": { en: "Hamstrings", fr: "Ischio-jambiers", ar: "الأفخاذ الخلفية" },
     "Calves": { en: "Calves", fr: "Mollets", ar: "السمانة" },
     "Shoulders": { en: "Shoulders", fr: "Épaules", ar: "الأكتاف" },
-    "Arms": { en: "Arms", fr: "Bras", ar: "الذراعين" },
+    "Biceps": { en: "Biceps", fr: "Biceps", ar: "البايسبس" },
+    "Triceps": { en: "Triceps", fr: "Triceps", ar: "الترايسبس" },
+    "Glutes": { en: "Glutes", fr: "Fessiers", ar: "العضلات الخلفية" },
     "Core": { en: "Core", fr: "Abdominaux", ar: "عضلات البطن" },
     "Full Body": { en: "Full Body", fr: "Corps Complet", ar: "كامل الجسم" }
   };
@@ -32,7 +34,6 @@ export const getExerciseDatabase = (lang: Language): Record<string, string[]> =>
       { en: "Landmine Press", fr: "Landmine Press", ar: "ضغط لاندماين" },
       { en: "Svend Press", fr: "Presse Svend", ar: "ضغط سفيند" },
       { en: "Decline Dumbbell Press", fr: "Développé Décliné", ar: "ضغط مائل للأسفل" },
-      // Added 5 New Chest Exercises
       { en: "Low Cable Crossover", fr: "Poulie Vis-à-vis Basse", ar: "تجميع كابل سفلي" },
       { en: "Guillotine Press", fr: "Développé Guillotine", ar: "ضغط المقصلة" },
       { en: "Dumbbell Pullover", fr: "Pull-over Haltère", ar: "بلوفر دمبل" },
@@ -50,7 +51,6 @@ export const getExerciseDatabase = (lang: Language): Record<string, string[]> =>
       { en: "Face Pulls", fr: "Face Pulls", ar: "سحب للوجه" },
       { en: "Straight-Arm Pulldown", fr: "Pull-over Poulie", ar: "سحب ذراع مستقيم" },
       { en: "Seal Rows", fr: "Rowing Seal", ar: "تجديف سيل" },
-      // Added 5 New Back Exercises
       { en: "Pendlay Row", fr: "Rowing Pendlay", ar: "تجديف بندلاي" },
       { en: "Lat Prayers (Cable)", fr: "Extension Bras Tendus", ar: "صلاة الظهر" },
       { en: "Kroc Rows", fr: "Kroc Rows", ar: "تجديف كروك" },
@@ -81,6 +81,13 @@ export const getExerciseDatabase = (lang: Language): Record<string, string[]> =>
       { en: "Kettlebell Swings", fr: "Swing Kettlebell", ar: "أرجحة الكيتل بيل" },
       { en: "Slider Leg Curls", fr: "Leg Curl Glissé", ar: "تمرين سحب الأرجل" },
     ],
+    "Glutes": [
+      { en: "Hip Thrusts", fr: "Hip Thrust", ar: "دفع الحوض" },
+      { en: "Glute Bridge", fr: "Pont de Fessiers", ar: "جسر الألوية" },
+      { en: "Cable Kickbacks", fr: "Kickback Poulie", ar: "ركلة كابل خلفية" },
+      { en: "Hyperextensions", fr: "Extensions au Banc", ar: "تمديد الظهر" },
+      { en: "Sumo Deadlift", fr: "Soulevé de Terre Sumo", ar: "رفعة مميتة سومو" }
+    ],
     "Calves": [
       { en: "Standing Calf Raises", fr: "Extensions Debout", ar: "رفع السمانة واقف" },
       { en: "Seated Calf Raises", fr: "Extensions Assis", ar: "رفع السمانة جالس" },
@@ -105,12 +112,14 @@ export const getExerciseDatabase = (lang: Language): Record<string, string[]> =>
       { en: "Cable Lateral Raises", fr: "Élévations Latérales Poulie", ar: "رفرفة جانبي كابل" },
       { en: "Rear Delt Flyes", fr: "Oiseau Haltères", ar: "رفرفة خلفي دمبل" },
     ],
-    "Arms": [
+    "Biceps": [
       { en: "Incline Dumbbell Curls", fr: "Curl Incliné", ar: "بايسبس مائل" },
       { en: "Hammer Curls", fr: "Curl Marteau", ar: "بايسبس المطرقة" },
       { en: "Preacher Curls", fr: "Curl Pupitre", ar: "بايسبس ارتكاز" },
       { en: "Bayesian Cable Curl", fr: "Curl Poulie Dos", ar: "بايسبس كابل خلفي" },
       { en: "Spider Curls", fr: "Spider Curl", ar: "سبايدر كيرل" },
+    ],
+    "Triceps": [
       { en: "Skullcrushers", fr: "Barre au Front", ar: "طحن الجمجمة" },
       { en: "Tricep Pushdowns", fr: "Extension Poulie", ar: "ترايسبس كابل" },
       { en: "Overhead Cable Extensions", fr: "Extension Nuque", ar: "ترايسبس خلف الرأس" },
