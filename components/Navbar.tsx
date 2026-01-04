@@ -51,16 +51,25 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
         </div>
 
         {/* Navigation Items - Grouped with Logo */}
-        <div className="flex items-center gap-6 text-sm font-bold text-zinc-400 ms-6 overflow-x-auto whitespace-nowrap scrollbar-hide py-1 px-2 mask-linear-fade">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setCurrentView(item.id)}
-              className={`transition-colors hover:text-white shrink-0 uppercase tracking-widest text-xs ${currentView === item.id ? 'text-teal-400' : ''}`}
-            >
-              {item.label}
-            </button>
-          ))}
+        <div className="relative flex items-center ms-6 overflow-hidden mask-linear-fade">
+          <div className="flex items-center gap-6 text-sm font-bold text-zinc-400 overflow-x-auto whitespace-nowrap scrollbar-hide py-1 px-2">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setCurrentView(item.id)}
+                className={`transition-colors hover:text-white shrink-0 uppercase tracking-widest text-xs ${currentView === item.id ? 'text-teal-400' : ''}`}
+              >
+                {item.label}
+              </button>
+            ))}
+            <div className="w-4 shrink-0 sm:hidden"></div> {/* Spacer for arrow */}
+          </div>
+          {/* Scroll Indicator Arrow (Mobile Only) */}
+          <div className={`absolute top-1/2 -translate-y-1/2 pointer-events-none text-teal-500 animate-pulse sm:hidden ${dir === 'rtl' ? 'left-0 rotate-180' : 'right-0'}`}>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
         </div>
 
         {/* Controls - Pushed to End */}

@@ -165,18 +165,18 @@ export const Tracker: React.FC = () => {
             onClick={() => toggleMuscle(muscle)}
             className={`group relative flex flex-col p-6 rounded-3xl border transition-all duration-300 ${selectedMuscles.includes(muscle)
               ? 'bg-teal-500 border-teal-500 shadow-[0_0_25px_rgba(20,184,166,0.2)]'
-              : 'bg-white dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 shadow-sm hover:shadow-md'
+              : 'bg-zinc-900/40 border-zinc-800 hover:border-zinc-700 shadow-sm hover:shadow-md'
               }`}
           >
             <div className="flex items-center justify-between mb-2">
               <span className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors ${selectedMuscles.includes(muscle) ? 'text-white' : 'text-zinc-500'}`}>
                 {muscle === 'Glutes' ? 'Lower Body' : muscle === 'Chest' ? 'Upper Body' : 'Muscle Group'}
               </span>
-              <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${selectedMuscles.includes(muscle) ? 'bg-white border-white' : 'border-zinc-200 dark:border-zinc-700 group-hover:border-zinc-300 dark:group-hover:border-zinc-600'}`}>
+              <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${selectedMuscles.includes(muscle) ? 'bg-white border-white' : 'border-zinc-700 group-hover:border-zinc-600'}`}>
                 {selectedMuscles.includes(muscle) && <svg className="w-3 h-3 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>}
               </div>
             </div>
-            <span className={`text-xl font-black text-left transition-colors ${selectedMuscles.includes(muscle) ? 'text-white' : 'text-zinc-900 dark:text-white'}`}>
+            <span className={`text-xl font-black text-left transition-colors ${selectedMuscles.includes(muscle) ? 'text-white' : 'text-white'}`}>
               {getLocalizedMuscleName(muscle, language)}
             </span>
           </button>
@@ -189,13 +189,13 @@ export const Tracker: React.FC = () => {
     return (
       <div className="mx-auto max-w-5xl px-6 py-24 text-center">
         <div className="mb-16">
-          <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white mb-2 uppercase tracking-tight">{t('tracker_select_muscle')}</h2>
+          <h2 className="text-4xl md:text-5xl font-black text-white mb-2 uppercase tracking-tight">{t('tracker_select_muscle')}</h2>
           <div className="h-1.5 w-24 bg-teal-500 mx-auto rounded-full mb-8"></div>
 
           {selectedMuscles.length > 0 && (
             <div className="flex flex-wrap justify-center gap-2 mb-4 animate-in fade-in zoom-in duration-300">
               {selectedMuscles.map(m => (
-                <span key={m} className="px-5 py-2 bg-teal-500/10 border border-teal-500/30 text-teal-600 dark:text-teal-400 text-[10px] font-black rounded-full uppercase tracking-[0.2em] shadow-sm">
+                <span key={m} className="px-5 py-2 bg-teal-500/10 border border-teal-500/30 text-teal-400 text-[10px] font-black rounded-full uppercase tracking-[0.2em] shadow-sm">
                   {getLocalizedMuscleName(m, language)}
                 </span>
               ))}
@@ -253,16 +253,16 @@ export const Tracker: React.FC = () => {
 
                   return (
                     <div key={category}>
-                      <h4 className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.4em] mb-6 ml-1 flex items-center gap-4">
+                      <h4 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.4em] mb-6 ml-1 flex items-center gap-4">
                         {category === 'weightlifting' ? 'Weightlifting' : category === 'cables' ? 'Cables' : 'Bodyweight'}
-                        <div className="h-px flex-1 bg-zinc-100 dark:bg-zinc-800"></div>
+                        <div className="h-px flex-1 bg-zinc-800"></div>
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {exercises.map(ex => (
                           <div key={ex} className="relative group">
                             <label className={`flex items-center gap-4 p-5 border-2 rounded-2xl cursor-pointer transition-all duration-300 ${selectedExercises.includes(ex)
-                              ? 'bg-teal-500/5 border-teal-500 shadow-md text-teal-900 dark:text-teal-400'
-                              : 'bg-white dark:bg-zinc-900/30 border-zinc-100 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-200 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-900/50'}`}>
+                              ? 'bg-teal-500/5 border-teal-500 shadow-md text-teal-400'
+                              : 'bg-zinc-900/30 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:bg-zinc-900/50'}`}>
                               <input
                                 type="checkbox"
                                 checked={selectedExercises.includes(ex)}

@@ -46,7 +46,7 @@ export const ProgramPlanner: React.FC = () => {
               setSearchQuery(e.target.value);
               if (e.target.value) setSelectedMuscle(null);
             }}
-            className="w-full bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-2xl pl-12 pr-4 py-4 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-teal-500 shadow-sm transition-all font-medium"
+            className="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl pl-12 pr-4 py-4 text-sm text-white focus:outline-none focus:border-teal-500 shadow-sm transition-all font-medium"
           />
         </div>
       </div>
@@ -63,7 +63,7 @@ export const ProgramPlanner: React.FC = () => {
               }}
               className={`text-left px-6 py-4 rounded-2xl border transition-all duration-300 font-black uppercase tracking-widest text-[10px] sm:text-xs ${selectedMuscle === muscleKey
                 ? 'bg-teal-500 text-white border-teal-500 shadow-lg shadow-teal-500/20'
-                : 'bg-white dark:bg-zinc-900/30 border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-500 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-300 shadow-sm'
+                : 'bg-zinc-900/30 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300 shadow-sm'
                 }`}
             >
               {getLocalizedMuscleName(muscleKey, language)}
@@ -134,13 +134,13 @@ export const ProgramPlanner: React.FC = () => {
                         {exercises.map((ex, i) => (
                           <Card
                             key={i}
-                            className="p-6 flex flex-col gap-5 bg-white dark:bg-zinc-900/40 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer group transition-all duration-300 border-zinc-200 dark:border-zinc-800 shadow-sm"
+                            className="p-6 flex flex-col gap-5 bg-zinc-900/40 hover:bg-zinc-800/50 cursor-pointer group transition-all duration-300 border-zinc-800 shadow-sm"
                           >
                             <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 rounded-xl bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center text-zinc-400 dark:text-zinc-500 font-black font-mono text-xs border border-zinc-100 dark:border-zinc-700 group-hover:border-teal-500/50 group-hover:text-teal-600 transition-all">
+                              <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-zinc-500 font-black font-mono text-xs border border-zinc-700 group-hover:border-teal-500/50 group-hover:text-teal-600 transition-all">
                                 {i + 1}
                               </div>
-                              <span className="text-zinc-900 dark:text-zinc-200 font-black text-xs uppercase tracking-tight">{ex}</span>
+                              <span className="text-zinc-200 font-black text-xs uppercase tracking-tight">{ex}</span>
                             </div>
 
                             <SpotlightButton
