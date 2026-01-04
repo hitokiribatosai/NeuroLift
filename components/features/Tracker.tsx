@@ -195,8 +195,8 @@ export const Tracker: React.FC = () => {
     );
 
     return (
-      <div className="w-full max-w-2xl mx-auto mb-16 px-4">
-        <div className="flex gap-8 md:gap-16">
+      <div className="w-full max-w-3xl mx-auto mb-16 px-4">
+        <div className="flex flex-col sm:flex-row gap-12 sm:gap-8 md:gap-16">
           <Skeleton muscles={frontMuscles} label={t('tracker_front')} />
           <Skeleton muscles={rearMuscles} label={t('tracker_back')} />
         </div>
@@ -390,14 +390,14 @@ export const Tracker: React.FC = () => {
                 {ex.name}
               </h3>
               <div className="space-y-2">
-                <div className="grid grid-cols-12 gap-2 text-[10px] text-zinc-500 mb-1 px-2 font-black uppercase tracking-widest">
+                <div className="grid grid-cols-12 gap-1 sm:gap-2 text-[9px] sm:text-[10px] text-zinc-500 mb-1 px-1 sm:px-2 font-black uppercase tracking-widest">
                   <div className="col-span-2">{t('tracker_header_set')}</div>
                   <div className="col-span-4">{t('tracker_header_kg')}</div>
                   <div className="col-span-4">{t('tracker_header_reps')}</div>
                   <div className="col-span-2 text-center">✓</div>
                 </div>
                 {ex.sets.map((set, setIdx) => (
-                  <div key={set.id} className={`grid grid-cols-12 gap-2 items-center p-2 rounded-lg transition-all ${set.completed ? 'bg-teal-500/10 border border-teal-500/20' : 'bg-black/40 border border-zinc-800/50'}`}>
+                  <div key={set.id} className={`grid grid-cols-12 gap-1 sm:gap-2 items-center p-1.5 sm:p-2 rounded-lg transition-all ${set.completed ? 'bg-teal-500/10 border border-teal-500/20' : 'bg-black/40 border border-zinc-800/50'}`}>
                     <div className="col-span-2 text-zinc-500 font-mono text-center text-xs">{setIdx + 1}</div>
                     <div className="col-span-4">
                       <input
