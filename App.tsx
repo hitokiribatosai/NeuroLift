@@ -12,7 +12,7 @@ function App() {
 
   const renderView = () => {
     switch (currentView) {
-      case 'home': return <Home />;
+      case 'home': return <Home setCurrentView={setCurrentView} />;
       case 'tracker': return <Tracker />;
       case 'planner': return <ProgramPlanner />;
       case 'nutrition': return <Nutrition />;
@@ -25,7 +25,7 @@ function App() {
     <LanguageProvider>
       <div className="min-h-screen bg-black text-white selection:bg-teal-500/30 selection:text-teal-200">
         <Navbar currentView={currentView} setCurrentView={setCurrentView} />
-        
+
         <main className="pt-16">
           {renderView()}
         </main>

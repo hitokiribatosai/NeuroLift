@@ -2,7 +2,11 @@ import React from 'react';
 import { SpotlightButton } from './ui/SpotlightButton';
 import { useLanguage } from '../contexts/LanguageContext';
 
-export const Hero: React.FC = () => {
+interface HeroProps {
+  setCurrentView: (view: string) => void;
+}
+
+export const Hero: React.FC<HeroProps> = ({ setCurrentView }) => {
   const { t } = useLanguage();
 
   return (
@@ -22,7 +26,7 @@ export const Hero: React.FC = () => {
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <SpotlightButton onClick={() => document.getElementById('tracker')?.scrollIntoView({ behavior: 'smooth' })}>
+          <SpotlightButton onClick={() => setCurrentView('tracker')}>
             {t('nav_workout')}
             <svg className="h-4 w-4 rtl:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />

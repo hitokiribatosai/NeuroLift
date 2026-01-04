@@ -3,12 +3,16 @@ import { Hero } from './Hero';
 import { Features } from './Features';
 import { FooterCTA } from './FooterCTA';
 
-export const Home: React.FC = () => {
+interface HomeProps {
+  setCurrentView: (view: string) => void;
+}
+
+export const Home: React.FC<HomeProps> = ({ setCurrentView }) => {
   return (
     <div className="flex flex-col animate-in fade-in duration-700">
-      <Hero />
+      <Hero setCurrentView={setCurrentView} />
       <Features />
-      <FooterCTA />
+      <FooterCTA setCurrentView={setCurrentView} />
     </div>
   );
 };

@@ -17,6 +17,7 @@ export const Tracker: React.FC = () => {
   const [duration, setDuration] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
   const [completedWorkout, setCompletedWorkout] = useState<CompletedWorkout | null>(null);
+  const [restRemaining, setRestRemaining] = useState<number | null>(null);
 
   // Dynamic DB
   const exercisesByMuscle = getExerciseDatabase(language);
@@ -29,6 +30,16 @@ export const Tracker: React.FC = () => {
     }
     return () => clearInterval(interval);
   }, [timerActive]);
+
+  useEffect(() => {
+    let interval: any;
+    if (restRemaining !== null && restRemaining > 0) {
+      interval = setInterval(() => setRestRemaining(r => (r !== null ? r - 1 : null)), 1000);
+    } else if (restRemaining === 0) {
+      setRestRemaining(null);
+    }
+    return () => clearInterval(interval);
+  }, [restRemaining]);
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
@@ -78,12 +89,20 @@ export const Tracker: React.FC = () => {
 
   const toggleSetComplete = (exIdx: number, setIdx: number) => {
     const newExs = [...activeExercises];
-    newExs[exIdx].sets[setIdx].completed = !newExs[exIdx].sets[setIdx].completed;
+    const isNowCompleted = !newExs[exIdx].sets[setIdx].completed;
+    newExs[exIdx].sets[setIdx].completed = isNowCompleted;
     setActiveExercises(newExs);
+
+    if (isNowCompleted) {
+      setRestRemaining(90); // Default rest duration
+    } else {
+      setRestRemaining(null);
+    }
   };
 
   const finishWorkout = () => {
     setTimerActive(false);
+    setRestRemaining(null);
     const volume = activeExercises.reduce((acc, ex) => {
       return acc + ex.sets.reduce((sAcc, s) => s.completed ? sAcc + (s.weight * s.reps) : sAcc, 0);
     }, 0);
@@ -96,7 +115,10 @@ export const Tracker: React.FC = () => {
       totalVolume: volume
     };
 
-    // Save to local storage (could be history)
+    // Save to history
+    const history = JSON.parse(localStorage.getItem('neuroLift_history') || '[]');
+    localStorage.setItem('neuroLift_history', JSON.stringify([record, ...history]));
+
     setCompletedWorkout(record);
     setPhase('summary');
   };
@@ -107,12 +129,56 @@ export const Tracker: React.FC = () => {
     setSelectedExercises([]);
     setDuration(0);
     setCompletedWorkout(null);
+    setRestRemaining(null);
+  };
+
+  const MuscleMap = () => {
+    const muscles = [
+      { id: 'chest', path: 'M 100 80 Q 150 70 200 80 L 200 120 Q 150 130 100 120 Z', label: 'Chest' },
+      { id: 'shoulders', path: 'M 70 80 Q 85 70 100 80 L 100 100 Q 85 110 70 100 Z M 200 80 Q 215 70 230 80 L 230 100 Q 215 110 200 100 Z', label: 'Shoulders' },
+      { id: 'quads', path: 'M 110 200 L 145 200 L 145 300 L 110 300 Z M 155 200 L 190 200 L 190 300 L 155 300 Z', label: 'Quads' },
+      { id: 'biceps', path: 'M 80 110 L 95 110 L 95 160 L 80 160 Z M 205 110 L 220 110 L 220 160 L 205 160 Z', label: 'Arms' },
+    ];
+
+    return (
+      <div className="relative w-full max-w-[300px] mx-auto mb-12 group">
+        <svg viewBox="0 0 300 400" className="w-full h-auto drop-shadow-[0_0_15px_rgba(20,184,166,0.1)]">
+          {/* Simplified Body Outline */}
+          <path
+            d="M 150 20 C 130 20 120 40 120 60 L 120 70 C 100 75 80 80 70 100 L 60 180 L 80 180 L 90 120 L 110 120 L 110 380 L 145 380 L 145 250 L 155 250 L 155 380 L 190 380 L 190 120 L 210 120 L 220 180 L 240 180 L 230 100 C 220 80 200 75 180 70 L 180 60 C 180 40 170 20 150 20"
+            fill="#18181b"
+            stroke="#3f3f46"
+            strokeWidth="2"
+          />
+
+          {/* Interactive Regions */}
+          {muscles.map(m => (
+            <path
+              key={m.id}
+              d={m.path}
+              onClick={() => toggleMuscle(m.id)}
+              className={`cursor-pointer transition-all duration-300 ${selectedMuscles.includes(m.id)
+                  ? 'fill-teal-500 stroke-teal-400'
+                  : 'fill-zinc-800/50 stroke-zinc-700 hover:fill-teal-500/30'
+                }`}
+              strokeWidth="1"
+            />
+          ))}
+        </svg>
+        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-zinc-500 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+          Interactive Muscle Map
+        </div>
+      </div>
+    );
   };
 
   if (phase === 'setup') {
     return (
       <div className="mx-auto max-w-4xl px-6 py-24 text-center">
         <h2 className="text-3xl font-bold text-white mb-8">{t('tracker_select_muscle')}</h2>
+
+        <MuscleMap />
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {selectableMuscles.map(m => (
             <button
@@ -188,8 +254,18 @@ export const Tracker: React.FC = () => {
     return (
       <div className="mx-auto max-w-3xl px-6 py-20 pb-32">
         {/* Timer Sticky Header */}
-        <div className="sticky top-16 z-40 bg-black/90 backdrop-blur border-b border-zinc-800 py-4 mb-8 flex justify-between items-center">
-          <div className="text-3xl font-mono font-bold text-teal-400">{formatTime(duration)}</div>
+        <div className="sticky top-16 z-40 bg-black/90 backdrop-blur border-b border-zinc-800 py-4 mb-8 flex justify-between items-center px-2">
+          <div className="flex flex-col">
+            <div className="text-3xl font-mono font-bold text-teal-400">{formatTime(duration)}</div>
+            {restRemaining !== null && (
+              <div className="flex items-center gap-2 text-xs font-bold text-orange-400 animate-pulse">
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {t('tracker_rest_timer')}: {restRemaining}{t('tracker_rest_sec')}
+              </div>
+            )}
+          </div>
           <SpotlightButton variant="secondary" onClick={finishWorkout} className="py-1 px-4 text-xs bg-red-900/20 border-red-900/50 hover:bg-red-900/40 text-red-200">
             {t('tracker_finish')}
           </SpotlightButton>

@@ -2,7 +2,11 @@ import React from 'react';
 import { SpotlightButton } from './ui/SpotlightButton';
 import { useLanguage } from '../contexts/LanguageContext';
 
-export const FooterCTA: React.FC = () => {
+interface FooterCTAProps {
+  setCurrentView: (view: string) => void;
+}
+
+export const FooterCTA: React.FC<FooterCTAProps> = ({ setCurrentView }) => {
   const { t } = useLanguage();
 
   return (
@@ -19,10 +23,7 @@ export const FooterCTA: React.FC = () => {
       <div className="mt-10">
         <SpotlightButton
           className="h-12 px-8 text-base"
-          onClick={() => {
-            const el = document.getElementById('features');
-            el?.scrollIntoView({ behavior: 'smooth' });
-          }}
+          onClick={() => setCurrentView('tracker')}
         >
           {t('footer_btn')}
         </SpotlightButton>

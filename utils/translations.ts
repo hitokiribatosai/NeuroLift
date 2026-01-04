@@ -155,7 +155,15 @@ export const translations = {
     cal_title: "Compteur Calories",
     cal_consumed: "Consommé Aujourd'hui",
     cal_add: "Ajouter",
-    cal_reset: "Réinitialiser"
+    cal_reset: "Réinitialiser",
+
+    // Enhancements
+    planner_search_placeholder: "Rechercher des exercices...",
+    tracker_rest_timer: "Chrono Repos",
+    tracker_rest_sec: "sec",
+    journal_volume_chart: "Progrès Volume (10 dernières séances)",
+    nutrition_history: "Historique (7 jours)",
+    nutrition_calories_unit: "kcal"
   },
   ar: {
     // Nav

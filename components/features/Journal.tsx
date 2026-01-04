@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { JournalEntry, CustomMeasurement } from '../../types';
+import { JournalEntry, CustomMeasurement, CompletedWorkout } from '../../types';
 import { Card } from '../ui/Card';
 import { SpotlightButton } from '../ui/SpotlightButton';
 
@@ -12,10 +12,14 @@ export const Journal: React.FC = () => {
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [newCustomField, setNewCustomField] = useState({ name: '', value: '', unit: 'cm' });
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [history, setHistory] = useState<CompletedWorkout[]>([]);
 
   useEffect(() => {
     const saved = localStorage.getItem('neuroLift_journal');
     if (saved) setEntries(JSON.parse(saved));
+
+    const savedHistory = localStorage.getItem('neuroLift_history');
+    if (savedHistory) setHistory(JSON.parse(savedHistory));
   }, []);
 
   const resetFormContent = () => {
@@ -41,7 +45,6 @@ export const Journal: React.FC = () => {
 
   const handleSave = () => {
     if (editingId) {
-      // Update existing
       const updatedEntries = entries.map(ent => {
         if (ent.id === editingId) {
           return {
@@ -55,7 +58,6 @@ export const Journal: React.FC = () => {
       setEntries(updatedEntries);
       localStorage.setItem('neuroLift_journal', JSON.stringify(updatedEntries));
     } else {
-      // Create new
       const newEntry: JournalEntry = {
         id: crypto.randomUUID(),
         date: new Date().toLocaleDateString(),
@@ -87,6 +89,67 @@ export const Journal: React.FC = () => {
     }
   };
 
+  const VolumeChart = () => {
+    const data = [...history].reverse().slice(-10);
+    if (data.length < 2) return null;
+
+    const maxVolume = Math.max(...data.map(d => d.totalVolume), 1);
+    const chartHeight = 100;
+    const chartWidth = 300;
+    const padding = 20;
+
+    const points = data.map((d, i) => ({
+      x: (i / (data.length - 1)) * (chartWidth - padding * 2) + padding,
+      y: chartHeight - (d.totalVolume / maxVolume) * (chartHeight - padding * 2) - padding
+    }));
+
+    const pathData = `M ${points.map(p => `${p.x},${p.y}`).join(' L ')}`;
+
+    return (
+      <Card className="p-6 mb-8 bg-zinc-900/50 border-zinc-800">
+        <h3 className="text-sm font-bold text-zinc-400 mb-6 uppercase tracking-widest">{t('journal_volume_chart')}</h3>
+        <div className="relative w-full overflow-hidden">
+          <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-32 drop-shadow-[0_0_8px_rgba(20,184,166,0.3)]">
+            {[0, 0.5, 1].map(v => (
+              <line
+                key={v}
+                x1="0"
+                y1={padding + v * (chartHeight - padding * 2)}
+                x2={chartWidth}
+                y2={padding + v * (chartHeight - padding * 2)}
+                stroke="#27272a"
+                strokeWidth="1"
+              />
+            ))}
+            <path
+              d={pathData}
+              fill="none"
+              stroke="#14b8a6"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="animate-in fade-in duration-1000"
+            />
+            {points.map((p, i) => (
+              <circle
+                key={i}
+                cx={p.x}
+                cy={p.y}
+                r="3"
+                fill="#14b8a6"
+                className="animate-pulse"
+              />
+            ))}
+          </svg>
+          <div className="flex justify-between mt-4 text-[10px] text-zinc-500 font-mono">
+            <span>{data[0].date}</span>
+            <span>{data[data.length - 1].date}</span>
+          </div>
+        </div>
+      </Card>
+    );
+  };
+
   const InputField = ({ label, field }: { label: string, field: keyof JournalEntry }) => (
     <div>
       <label className="text-xs text-zinc-500 block mb-1">{label}</label>
@@ -101,10 +164,11 @@ export const Journal: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-24">
-      <h2 className="text-3xl font-bold text-white mb-8">{t('journal_title')}</h2>
+      <h2 className="text-3xl font-bold text-white mb-2">{t('journal_title')}</h2>
+
+      <VolumeChart />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Input Form */}
         <div className="lg:col-span-1 space-y-4">
           <Card className={`p-6 space-y-6 ${editingId ? 'ring-1 ring-teal-500/50 bg-teal-500/5' : 'bg-zinc-900/80'}`}>
             <div className="flex items-center justify-between">
@@ -141,7 +205,6 @@ export const Journal: React.FC = () => {
               <InputField label={t('field_calves')} field="calves" />
             </div>
 
-            {/* Custom Fields List */}
             {customFields.length > 0 && (
               <div className="space-y-2 pt-2 border-t border-zinc-800">
                 {customFields.map(f => (
@@ -163,7 +226,6 @@ export const Journal: React.FC = () => {
               </div>
             )}
 
-            {/* Add Custom Field UI */}
             {showCustomInput ? (
               <div className="p-3 bg-zinc-800/50 rounded-lg space-y-2 border border-zinc-700">
                 <input
@@ -210,7 +272,6 @@ export const Journal: React.FC = () => {
           </Card>
         </div>
 
-        {/* History / Chart */}
         <div className="lg:col-span-2 space-y-6">
           {entries.length === 0 ? (
             <div className="text-zinc-500 text-center py-20 border border-dashed border-zinc-800 rounded-xl">
@@ -226,7 +287,6 @@ export const Journal: React.FC = () => {
                     : 'border-zinc-800 bg-zinc-900/30 hover:bg-zinc-900 hover:border-zinc-700'
                   }`}
               >
-                {/* Delete button */}
                 <button
                   onClick={(e) => handleDeleteEntry(e, entry.id)}
                   className="absolute top-4 right-4 p-2 rounded-lg bg-zinc-800/50 text-zinc-500 hover:bg-red-500/10 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all z-10"
@@ -247,7 +307,6 @@ export const Journal: React.FC = () => {
                   {entry.biceps_right && <div>Arms: <span className="text-zinc-200">{entry.biceps_right}</span></div>}
                   {entry.thigh_right && <div>Legs: <span className="text-zinc-200">{entry.thigh_right}</span></div>}
 
-                  {/* Show custom measurements */}
                   {entry.customMeasurements?.map(c => (
                     <div key={c.id} className="text-teal-500/80">
                       {c.name}: <span className="text-teal-200">{c.value}{c.unit}</span>
