@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">NeuroLift</string>
+    <string name="title_activity_main">NeuroLift</string>
+    <string name="package_name">com.neurolift.app</string>
+    <string name="custom_url_scheme">com.neurolift.app</string>
+</resources>
