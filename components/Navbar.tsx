@@ -48,17 +48,19 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
             </button>
           ))}
 
-          {/* Language Switcher - Restored within the scrollable container */}
-          <div className="flex shrink-0 items-center gap-2 border-l border-zinc-800 pl-4 ml-2 mr-4">
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value as Language)}
-              className="bg-zinc-900/50 border border-zinc-800 text-[10px] sm:text-xs text-zinc-300 rounded px-2 py-1 focus:outline-none focus:border-teal-400 cursor-pointer hover:bg-zinc-800 transition-all uppercase font-bold tracking-tight"
-            >
-              <option value="en">EN</option>
-              <option value="fr">FR</option>
-              <option value="ar">AR</option>
-            </select>
+          {/* Language Switcher - Vertical Divider & High Contrast Buttons */}
+          <div className="flex shrink-0 items-center gap-1 border-l border-zinc-800 pl-4 ml-2 mr-4">
+            {(['en', 'fr', 'ar'] as Language[]).map((lang, idx) => (
+              <React.Fragment key={lang}>
+                <button
+                  onClick={() => setLanguage(lang)}
+                  className={`px-2 py-1 text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all rounded ${language === lang ? 'bg-teal-500 text-black shadow-[0_0_10px_rgba(20,184,166,0.3)]' : 'text-zinc-500 hover:text-zinc-300'}`}
+                >
+                  {lang}
+                </button>
+                {idx < 2 && <span className="text-zinc-800 text-[10px]">|</span>}
+              </React.Fragment>
+            ))}
           </div>
 
           {/* Mobile Spacer to ensure last items aren't cut off */}

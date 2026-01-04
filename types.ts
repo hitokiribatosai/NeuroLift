@@ -82,3 +82,11 @@ export interface CompletedWorkout {
   exercises: ActiveExercise[];
   totalVolume: number;
 }
+
+export interface CategorizedExercises {
+  weightlifting: string[];
+  cables: string[];
+  bodyweight: string[];
+}
+
+export type ExerciseDatabase = Record<string, CategorizedExercises>;

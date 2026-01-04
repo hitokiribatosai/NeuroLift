@@ -257,28 +257,44 @@ export const Tracker: React.FC = () => {
           </button>
         </div>
 
-        <div className="space-y-12 mb-16">
+        <div className="space-y-16 mb-20">
           {selectedMuscles.map(muscle => (
             <div key={muscle} className="animate-in fade-in slide-in-from-bottom-4">
-              <h3 className="text-xl font-black text-white mb-6 uppercase tracking-widest flex items-center gap-3">
-                <span className="w-1.5 h-6 bg-teal-500 rounded-full"></span>
+              <h3 className="text-2xl font-black text-white mb-8 uppercase tracking-widest flex items-center gap-3">
+                <span className="w-2 h-8 bg-teal-500 rounded-full"></span>
                 {getLocalizedMuscleName(muscle, language)}
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {exercisesByMuscle[muscle]?.map(ex => (
-                  <label key={ex} className={`flex items-center gap-4 p-5 border rounded-2xl cursor-pointer transition-all ${selectedExercises.includes(ex) ? 'bg-teal-500/10 border-teal-500/50 text-white shadow-[0_0_20px_rgba(20,184,166,0.05)]' : 'bg-zinc-900/30 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:bg-zinc-900/50'}`}>
-                    <input
-                      type="checkbox"
-                      checked={selectedExercises.includes(ex)}
-                      onChange={() => toggleExercise(ex)}
-                      className="hidden"
-                    />
-                    <div className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-all ${selectedExercises.includes(ex) ? 'bg-teal-500 border-teal-500 text-black' : 'border-zinc-700'}`}>
-                      {selectedExercises.includes(ex) && <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>}
+
+              <div className="space-y-10">
+                {(['weightlifting', 'cables', 'bodyweight'] as const).map(category => {
+                  const exercises = exercisesByMuscle[muscle]?.[category] || [];
+                  if (exercises.length === 0) return null;
+
+                  return (
+                    <div key={category}>
+                      <h4 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-4 ml-1 flex items-center gap-2">
+                        {category === 'weightlifting' ? 'Weightlifting' : category === 'cables' ? 'Cables' : 'Bodyweight'}
+                        <div className="h-[1px] flex-1 bg-zinc-900"></div>
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {exercises.map(ex => (
+                          <label key={ex} className={`flex items-center gap-4 p-4 border rounded-xl cursor-pointer transition-all ${selectedExercises.includes(ex) ? 'bg-teal-500/10 border-teal-500/50 text-white shadow-[0_0_20px_rgba(20,184,166,0.05)]' : 'bg-zinc-900/30 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:bg-zinc-900/50'}`}>
+                            <input
+                              type="checkbox"
+                              checked={selectedExercises.includes(ex)}
+                              onChange={() => toggleExercise(ex)}
+                              className="hidden"
+                            />
+                            <div className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all ${selectedExercises.includes(ex) ? 'bg-teal-500 border-teal-500 text-black' : 'border-zinc-700'}`}>
+                              {selectedExercises.includes(ex) && <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>}
+                            </div>
+                            <span className="text-xs font-bold tracking-wide">{ex}</span>
+                          </label>
+                        ))}
+                      </div>
                     </div>
-                    <span className="text-sm font-bold tracking-wide">{ex}</span>
-                  </label>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ))}
