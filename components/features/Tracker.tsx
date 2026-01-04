@@ -16,6 +16,7 @@ export const Tracker: React.FC = () => {
   const [activeExercises, setActiveExercises] = useState<ActiveExercise[]>([]);
   const [duration, setDuration] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
+  const [laps, setLaps] = useState<number[]>([]);
   const [completedWorkout, setCompletedWorkout] = useState<CompletedWorkout | null>(null);
   const [restRemaining, setRestRemaining] = useState<number | null>(null);
 
@@ -128,20 +129,60 @@ export const Tracker: React.FC = () => {
     setSelectedMuscles([]);
     setSelectedExercises([]);
     setDuration(0);
+    setLaps([]);
     setCompletedWorkout(null);
     setRestRemaining(null);
+    setTimerActive(false);
   };
 
+  const addLap = () => {
+    setLaps([duration, ...laps]);
+  };
+
+  const resetCurrentTimer = () => {
+    if (window.confirm(t('timer_reset') + '?')) {
+      setDuration(0);
+      setLaps([]);
+    }
+  };
+
+
+  const [mapView, setMapView] = useState<'front' | 'rear'>('front');
+
   const MuscleMap = () => {
-    const muscles = [
-      { id: 'chest', path: 'M 100 80 Q 150 70 200 80 L 200 120 Q 150 130 100 120 Z', label: 'Chest' },
-      { id: 'shoulders', path: 'M 70 80 Q 85 70 100 80 L 100 100 Q 85 110 70 100 Z M 200 80 Q 215 70 230 80 L 230 100 Q 215 110 200 100 Z', label: 'Shoulders' },
-      { id: 'quads', path: 'M 110 200 L 145 200 L 145 300 L 110 300 Z M 155 200 L 190 200 L 190 300 L 155 300 Z', label: 'Quads' },
-      { id: 'biceps', path: 'M 80 110 L 95 110 L 95 160 L 80 160 Z M 205 110 L 220 110 L 220 160 L 205 160 Z', label: 'Arms' },
+    const frontMuscles = [
+      { id: 'chest', path: 'M 100 80 Q 150 70 200 80 L 200 120 Q 150 130 100 120 Z' },
+      { id: 'shoulders', path: 'M 70 80 Q 85 70 100 80 L 100 100 Q 85 110 70 100 Z M 200 80 Q 215 70 230 80 L 230 100 Q 215 110 200 100 Z' },
+      { id: 'quads', path: 'M 110 200 L 145 200 L 145 300 L 110 300 Z M 155 200 L 190 200 L 190 300 L 155 300 Z' },
+      { id: 'biceps', path: 'M 80 110 L 95 110 L 95 160 L 80 160 Z M 205 110 L 220 110 L 220 160 L 205 160 Z' },
     ];
 
+    const rearMuscles = [
+      { id: 'back', path: 'M 100 80 L 200 80 L 180 160 L 150 170 L 120 160 Z' },
+      { id: 'glutes', path: 'M 115 175 L 145 175 L 145 210 L 115 210 Z M 155 175 L 185 175 L 185 210 L 155 210 Z' },
+      { id: 'hamstrings', path: 'M 110 215 L 145 215 L 145 290 L 110 290 Z M 155 215 L 190 215 L 190 290 L 155 290 Z' },
+      { id: 'calves', path: 'M 115 300 L 140 300 L 140 370 L 115 370 Z M 160 300 L 185 300 L 185 370 L 160 370 Z' },
+    ];
+
+    const activeMuscles = mapView === 'front' ? frontMuscles : rearMuscles;
+
     return (
-      <div className="relative w-full max-w-[300px] mx-auto mb-12 group">
+      <div className="relative w-full max-w-[320px] mx-auto mb-12">
+        <div className="flex justify-center gap-2 mb-6">
+          <button
+            onClick={() => setMapView('front')}
+            className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${mapView === 'front' ? 'bg-teal-500 text-black' : 'bg-zinc-900 text-zinc-500 border border-zinc-800'}`}
+          >
+            {t('tracker_front')}
+          </button>
+          <button
+            onClick={() => setMapView('rear')}
+            className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${mapView === 'rear' ? 'bg-teal-500 text-black' : 'bg-zinc-900 text-zinc-500 border border-zinc-800'}`}
+          >
+            {t('tracker_back')}
+          </button>
+        </div>
+
         <svg viewBox="0 0 300 400" className="w-full h-auto drop-shadow-[0_0_15px_rgba(20,184,166,0.1)]">
           {/* Simplified Body Outline */}
           <path
@@ -152,22 +193,19 @@ export const Tracker: React.FC = () => {
           />
 
           {/* Interactive Regions */}
-          {muscles.map(m => (
+          {activeMuscles.map(m => (
             <path
               key={m.id}
               d={m.path}
               onClick={() => toggleMuscle(m.id)}
               className={`cursor-pointer transition-all duration-300 ${selectedMuscles.includes(m.id)
-                  ? 'fill-teal-500 stroke-teal-400'
-                  : 'fill-zinc-800/50 stroke-zinc-700 hover:fill-teal-500/30'
+                ? 'fill-teal-500 stroke-teal-400'
+                : 'fill-zinc-800/50 stroke-zinc-700 hover:fill-teal-500/30'
                 }`}
               strokeWidth="1"
             />
           ))}
         </svg>
-        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-zinc-500 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-          Interactive Muscle Map
-        </div>
       </div>
     );
   };
@@ -175,7 +213,8 @@ export const Tracker: React.FC = () => {
   if (phase === 'setup') {
     return (
       <div className="mx-auto max-w-4xl px-6 py-24 text-center">
-        <h2 className="text-3xl font-bold text-white mb-8">{t('tracker_select_muscle')}</h2>
+        <h2 className="text-3xl font-bold text-white mb-2">{t('tracker_select_muscle')}</h2>
+        <p className="text-zinc-500 text-sm mb-12 uppercase tracking-widest">Interactive Selection</p>
 
         <MuscleMap />
 
@@ -254,21 +293,69 @@ export const Tracker: React.FC = () => {
     return (
       <div className="mx-auto max-w-3xl px-6 py-20 pb-32">
         {/* Timer Sticky Header */}
-        <div className="sticky top-16 z-40 bg-black/90 backdrop-blur border-b border-zinc-800 py-4 mb-8 flex justify-between items-center px-2">
-          <div className="flex flex-col">
-            <div className="text-3xl font-mono font-bold text-teal-400">{formatTime(duration)}</div>
-            {restRemaining !== null && (
-              <div className="flex items-center gap-2 text-xs font-bold text-orange-400 animate-pulse">
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {t('tracker_rest_timer')}: {restRemaining}{t('tracker_rest_sec')}
-              </div>
-            )}
+        <div className="sticky top-16 z-40 bg-zinc-950/90 backdrop-blur border-b border-zinc-800 py-4 mb-8 px-4">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col">
+              <div className="text-4xl font-mono font-bold text-teal-400 leading-none">{formatTime(duration)}</div>
+              {restRemaining !== null && (
+                <div className="flex items-center gap-2 text-[10px] font-bold text-orange-400 animate-pulse mt-1">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {t('tracker_rest_timer')}: {restRemaining}{t('tracker_rest_sec')}
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setTimerActive(!timerActive)}
+                className={`p-2 rounded-lg border transition-all ${timerActive
+                  ? 'bg-amber-500/10 border-amber-500/50 text-amber-500'
+                  : 'bg-emerald-500/10 border-emerald-500/50 text-emerald-500'
+                  }`}
+                title={timerActive ? t('timer_stop') : t('timer_resume')}
+              >
+                {timerActive ? (
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                )}
+              </button>
+
+              <button
+                onClick={addLap}
+                disabled={!timerActive}
+                className="p-2 rounded-lg border border-zinc-700 text-zinc-400 hover:text-white hover:bg-zinc-800 disabled:opacity-30 transition-all"
+                title={t('timer_lap')}
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              </button>
+
+              <button
+                onClick={resetCurrentTimer}
+                className="p-2 rounded-lg border border-zinc-700 text-zinc-400 hover:text-red-400 hover:bg-red-400/10 transition-all"
+                title={t('timer_reset')}
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+              </button>
+
+              <SpotlightButton variant="secondary" onClick={finishWorkout} className="py-2 px-4 text-xs bg-red-900/20 border-red-900/50 hover:bg-red-400 text-red-200 hover:text-white transition-all ml-2">
+                {t('tracker_finish')}
+              </SpotlightButton>
+            </div>
           </div>
-          <SpotlightButton variant="secondary" onClick={finishWorkout} className="py-1 px-4 text-xs bg-red-900/20 border-red-900/50 hover:bg-red-900/40 text-red-200">
-            {t('tracker_finish')}
-          </SpotlightButton>
+
+          {/* Laps List */}
+          {laps.length > 0 && (
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {laps.map((time, i) => (
+                <div key={i} className="flex-shrink-0 px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-full text-[10px] text-zinc-400 font-mono">
+                  <span className="text-teal-500 mr-2">L{laps.length - i}</span> {formatTime(time)}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="space-y-8">

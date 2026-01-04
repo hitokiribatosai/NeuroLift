@@ -79,7 +79,21 @@ export const translations = {
     cal_title: "Calorie Tracker",
     cal_consumed: "Consumed Today",
     cal_add: "Add Calories",
-    cal_reset: "Reset Day"
+    cal_reset: "Reset Day",
+
+    // Enhancements
+    planner_search_placeholder: "Search exercises...",
+    tracker_rest_timer: "Rest Timer",
+    tracker_rest_sec: "sec",
+    journal_volume_chart: "Volume Progress (Last 10 sessions)",
+    nutrition_history: "7-Day History",
+    nutrition_calories_unit: "kcal",
+
+    // Advanced Timer & Map
+    timer_resume: "Resume",
+    timer_lap: "Lap",
+    tracker_front: "Front",
+    tracker_rear: "Rear"
   },
   fr: {
     // Nav
@@ -163,7 +177,13 @@ export const translations = {
     tracker_rest_sec: "sec",
     journal_volume_chart: "Progrès Volume (10 dernières séances)",
     nutrition_history: "Historique (7 jours)",
-    nutrition_calories_unit: "kcal"
+    nutrition_calories_unit: "kcal",
+
+    // Advanced Timer & Map
+    timer_resume: "Reprendre",
+    timer_lap: "Tour",
+    tracker_front: "Avant",
+    tracker_rear: "Arrière"
   },
   ar: {
     // Nav
@@ -239,7 +259,21 @@ export const translations = {
     cal_title: "عداد السعرات",
     cal_consumed: "المستهلك اليوم",
     cal_add: "إضافة سعرات",
-    cal_reset: "إعادة تعيين"
+    cal_reset: "إعادة تعيين",
+
+    // Enhancements
+    planner_search_placeholder: "ابحث عن التمارين...",
+    tracker_rest_timer: "مؤقت الراحة",
+    tracker_rest_sec: "ثانية",
+    journal_volume_chart: "تقدم الحجم (آخر 10 جلسات)",
+    nutrition_history: "سجل 7 أيام",
+    nutrition_calories_unit: "سعرة",
+
+    // Advanced Timer & Map
+    timer_resume: "استئناف",
+    timer_lap: "جولة",
+    tracker_front: "الأمامي",
+    tracker_rear: "الخلفي"
   }
 };
 
