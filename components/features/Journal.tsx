@@ -164,28 +164,28 @@ export const Journal: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-24">
-      <h2 className="text-3xl font-bold text-white mb-2">{t('journal_title')}</h2>
+      <h2 className="text-4xl font-black text-zinc-900 dark:text-white mb-8 uppercase tracking-tight">{t('journal_title')}</h2>
 
       <VolumeChart />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-4">
-          <Card className={`p-6 space-y-6 ${editingId ? 'ring-1 ring-teal-500/50 bg-teal-500/5' : 'bg-zinc-900/80'}`}>
+          <Card className={`p-8 space-y-6 rounded-[2.5rem] shadow-sm transition-all duration-300 ${editingId ? 'bg-teal-500/5 border-teal-500 shadow-teal-500/10' : 'bg-white dark:bg-zinc-900/80 border-zinc-200 dark:border-zinc-800'}`}>
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-white">
+                <h3 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">
                   {editingId ? 'Edit Entry' : t('journal_add_entry')}
                 </h3>
                 {editingId && (
                   <button
                     onClick={resetFormContent}
-                    className="text-[10px] text-teal-400 hover:text-teal-300 font-bold uppercase tracking-wider"
+                    className="text-[10px] text-teal-600 dark:text-teal-400 hover:underline font-black uppercase tracking-widest mt-1"
                   >
                     + Create New
                   </button>
                 )}
               </div>
-              <span className="text-xs text-zinc-500">
+              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
                 {editingId ? entries.find(e => e.id === editingId)?.date : new Date().toLocaleDateString()}
               </span>
             </div>
@@ -206,18 +206,18 @@ export const Journal: React.FC = () => {
             </div>
 
             {customFields.length > 0 && (
-              <div className="space-y-2 pt-2 border-t border-zinc-800">
+              <div className="space-y-3 pt-4 border-t border-zinc-100 dark:border-zinc-800">
                 {customFields.map(f => (
-                  <div key={f.id} className="flex justify-between items-center text-sm text-zinc-300 bg-zinc-900 p-2 rounded group">
-                    <span>{f.name}</span>
-                    <div className="flex items-center gap-2">
-                      <span>{f.value} {f.unit}</span>
+                  <div key={f.id} className="flex justify-between items-center text-xs text-zinc-600 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-900 p-3 rounded-xl border border-zinc-100 dark:border-zinc-800 group">
+                    <span className="font-bold uppercase tracking-widest text-[9px]">{f.name}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="font-black text-zinc-900 dark:text-white">{f.value} {f.unit}</span>
                       <button
                         onClick={() => setCustomFields(customFields.filter(cf => cf.id !== f.id))}
-                        className="text-zinc-600 hover:text-red-400 transition-colors"
+                        className="text-zinc-300 hover:text-rose-500 transition-colors"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       </button>
                     </div>
@@ -227,12 +227,12 @@ export const Journal: React.FC = () => {
             )}
 
             {showCustomInput ? (
-              <div className="p-3 bg-zinc-800/50 rounded-lg space-y-2 border border-zinc-700">
+              <div className="p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-3xl space-y-4 border border-zinc-200 dark:border-zinc-700 shadow-inner">
                 <input
                   placeholder="Measure Name (e.g. Wrist)"
                   value={newCustomField.name}
                   onChange={e => setNewCustomField({ ...newCustomField, name: e.target.value })}
-                  className="w-full bg-black text-xs p-2 rounded border border-zinc-700 text-white"
+                  className="w-full bg-white dark:bg-black text-xs p-3 rounded-xl border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white outline-none focus:border-teal-500 font-bold"
                 />
                 <div className="flex gap-2">
                   <input
@@ -240,33 +240,33 @@ export const Journal: React.FC = () => {
                     type="number"
                     value={newCustomField.value}
                     onChange={e => setNewCustomField({ ...newCustomField, value: e.target.value })}
-                    className="w-2/3 bg-black text-xs p-2 rounded border border-zinc-700 text-white"
+                    className="w-2/3 bg-white dark:bg-black text-xs p-3 rounded-xl border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white outline-none focus:border-teal-500 font-bold"
                   />
                   <select
                     value={newCustomField.unit}
                     onChange={e => setNewCustomField({ ...newCustomField, unit: e.target.value })}
-                    className="w-1/3 bg-black text-xs rounded border border-zinc-700 text-white"
+                    className="w-1/3 bg-white dark:bg-black text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white font-bold outline-none"
                   >
                     <option value="cm">cm</option>
                     <option value="kg">kg</option>
                     <option value="in">in</option>
                   </select>
                 </div>
-                <div className="flex gap-2 pt-1">
-                  <button onClick={addCustomField} className="flex-1 bg-teal-600 text-white text-xs py-1 rounded">Add</button>
-                  <button onClick={() => setShowCustomInput(false)} className="flex-1 bg-zinc-700 text-white text-xs py-1 rounded">Cancel</button>
+                <div className="flex gap-2 pt-2">
+                  <button onClick={addCustomField} className="flex-1 bg-teal-600 text-white text-[10px] font-black uppercase tracking-widest py-3 rounded-xl shadow-lg shadow-teal-500/20 active:scale-95 transition-all">Add</button>
+                  <button onClick={() => setShowCustomInput(false)} className="flex-1 bg-white dark:bg-zinc-700 text-zinc-500 dark:text-white text-[10px] font-black uppercase tracking-widest py-3 rounded-xl border border-zinc-200 dark:border-zinc-600 active:scale-95 transition-all">Cancel</button>
                 </div>
               </div>
             ) : (
               <button
                 onClick={() => setShowCustomInput(true)}
-                className="w-full py-2 border border-dashed border-zinc-700 text-zinc-400 text-xs rounded hover:border-teal-500 hover:text-teal-400 transition-colors flex items-center justify-center gap-1"
+                className="w-full py-4 border-2 border-dashed border-zinc-100 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:border-teal-500/50 hover:text-teal-600 transition-all flex items-center justify-center gap-2"
               >
                 <span>+</span> {t('add_custom')}
               </button>
             )}
 
-            <SpotlightButton onClick={handleSave} className="w-full justify-center mt-4">
+            <SpotlightButton onClick={handleSave} className="w-full justify-center py-5 text-sm font-black uppercase tracking-widest shadow-xl shadow-teal-500/20">
               {editingId ? 'Update Entry' : t('save')}
             </SpotlightButton>
           </Card>
@@ -274,47 +274,49 @@ export const Journal: React.FC = () => {
 
         <div className="lg:col-span-2 space-y-6">
           {entries.length === 0 ? (
-            <div className="text-zinc-500 text-center py-20 border border-dashed border-zinc-800 rounded-xl">
-              Start tracking your comprehensive metrics today.
+            <div className="text-zinc-400 dark:text-zinc-600 text-center py-32 border-2 border-dashed border-zinc-100 dark:border-zinc-800 rounded-[3rem] bg-zinc-50/50 dark:bg-zinc-900/10">
+              <div className="text-[10px] font-black uppercase tracking-[0.4em] mb-2 text-zinc-300 dark:text-zinc-800">No Entries Found</div>
+              <p className="text-xs font-bold px-10">Start tracking your comprehensive metrics today.</p>
             </div>
           ) : (
             entries.map(entry => (
               <div
                 key={entry.id}
                 onClick={() => handleSelectEntry(entry)}
-                className={`p-5 rounded-xl border transition-all cursor-pointer group relative ${editingId === entry.id
-                    ? 'border-teal-500 bg-teal-500/5 shadow-[0_0_20px_rgba(20,184,166,0.1)]'
-                    : 'border-zinc-800 bg-zinc-900/30 hover:bg-zinc-900 hover:border-zinc-700'
+                className={`p-8 rounded-[2.5rem] border transition-all duration-500 cursor-pointer group relative shadow-sm ${editingId === entry.id
+                  ? 'border-teal-500 bg-teal-500/5 shadow-teal-500/10'
+                  : 'border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900/30 hover:bg-white dark:hover:bg-zinc-900 hover:border-zinc-200 dark:hover:border-zinc-700 hover:shadow-md'
                   }`}
               >
                 <button
                   onClick={(e) => handleDeleteEntry(e, entry.id)}
-                  className="absolute top-4 right-4 p-2 rounded-lg bg-zinc-800/50 text-zinc-500 hover:bg-red-500/10 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all z-10"
+                  className="absolute top-6 right-6 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800 text-zinc-400 hover:bg-rose-500 hover:text-white md:opacity-0 group-hover:opacity-100 transition-all z-10 shadow-sm border border-zinc-100 dark:border-zinc-700"
                   title="Delete entry"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
                 </button>
 
-                <div className="flex justify-between items-center mb-4 border-b border-zinc-800 pb-2">
-                  <span className="text-teal-400 font-mono font-bold">{entry.date}</span>
-                  {entry.weight && <span className="text-white font-bold">{entry.weight} kg</span>}
+                <div className="flex justify-between items-center mb-6 border-b border-zinc-50 dark:border-zinc-800 pb-4">
+                  <span className="text-teal-600 dark:text-teal-400 font-black text-xs uppercase tracking-widest">{entry.date}</span>
+                  {entry.weight && <span className="text-zinc-900 dark:text-white font-black text-xl font-mono tracking-tighter">{entry.weight} <span className="text-[10px] text-zinc-400 dark:text-zinc-500">KG</span></span>}
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-zinc-400">
-                  {entry.chest && <div>Chest: <span className="text-zinc-200">{entry.chest}</span></div>}
-                  {entry.waist && <div>Waist: <span className="text-zinc-200">{entry.waist}</span></div>}
-                  {entry.biceps_right && <div>Arms: <span className="text-zinc-200">{entry.biceps_right}</span></div>}
-                  {entry.thigh_right && <div>Legs: <span className="text-zinc-200">{entry.thigh_right}</span></div>}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-xs text-zinc-500 dark:text-zinc-400">
+                  {entry.chest && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Chest</span> <span className="text-zinc-900 dark:text-zinc-200 font-bold">{entry.chest} cm</span></div>}
+                  {entry.waist && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Waist</span> <span className="text-zinc-900 dark:text-zinc-200 font-bold">{entry.waist} cm</span></div>}
+                  {entry.biceps_right && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Arms</span> <span className="text-zinc-900 dark:text-zinc-200 font-bold">{entry.biceps_right} cm</span></div>}
+                  {entry.thigh_right && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Legs</span> <span className="text-zinc-900 dark:text-zinc-200 font-bold">{entry.thigh_right} cm</span></div>}
 
                   {entry.customMeasurements?.map(c => (
-                    <div key={c.id} className="text-teal-500/80">
-                      {c.name}: <span className="text-teal-200">{c.value}{c.unit}</span>
+                    <div key={c.id} className="flex flex-col gap-1">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-teal-600/50 dark:text-teal-500/50">{c.name}</span>
+                      <span className="text-teal-600 dark:text-teal-400 font-bold">{c.value} {c.unit}</span>
                     </div>
                   ))}
                 </div>
                 {editingId === entry.id && (
-                  <div className="mt-4 flex items-center gap-2 text-[10px] text-teal-400 font-bold uppercase tracking-widest">
+                  <div className="mt-6 flex items-center justify-center gap-3 text-[9px] text-teal-600 dark:text-teal-400 font-black uppercase tracking-[0.4em] bg-teal-500/5 py-2 rounded-xl">
                     <div className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse"></div>
                     Currently Editing
                   </div>

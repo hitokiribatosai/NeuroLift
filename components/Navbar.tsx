@@ -25,7 +25,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
     { id: 'home', label: t('nav_home') },
     { id: 'planner', label: t('nav_planner') },
     { id: 'tracker', label: t('nav_workout') },
-    { id: 'nutrition', label: t('nav_nutrition') },
     { id: 'journal', label: t('nav_journal') },
     { id: 'clock', label: t('nav_clock') },
   ];
@@ -39,7 +38,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
         </div>
 
         {/* Navigation Wrapper */}
-        <div className="flex flex-1 items-center justify-end gap-2 sm:gap-6 overflow-hidden">
+        <div className="flex flex-1 items-center justify-end gap-2 sm:gap-6">
           {/* Navigation Items - Scrollable if needed */}
           <div className="flex items-center gap-4 sm:gap-6 text-sm font-bold text-zinc-500 dark:text-zinc-400 overflow-x-auto whitespace-nowrap scrollbar-hide py-1 px-2">
             {navItems.map((item) => (
@@ -79,7 +78,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
                 <svg className="w-3 h-3 text-zinc-400 dark:text-zinc-600 group-hover:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg>
               </button>
 
-              <div className="absolute top-full mt-2 right-0 w-24 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden opacity-0 -translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-300 shadow-2xl z-[100]">
+              <div className="absolute top-full mt-2 right-0 w-32 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden opacity-0 -translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-300 shadow-2xl z-[100]">
                 {(['en', 'fr', 'ar'] as Language[]).map((lang) => (
                   <button
                     key={lang}

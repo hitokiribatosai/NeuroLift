@@ -14,10 +14,10 @@ export const FooterCTA: React.FC<FooterCTAProps> = ({ setCurrentView }) => {
       {/* Glow effect */}
       <div className="absolute bottom-0 left-1/2 -z-10 h-64 w-[600px] -translate-x-1/2 rounded-full bg-teal-900/20 blur-[100px]"></div>
 
-      <h2 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
+      <h2 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-5xl">
         {t('footer_title')}
       </h2>
-      <p className="mx-auto mt-6 max-w-xl text-lg text-zinc-400">
+      <p className="mx-auto mt-6 max-w-xl text-lg text-zinc-600 dark:text-zinc-400">
         {t('footer_desc')}
       </p>
       <div className="mt-10">
@@ -29,7 +29,7 @@ export const FooterCTA: React.FC<FooterCTAProps> = ({ setCurrentView }) => {
         </SpotlightButton>
       </div>
 
-      <div className="mt-16 border-t border-zinc-900 pt-8 text-sm text-zinc-600">
+      <div className="mt-16 border-t border-zinc-200 dark:border-zinc-900 pt-8 text-sm text-zinc-500 underline underline-offset-4 decoration-zinc-200 dark:decoration-zinc-800">
         &copy; {new Date().getFullYear()} {t('footer_copy')}
       </div>
     </section>

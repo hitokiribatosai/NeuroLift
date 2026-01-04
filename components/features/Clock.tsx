@@ -28,29 +28,29 @@ export const Clock: React.FC = () => {
     return (
         <div className="mx-auto max-w-4xl px-6 py-24 min-h-[70vh] flex flex-col items-center">
             <div className="w-full max-w-md">
-                <Card className="p-8 bg-zinc-900/80 mb-8">
-                    <div className="flex justify-center gap-4 mb-8">
+                <Card className="p-8 bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 mb-8 shadow-sm rounded-[2.5rem]">
+                    <div className="flex justify-center gap-4 mb-8 bg-zinc-50 dark:bg-black/40 p-1.5 rounded-2xl border border-zinc-100 dark:border-zinc-800">
                         <button
                             onClick={() => { setMode('stopwatch'); setTimerActive(false); }}
-                            className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${mode === 'stopwatch' ? 'bg-teal-500 text-black' : 'bg-zinc-800 text-zinc-500 hover:text-white'}`}
+                            className={`flex-1 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${mode === 'stopwatch' ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/20' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}
                         >
                             {t('clock_stopwatch')}
                         </button>
                         <button
                             onClick={() => { setMode('timer'); setTimerActive(false); }}
-                            className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${mode === 'timer' ? 'bg-teal-500 text-black' : 'bg-zinc-800 text-zinc-500 hover:text-white'}`}
+                            className={`flex-1 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${mode === 'timer' ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/20' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}
                         >
                             {t('clock_timer')}
                         </button>
                     </div>
 
-                    <div className="relative flex flex-col items-center justify-center py-10">
+                    <div className="relative flex flex-col items-center justify-center py-12">
                         <div className="absolute inset-0 bg-teal-500/5 rounded-full blur-3xl"></div>
                         <div className="relative text-center">
-                            <div className="text-7xl font-mono font-bold text-white tracking-widest">
+                            <div className="text-8xl font-mono font-black text-zinc-900 dark:text-white tracking-tighter leading-none">
                                 {formatTime(currentDisplay)}
                             </div>
-                            <div className="text-[10px] text-zinc-500 uppercase tracking-[0.3em] mt-4 font-bold">
+                            <div className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.4em] mt-6 font-black">
                                 {mode === 'stopwatch' ? t('clock_stopwatch') : t('clock_timer')}
                             </div>
                         </div>
@@ -64,9 +64,9 @@ export const Clock: React.FC = () => {
                                     value={countdownInput}
                                     onChange={(e) => setCountdownInput(e.target.value)}
                                     placeholder="Seconds"
-                                    className="flex-1 bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white focus:border-teal-500 outline-none"
+                                    className="flex-1 bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-zinc-900 dark:text-white font-bold focus:border-teal-500 outline-none"
                                 />
-                                <SpotlightButton onClick={() => startTimer(parseInt(countdownInput))} disabled={!countdownInput}>
+                                <SpotlightButton onClick={() => startTimer(parseInt(countdownInput))} disabled={!countdownInput} className="px-6 rounded-xl font-black uppercase text-[10px] tracking-widest">
                                     {t('timer_set')}
                                 </SpotlightButton>
                             </div>
@@ -75,7 +75,7 @@ export const Clock: React.FC = () => {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setTimerActive(!timerActive)}
-                                className={`flex-1 py-4 rounded-xl font-bold transition-all active:scale-95 ${timerActive ? 'bg-amber-500/20 text-amber-500 border border-amber-500/50' : 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/50'
+                                className={`flex-1 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all active:scale-95 shadow-lg ${timerActive ? 'bg-rose-500 text-white shadow-rose-500/20' : 'bg-teal-600 text-white shadow-teal-500/20'
                                     }`}
                             >
                                 {timerActive ? t('timer_stop') : (mode === 'stopwatch' && duration > 0 ? t('timer_resume') : t('timer_start'))}
@@ -85,7 +85,7 @@ export const Clock: React.FC = () => {
                                 <button
                                     onClick={addLap}
                                     disabled={!timerActive}
-                                    className="px-6 rounded-xl border border-zinc-700 text-zinc-400 hover:text-white disabled:opacity-20 translate-y-0 active:translate-y-1"
+                                    className="px-6 rounded-2xl border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800/50 disabled:opacity-20 transition-all font-black uppercase text-[10px] tracking-widest"
                                 >
                                     {t('timer_lap')}
                                 </button>
@@ -94,7 +94,7 @@ export const Clock: React.FC = () => {
 
                         <button
                             onClick={resetClock}
-                            className="w-full text-xs text-zinc-500 hover:text-red-400 uppercase tracking-widest font-bold pt-4"
+                            className="w-full text-[10px] text-zinc-400 hover:text-rose-500 uppercase tracking-[0.3em] font-black pt-4 transition-colors"
                         >
                             {t('timer_reset')}
                         </button>
@@ -102,13 +102,16 @@ export const Clock: React.FC = () => {
                 </Card>
 
                 {mode === 'stopwatch' && laps.length > 0 && (
-                    <Card className="p-6 bg-zinc-900/50 border-zinc-800 animate-in fade-in slide-in-from-bottom-4">
-                        <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-4">Laps History</h4>
-                        <div className="space-y-2 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-700">
+                    <Card className="p-8 bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 animate-in fade-in slide-in-from-bottom-4 shadow-sm rounded-[2rem]">
+                        <h4 className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.4em] mb-6 flex items-center gap-4">
+                            Laps History
+                            <div className="h-px flex-1 bg-zinc-100 dark:bg-zinc-800"></div>
+                        </h4>
+                        <div className="space-y-4 max-h-48 overflow-y-auto pr-3 scrollbar-thin scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-700">
                             {laps.map((time, i) => (
-                                <div key={i} className="flex justify-between items-center text-sm border-b border-zinc-800/50 pb-2">
-                                    <span className="text-zinc-500 font-mono">#{laps.length - i}</span>
-                                    <span className="text-teal-400 font-mono font-bold">{formatTime(time)}</span>
+                                <div key={i} className="flex justify-between items-center text-sm border-b border-zinc-50 dark:border-zinc-800/50 pb-3 last:border-0 last:pb-0">
+                                    <span className="text-zinc-400 dark:text-zinc-500 font-black text-[10px]">#{laps.length - i}</span>
+                                    <span className="text-teal-600 dark:text-teal-400 font-mono font-black">{formatTime(time)}</span>
                                 </div>
                             ))}
                         </div>

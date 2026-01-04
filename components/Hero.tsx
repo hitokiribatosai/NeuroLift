@@ -16,12 +16,12 @@ export const Hero: React.FC<HeroProps> = ({ setCurrentView }) => {
       <div className="absolute -top-40 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-teal-500/20 blur-[120px] filter animate-pulse-slow"></div>
 
       <div className="relative z-10 max-w-4xl px-6">
-        <h1 className="bg-gradient-to-b from-white via-zinc-200 to-zinc-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent sm:text-7xl">
+        <h1 className="bg-gradient-to-b from-zinc-800 via-zinc-900 to-black dark:from-white dark:via-zinc-200 dark:to-zinc-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent sm:text-7xl">
           {t('hero_title_1')} <br />
-          <span className="text-white">{t('hero_title_2')}</span>
+          <span className="text-teal-600 dark:text-white">{t('hero_title_2')}</span>
         </h1>
 
-        <p className="mx-auto mt-6 max-w-2xl text-lg text-zinc-400">
+        <p className="mx-auto mt-6 max-w-2xl text-lg text-zinc-600 dark:text-zinc-400">
           {t('hero_subtitle')}
         </p>
 
