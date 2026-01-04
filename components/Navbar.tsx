@@ -51,7 +51,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
         </div>
 
         {/* Navigation Items - Grouped with Logo */}
-        <div className="hidden sm:flex items-center gap-6 text-sm font-bold text-zinc-400 ms-6">
+        <div className="flex items-center gap-6 text-sm font-bold text-zinc-400 ms-6 overflow-x-auto whitespace-nowrap scrollbar-hide py-1 px-2 mask-linear-fade">
           {navItems.map((item) => (
             <button
               key={item.id}
@@ -64,7 +64,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
         </div>
 
         {/* Controls - Pushed to End */}
-        <div className="flex shrink-0 items-center gap-3 ms-auto">
+        <div className="flex shrink-0 items-center gap-3 ms-4">
 
           {/* Language Switcher */}
           <div className="relative lang-dropdown-container hidden sm:block">
