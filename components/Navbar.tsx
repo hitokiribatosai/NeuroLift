@@ -48,20 +48,31 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
             </button>
           ))}
 
-          {/* Language Switcher - Now inside the scrollable container */}
-          <div className="flex shrink-0 items-center gap-2 border-l border-zinc-800 pl-4 ml-2 mr-4">
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value as Language)}
-              className="bg-zinc-900/50 border border-zinc-800 text-[10px] sm:text-xs text-zinc-300 rounded px-2 py-1 focus:outline-none focus:border-teal-400 cursor-pointer hover:bg-zinc-800 transition-all uppercase font-bold tracking-tight"
-            >
-              <option value="en">EN</option>
-              <option value="fr">FR</option>
-              <option value="ar">AR</option>
-            </select>
+          {/* Language Switcher Dropdown - Inside scrollable container */}
+          <div className="relative group shrink-0 border-l border-zinc-800 pl-4 ml-2 mr-4 py-2">
+            <button className="flex items-center gap-1.5 transition-colors hover:text-white uppercase font-bold text-xs tracking-widest cursor-default">
+              {language}
+              <svg className="w-3 h-3 transition-transform group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            <div className="absolute bottom-full left-0 mb-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-2 group-hover:translate-y-0 z-[60]">
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl min-w-[80px]">
+                {(['en', 'fr', 'ar'] as Language[]).map((lang) => (
+                  <button
+                    key={lang}
+                    onClick={() => setLanguage(lang)}
+                    className={`w-full px-4 py-2 text-left text-[10px] font-bold uppercase tracking-widest hover:bg-teal-500 hover:text-black transition-colors ${language === lang ? 'text-teal-400' : 'text-zinc-400'}`}
+                  >
+                    {lang}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
-          {/* Mobile Spacer to ensure last items aren't cut off */}
+          {/* Mobile Spacer */}
           <div className="w-8 shrink-0 sm:hidden" />
         </div>
       </div>
