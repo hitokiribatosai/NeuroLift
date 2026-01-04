@@ -37,33 +37,32 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
         </div>
 
         {/* Navigation Items - Scrollable on mobile */}
-        <div className="flex flex-1 items-center justify-between min-w-0">
-          <div className="flex items-center gap-4 sm:gap-6 text-sm font-medium text-zinc-400 overflow-x-auto whitespace-nowrap scrollbar-hide py-1 px-2">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setCurrentView(item.id)}
-                className={`transition-colors hover:text-white shrink-0 ${currentView === item.id ? 'text-teal-400 font-semibold' : ''}`}
-              >
-                {item.label}
-              </button>
-            ))}
-            {/* Mobile Spacer to ensure last items aren't cut off */}
-            <div className="w-12 shrink-0 sm:hidden" />
-          </div>
+        <div className="flex flex-1 items-center gap-4 sm:gap-6 text-sm font-medium text-zinc-400 overflow-x-auto whitespace-nowrap scrollbar-hide py-1 px-2">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setCurrentView(item.id)}
+              className={`transition-colors hover:text-white shrink-0 ${currentView === item.id ? 'text-teal-400 font-semibold' : ''}`}
+            >
+              {item.label}
+            </button>
+          ))}
 
-          {/* Language Switcher */}
-          <div className="flex shrink-0 items-center gap-2 ml-4">
+          {/* Language Switcher - Now inside the scrollable container */}
+          <div className="flex shrink-0 items-center gap-2 border-l border-zinc-800 pl-4 ml-2 mr-4">
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value as Language)}
-              className="bg-zinc-900 border border-zinc-800 text-[10px] sm:text-xs text-zinc-300 rounded px-2 py-1 focus:outline-none focus:border-teal-400"
+              className="bg-zinc-900/50 border border-zinc-800 text-[10px] sm:text-xs text-zinc-300 rounded px-2 py-1 focus:outline-none focus:border-teal-400 cursor-pointer hover:bg-zinc-800 transition-all uppercase font-bold tracking-tight"
             >
               <option value="en">EN</option>
               <option value="fr">FR</option>
               <option value="ar">AR</option>
             </select>
           </div>
+
+          {/* Mobile Spacer to ensure last items aren't cut off */}
+          <div className="w-8 shrink-0 sm:hidden" />
         </div>
       </div>
     </nav>
