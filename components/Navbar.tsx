@@ -21,10 +21,11 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
 
   const navItems = [
     { id: 'home', label: t('nav_home') },
-    { id: 'tracker', label: t('nav_workout') }, // Replaced Timer with comprehensive Tracker
     { id: 'planner', label: t('nav_planner') },
+    { id: 'tracker', label: t('nav_workout') },
     { id: 'nutrition', label: t('nav_nutrition') },
     { id: 'journal', label: t('nav_journal') },
+    { id: 'clock', label: t('nav_clock') },
   ];
 
   return (

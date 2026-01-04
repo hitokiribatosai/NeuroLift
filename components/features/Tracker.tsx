@@ -2,49 +2,36 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { SpotlightButton } from '../ui/SpotlightButton';
 import { Card } from '../ui/Card';
-import { CompletedWorkout, ActiveExercise, WorkoutSet } from '../../types';
+import { CompletedWorkout, ActiveExercise } from '../../types';
 import { getExerciseDatabase, getLocalizedMuscleName } from '../../utils/exerciseData';
+import { useClock } from '../../contexts/ClockContext';
 
 export const Tracker: React.FC = () => {
   const { t, language } = useLanguage();
-  const [phase, setPhase] = useState<'setup' | 'selection' | 'active' | 'summary'>('setup');
+  const [phase, setPhase] = useState<'setup' | 'active' | 'summary'>('setup');
   const [selectedMuscles, setSelectedMuscles] = useState<string[]>([]);
   const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
 
   // Active Session State
   const [activeExercises, setActiveExercises] = useState<ActiveExercise[]>([]);
-  const [duration, setDuration] = useState(0);
-  const [timerActive, setTimerActive] = useState(false);
-  const [laps, setLaps] = useState<number[]>([]);
   const [completedWorkout, setCompletedWorkout] = useState<CompletedWorkout | null>(null);
   const [restRemaining, setRestRemaining] = useState<number | null>(null);
 
-  // Timer/Stopwatch State
-  const [activeClockMode, setActiveClockMode] = useState<'stopwatch' | 'timer'>('stopwatch');
-  const [countdownRemaining, setCountdownRemaining] = useState<number | null>(null);
-  const [countdownInput, setCountdownInput] = useState('60');
+  // Use Global Clock for Workout Session
+  const {
+    mode, setMode,
+    timerActive, setTimerActive,
+    duration, setDuration,
+    countdownRemaining,
+    countdownInput, setCountdownInput,
+    laps, addLap,
+    resetClock,
+    startTimer
+  } = useClock();
 
   // Dynamic DB
   const exercisesByMuscle = getExerciseDatabase(language);
   const selectableMuscles = Object.keys(exercisesByMuscle);
-
-  useEffect(() => {
-    let interval: any;
-    if (timerActive) {
-      interval = setInterval(() => {
-        if (activeClockMode === 'stopwatch') {
-          setDuration(d => d + 1);
-        } else if (countdownRemaining !== null && countdownRemaining > 0) {
-          setCountdownRemaining(r => (r !== null ? r - 1 : 0));
-        } else if (countdownRemaining === 0) {
-          setTimerActive(false);
-          setCountdownRemaining(null);
-          alert("Time's up!");
-        }
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [timerActive, activeClockMode, countdownRemaining]);
 
   useEffect(() => {
     let interval: any;
@@ -65,14 +52,25 @@ export const Tracker: React.FC = () => {
   const toggleMuscle = (m: string) => {
     if (selectedMuscles.includes(m)) {
       setSelectedMuscles(selectedMuscles.filter(x => x !== m));
+      // Optionally remove exercises if muscle deselected
     } else {
       setSelectedMuscles([...selectedMuscles, m]);
+    }
+  };
+
+  const toggleExercise = (ex: string) => {
+    if (selectedExercises.includes(ex)) {
+      setSelectedExercises(selectedExercises.filter(i => i !== ex));
+    } else {
+      setSelectedExercises([...selectedExercises, ex]);
     }
   };
 
   const handleStartWorkout = () => {
     setPhase('active');
     setTimerActive(true);
+    setMode('stopwatch');
+    setDuration(0);
     setActiveExercises(selectedExercises.map(name => ({
       name,
       sets: [{ id: crypto.randomUUID(), weight: 0, reps: 0, completed: false }]
@@ -136,30 +134,21 @@ export const Tracker: React.FC = () => {
     setPhase('setup');
     setSelectedMuscles([]);
     setSelectedExercises([]);
-    setDuration(0);
-    setLaps([]);
     setCompletedWorkout(null);
     setRestRemaining(null);
     setTimerActive(false);
   };
 
-  const addLap = () => {
-    setLaps([duration, ...laps]);
-  };
-
   const resetCurrentTimer = () => {
     if (window.confirm(t('timer_reset') + '?')) {
-      setDuration(0);
-      setLaps([]);
-      setCountdownRemaining(null);
+      resetClock();
     }
   };
 
   const startTimerMode = () => {
     const secs = parseInt(countdownInput);
     if (!isNaN(secs) && secs > 0) {
-      setCountdownRemaining(secs);
-      setTimerActive(true);
+      startTimer(secs);
     }
   };
 
@@ -217,75 +206,63 @@ export const Tracker: React.FC = () => {
 
   if (phase === 'setup') {
     return (
-      <div className="mx-auto max-w-4xl px-6 py-24 text-center">
-        <div className="mb-12">
+      <div className="mx-auto max-w-6xl px-6 py-24">
+        <div className="text-center mb-12">
           <h2 className="text-4xl font-black text-white mb-2 uppercase tracking-tight">{t('tracker_select_muscle')}</h2>
-          <div className="h-1 w-20 bg-teal-500 mx-auto rounded-full"></div>
+          <div className="h-1 w-20 bg-teal-500 mx-auto rounded-full mb-4"></div>
+          <p className="text-zinc-500 text-sm uppercase tracking-widest">Select muscles and exercises to begin</p>
         </div>
-        <MuscleMap />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          {selectableMuscles.map(m => (
-            <button
-              key={m}
-              onClick={() => toggleMuscle(m)}
-              className={`p-8 rounded-2xl border transition-all text-xl font-semibold 
-                ${selectedMuscles.includes(m)
-                  ? 'bg-teal-900/20 border-teal-500 text-white'
-                  : 'bg-zinc-900/50 border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-900'
-                }`}
-            >
-              {getLocalizedMuscleName(m, language)}
-              {selectedMuscles.includes(m) && <span className="block text-xs text-teal-400 mt-2">✓ Selected</span>}
-            </button>
-          ))}
-        </div>
-        {selectedMuscles.length > 0 && (
-          <div className="animate-in fade-in slide-in-from-bottom-4">
-            <SpotlightButton onClick={() => setPhase('selection')} className="px-12">
-              Continue with {selectedMuscles.length} Groups
-            </SpotlightButton>
-          </div>
-        )}
-      </div>
-    );
-  }
 
-  if (phase === 'selection') {
-    return (
-      <div className="mx-auto max-w-4xl px-6 py-24">
-        <h2 className="text-3xl font-bold text-white mb-6 underline decoration-teal-500 decoration-2 underline-offset-8">
-          {t('tracker_select_exercises')}
-        </h2>
-        <div className="space-y-8 mb-8">
-          {selectedMuscles.map(muscle => (
-            <div key={muscle} className="animate-in fade-in slide-in-from-bottom-2">
-              <h3 className="text-xl font-semibold text-teal-400 mb-4 border-b border-zinc-800 pb-2 uppercase tracking-widest">{getLocalizedMuscleName(muscle, language)}</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {exercisesByMuscle[muscle]?.map(ex => (
-                  <label key={ex} className="flex items-center gap-4 p-4 border border-zinc-800 rounded-xl bg-zinc-900/30 cursor-pointer hover:bg-zinc-800 hover:border-teal-500/50 transition-all">
-                    <input
-                      type="checkbox"
-                      checked={selectedExercises.includes(ex)}
-                      onChange={(e) => {
-                        if (e.target.checked) setSelectedExercises([...selectedExercises, ex]);
-                        else setSelectedExercises(selectedExercises.filter(i => i !== ex));
-                      }}
-                      className="w-5 h-5 accent-teal-500 rounded border-zinc-700 bg-zinc-900"
-                    />
-                    <span className="text-sm font-medium text-zinc-200">{ex}</span>
-                  </label>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+          <div>
+            <MuscleMap />
+          </div>
+
+          <div className="space-y-6">
+            {selectedMuscles.length === 0 ? (
+              <div className="h-64 flex flex-col items-center justify-center border border-dashed border-zinc-800 rounded-3xl bg-zinc-900/20 text-zinc-500">
+                <svg className="w-12 h-12 mb-4 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-sm font-medium uppercase tracking-widest">Select a muscle group to see exercises</p>
+              </div>
+            ) : (
+              <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+                {selectedMuscles.map(muscle => (
+                  <Card key={muscle} className="p-6 bg-zinc-900/40 border-zinc-800">
+                    <h3 className="text-lg font-bold text-teal-400 mb-4 uppercase tracking-widest flex items-center gap-2">
+                      <span className="w-1 h-4 bg-teal-500 rounded-full"></span>
+                      {getLocalizedMuscleName(muscle, language)}
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {exercisesByMuscle[muscle]?.map(ex => (
+                        <label key={ex} className={`flex items-center gap-3 p-3 border rounded-xl cursor-pointer transition-all ${selectedExercises.includes(ex) ? 'bg-teal-500/10 border-teal-500/50 text-white' : 'bg-black/40 border-zinc-800 text-zinc-400 hover:border-zinc-700'}`}>
+                          <input
+                            type="checkbox"
+                            checked={selectedExercises.includes(ex)}
+                            onChange={() => toggleExercise(ex)}
+                            className="hidden"
+                          />
+                          <span className={`w-4 h-4 rounded border flex items-center justify-center ${selectedExercises.includes(ex) ? 'bg-teal-500 border-teal-500' : 'border-zinc-600'}`}>
+                            {selectedExercises.includes(ex) && <svg className="w-3 h-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>}
+                          </span>
+                          <span className="text-xs font-semibold">{ex}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </Card>
                 ))}
               </div>
-            </div>
-          ))}
-        </div>
-        <div className="flex gap-4 sticky bottom-8 bg-black/80 backdrop-blur-md p-4 rounded-xl border border-zinc-800">
-          <SpotlightButton onClick={handleStartWorkout} disabled={selectedExercises.length === 0}>
-            {t('tracker_start')} ({selectedExercises.length})
-          </SpotlightButton>
-          <button onClick={() => setPhase('setup')} className="px-6 py-3 text-zinc-400 hover:text-white">
-            {t('tracker_back')}
-          </button>
+            )}
+
+            {selectedExercises.length > 0 && (
+              <div className="sticky bottom-0 pt-6 pb-2 bg-gradient-to-t from-black via-black to-transparent">
+                <SpotlightButton onClick={handleStartWorkout} className="w-full py-4 text-lg">
+                  {t('tracker_start')} ({selectedExercises.length} {selectedExercises.length === 1 ? 'Exercise' : 'Exercises'})
+                </SpotlightButton>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -298,19 +275,19 @@ export const Tracker: React.FC = () => {
           <div className="flex justify-between items-center mb-4">
             <div className="flex flex-col">
               <div className="text-4xl font-mono font-bold text-teal-400 leading-none">
-                {activeClockMode === 'stopwatch' ? formatTime(duration) : formatTime(countdownRemaining || 0)}
+                {mode === 'stopwatch' ? formatTime(duration) : formatTime(countdownRemaining || 0)}
               </div>
               <div className="flex items-center gap-2 mt-2">
                 <button
-                  onClick={() => { setActiveClockMode('stopwatch'); setTimerActive(false); }}
-                  className={`p-1.5 rounded transition-colors ${activeClockMode === 'stopwatch' ? 'bg-teal-500/10 text-teal-500' : 'text-zinc-500'}`}
+                  onClick={() => { setMode('stopwatch'); setTimerActive(false); }}
+                  className={`p-1.5 rounded transition-colors ${mode === 'stopwatch' ? 'bg-teal-500/10 text-teal-500' : 'text-zinc-500'}`}
                   title={t('clock_stopwatch')}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </button>
                 <button
-                  onClick={() => { setActiveClockMode('timer'); setTimerActive(false); }}
-                  className={`p-1.5 rounded transition-colors ${activeClockMode === 'timer' ? 'bg-teal-500/10 text-teal-500' : 'text-zinc-500'}`}
+                  onClick={() => { setMode('timer'); setTimerActive(false); }}
+                  className={`p-1.5 rounded transition-colors ${mode === 'timer' ? 'bg-teal-500/10 text-teal-500' : 'text-zinc-500'}`}
                   title={t('clock_timer')}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -324,7 +301,7 @@ export const Tracker: React.FC = () => {
             </div>
 
             <div className="flex gap-2">
-              {activeClockMode === 'timer' && countdownRemaining === null && (
+              {mode === 'timer' && countdownRemaining === null && (
                 <div className="flex items-center gap-2 mr-2">
                   <input
                     type="number"
@@ -348,8 +325,8 @@ export const Tracker: React.FC = () => {
               </button>
 
               <button
-                onClick={activeClockMode === 'stopwatch' ? addLap : undefined}
-                disabled={!timerActive || activeClockMode !== 'stopwatch'}
+                onClick={mode === 'stopwatch' ? addLap : undefined}
+                disabled={!timerActive || mode !== 'stopwatch'}
                 className="p-2 rounded-lg border border-zinc-700 text-zinc-400 hover:text-white disabled:opacity-30"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -365,7 +342,7 @@ export const Tracker: React.FC = () => {
             </div>
           </div>
 
-          {activeClockMode === 'stopwatch' && laps.length > 0 && (
+          {mode === 'stopwatch' && laps.length > 0 && (
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
               {laps.map((time, i) => (
                 <div key={i} className="flex-shrink-0 px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-full text-[10px] text-zinc-400 font-mono">

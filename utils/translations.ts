@@ -8,6 +8,7 @@ export const translations = {
     nav_planner: "Exercises",
     nav_nutrition: "Nutrition",
     nav_journal: "Journal",
+    nav_clock: "Clock",
 
     // Hero
     hero_title_1: "Scientific Growth.",
@@ -106,6 +107,7 @@ export const translations = {
     nav_planner: "Exercices",
     nav_nutrition: "Nutrition",
     nav_journal: "Journal",
+    nav_clock: "Horloge",
 
     // Hero
     hero_title_1: "Croissance Scientifique.",
@@ -200,6 +202,7 @@ export const translations = {
     nav_planner: "تمارين",
     nav_nutrition: "التغذية",
     nav_journal: "السجل",
+    nav_clock: "الساعة",
 
     // Hero
     hero_title_1: "نمو علمي.",
