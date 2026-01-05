@@ -168,10 +168,7 @@ export const Tracker: React.FC = () => {
               : 'bg-zinc-900/40 border-zinc-800 hover:border-zinc-700 shadow-sm hover:shadow-md'
               }`}
           >
-            <div className="flex items-center justify-between mb-2">
-              <span className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors ${selectedMuscles.includes(muscle) ? 'text-white' : 'text-zinc-500'}`}>
-                {muscle === 'Glutes' ? 'Lower Body' : muscle === 'Chest' ? 'Upper Body' : 'Muscle Group'}
-              </span>
+            <div className="flex items-center justify-end mb-2">
               <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${selectedMuscles.includes(muscle) ? 'bg-white border-white' : 'border-zinc-700 group-hover:border-zinc-600'}`}>
                 {selectedMuscles.includes(muscle) && <svg className="w-3 h-3 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>}
               </div>
