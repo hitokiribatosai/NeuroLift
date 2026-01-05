@@ -27,7 +27,8 @@ export const getLocalizedMuscleName = (muscle: string, lang: Language): string =
     "Biceps": { en: "Biceps", fr: "Biceps", ar: "البايسبس" },
     "Triceps": { en: "Triceps", fr: "Triceps", ar: "الترايسبس" },
     "Forearms": { en: "Forearms", fr: "Avant-bras", ar: "الساعدين" },
-    "Abs": { en: "Abs", fr: "Abdominaux", ar: "عضلات البطن" }
+    "Abs": { en: "Abs", fr: "Abdominaux", ar: "عضلات البطن" },
+    "Cardio": { en: "Cardio", fr: "Cardio", ar: "كارديو" }
   };
 
   return muscleMap[muscle]?.[lang] || muscle;
@@ -452,6 +453,35 @@ export const getExerciseDatabase = (lang: Language): ExerciseDatabase => {
         ],
         machines: [
           { en: "Ab Crunch Machine", fr: "Machine Abdominaux", ar: "ماكينة البطن" }
+        ]
+      }
+    },
+    "Cardio": {
+      "High Intensity": {
+        weightlifting: [],
+        cables: [],
+        bodyweight: [
+          { en: "Burpees", fr: "Burpees", ar: "بربيز" },
+          { en: "Mountain Climbers", fr: "Mountain Climbers", ar: "متسلق الجبال" },
+          { en: "High Knees", fr: "Montées de Genoux", ar: "رفع الركبتين" },
+          { en: "Jumping Jacks", fr: "Jumping Jacks", ar: "جامبينج جاكس" },
+          { en: "Butt Kicks", fr: "Talons-Fesses", ar: "ركلات الكعب" }
+        ],
+        machines: []
+      },
+      "Endurance": {
+        weightlifting: [],
+        cables: [],
+        bodyweight: [
+          { en: "Running (Outdoors)", fr: "Course à Pied", ar: "الجري" },
+          { en: "Walking", fr: "Marche", ar: "المشي" }
+        ],
+        machines: [
+          { en: "Treadmill", fr: "Tapis de Course", ar: "جهاز الجري" },
+          { en: "Stationary Bike", fr: "Vélo Elliptique", ar: "دراجة ثابتة" },
+          { en: "Elliptical Trainer", fr: "Elliptique", ar: "جهاز الايلبتيكال" },
+          { en: "Stair Climber", fr: "Stepper", ar: "جهاز الدرج" },
+          { en: "Rowing Machine", fr: "Rameur", ar: "جهاز التجديف" }
         ]
       }
     }

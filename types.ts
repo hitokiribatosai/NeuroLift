@@ -72,6 +72,8 @@ export interface WorkoutSet {
   weight: number;
   reps: number;
   completed: boolean;
+  durationSeconds?: number;
+  distanceKm?: number;
 }
 
 export interface ActiveExercise {

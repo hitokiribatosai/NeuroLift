@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { SpotlightButton } from '../ui/SpotlightButton';
 import { Card } from '../ui/Card';
-import { CompletedWorkout, ActiveExercise } from '../../types';
-import { getExerciseDatabase, getLocalizedMuscleName } from '../../utils/exerciseData';
+import { CompletedWorkout, ActiveExercise, WorkoutSet } from '../../types';
+import { getExerciseDatabase, getLocalizedMuscleName, getMuscleForExercise } from '../../utils/exerciseData';
 import { useClock } from '../../contexts/ClockContext';
 
 export const Tracker: React.FC = () => {
@@ -145,7 +145,7 @@ export const Tracker: React.FC = () => {
     setActiveExercises(newExs);
   };
 
-  const updateSet = (exIdx: number, setIdx: number, field: 'weight' | 'reps', val: string) => {
+  const updateSet = (exIdx: number, setIdx: number, field: keyof WorkoutSet, val: string) => {
     const newExs = [...activeExercises];
     const value = parseFloat(val) || 0;
     (newExs[exIdx].sets[setIdx] as any)[field] = value;
@@ -596,49 +596,89 @@ export const Tracker: React.FC = () => {
                   <div className="col-span-4 text-center">{t('tracker_header_reps')}</div>
                   <div className="col-span-2 text-center">✓</div>
                 </div>
-                {ex.sets.map((set, setIdx) => (
-                  <div key={set.id} className={`grid grid-cols-12 gap-3 items-center p-4 rounded-3xl transition-all duration-300 border-2 ${set.completed
-                    ? 'bg-teal-500/5 border-teal-500 shadow-md transform scale-[1.01]'
-                    : 'bg-white dark:bg-black/40 border-zinc-100 dark:border-zinc-800 shadow-sm'}`}>
-                    <div className="col-span-2 text-zinc-400 dark:text-zinc-600 font-black font-mono text-lg text-center">{setIdx + 1}</div>
-                    <div className="col-span-4 relative group/plate">
-                      <input
-                        type="number"
-                        placeholder="0"
-                        value={set.weight || ''}
-                        onChange={(e) => updateSet(exIdx, setIdx, 'weight', e.target.value)}
-                        className={`w-full bg-transparent text-center outline-none text-xl font-black font-mono ${set.completed ? 'text-teal-600 dark:text-teal-400' : 'text-zinc-900 dark:text-white'}`}
-                      />
-                      <button
-                        onClick={() => {
-                          setPlateCalcWeight(0);
-                          setActiveSetInfo({ exIdx, setIdx });
-                        }}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-zinc-300 dark:text-zinc-700 hover:text-teal-500 transition-colors"
-                        title={t('plate_calc_title')}
-                      >
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="2" /></svg>
-                      </button>
+                {ex.sets.map((set, setIdx) => {
+                  const isCardio = getMuscleForExercise(ex.name) === 'Cardio';
+
+                  return (
+                    <div key={set.id} className={`grid grid-cols-12 gap-3 items-center p-4 rounded-3xl transition-all duration-300 border-2 ${set.completed
+                      ? 'bg-teal-500/5 border-teal-500 shadow-md transform scale-[1.01]'
+                      : 'bg-white dark:bg-black/40 border-zinc-100 dark:border-zinc-800 shadow-sm'}`}>
+                      <div className="col-span-2 text-zinc-400 dark:text-zinc-600 font-black font-mono text-lg text-center">{setIdx + 1}</div>
+
+                      {isCardio ? (
+                        <>
+                          <div className="col-span-4">
+                            <input
+                              type="number"
+                              placeholder="Min"
+                              value={set.durationSeconds ? Math.floor(set.durationSeconds / 60) : ''}
+                              onChange={(e) => {
+                                const mins = parseInt(e.target.value) || 0;
+                                const currentSeconds = (set.durationSeconds || 0) % 60;
+                                updateSet(exIdx, setIdx, 'durationSeconds', (mins * 60 + currentSeconds).toString());
+                              }}
+                              className={`w-full bg-transparent text-center outline-none text-xl font-black font-mono ${set.completed ? 'text-teal-600 dark:text-teal-400' : 'text-zinc-900 dark:text-white'}`}
+                            />
+                            <div className="text-[8px] text-center text-zinc-500 uppercase font-black">Min</div>
+                          </div>
+                          <div className="col-span-4">
+                            <input
+                              type="number"
+                              placeholder="KM"
+                              step="0.1"
+                              value={set.distanceKm || ''}
+                              onChange={(e) => updateSet(exIdx, setIdx, 'distanceKm', e.target.value)}
+                              className={`w-full bg-transparent text-center outline-none text-xl font-black font-mono ${set.completed ? 'text-teal-600 dark:text-teal-400' : 'text-zinc-900 dark:text-white'}`}
+                            />
+                            <div className="text-[8px] text-center text-zinc-500 uppercase font-black">KM</div>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="col-span-4 relative group/plate">
+                            <input
+                              type="number"
+                              placeholder="0"
+                              value={set.weight || ''}
+                              onChange={(e) => updateSet(exIdx, setIdx, 'weight', e.target.value)}
+                              className={`w-full bg-transparent text-center outline-none text-xl font-black font-mono ${set.completed ? 'text-teal-600 dark:text-teal-400' : 'text-zinc-900 dark:text-white'}`}
+                            />
+                            <button
+                              onClick={() => {
+                                setPlateCalcWeight(0);
+                                setActiveSetInfo({ exIdx, setIdx });
+                              }}
+                              className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-zinc-300 dark:text-zinc-700 hover:text-teal-500 transition-colors"
+                              title={t('plate_calc_title')}
+                            >
+                              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="2" /></svg>
+                            </button>
+                            <div className="text-[8px] text-center text-zinc-500 uppercase font-black">KG</div>
+                          </div>
+                          <div className="col-span-4">
+                            <input
+                              type="number"
+                              placeholder="0"
+                              value={set.reps || ''}
+                              onChange={(e) => updateSet(exIdx, setIdx, 'reps', e.target.value)}
+                              className={`w-full bg-transparent text-center outline-none text-xl font-black font-mono ${set.completed ? 'text-teal-600 dark:text-teal-400' : 'text-zinc-900 dark:text-white'}`}
+                            />
+                            <div className="text-[8px] text-center text-zinc-500 uppercase font-black">Reps</div>
+                          </div>
+                        </>
+                      )}
+
+                      <div className="col-span-2 flex justify-center">
+                        <button
+                          onClick={() => toggleSetComplete(exIdx, setIdx)}
+                          className={`w-10 h-10 rounded-2xl border-2 flex items-center justify-center transition-all duration-300 ${set.completed ? 'bg-teal-500 border-teal-500 text-white shadow-lg shadow-teal-500/30 rotate-0' : 'border-zinc-200 dark:border-zinc-700 hover:border-teal-500/50'}`}
+                        >
+                          {set.completed && <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>}
+                        </button>
+                      </div>
                     </div>
-                    <div className="col-span-4">
-                      <input
-                        type="number"
-                        placeholder="0"
-                        value={set.reps || ''}
-                        onChange={(e) => updateSet(exIdx, setIdx, 'reps', e.target.value)}
-                        className={`w-full bg-transparent text-center outline-none text-xl font-black font-mono ${set.completed ? 'text-teal-600 dark:text-teal-400' : 'text-zinc-900 dark:text-white'}`}
-                      />
-                    </div>
-                    <div className="col-span-2 flex justify-center">
-                      <button
-                        onClick={() => toggleSetComplete(exIdx, setIdx)}
-                        className={`w-10 h-10 rounded-2xl border-2 flex items-center justify-center transition-all duration-300 ${set.completed ? 'bg-teal-500 border-teal-500 text-white shadow-lg shadow-teal-500/30 rotate-0' : 'border-zinc-200 dark:border-zinc-700 hover:border-teal-500/50'}`}
-                      >
-                        {set.completed && <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>}
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
                 <button
                   onClick={() => addSet(exIdx)}
                   className="w-full py-5 mt-4 text-[11px] text-zinc-400 dark:text-zinc-500 hover:text-teal-600 dark:hover:text-teal-400 hover:bg-teal-500/5 rounded-3xl border-2 border-dashed border-zinc-200 dark:border-zinc-800 transition-all font-black uppercase tracking-[0.3em]"

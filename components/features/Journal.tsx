@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { JournalEntry, CustomMeasurement, CompletedWorkout, ActiveExercise } from '../../types';
+import { JournalEntry, CustomMeasurement, CompletedWorkout, ActiveExercise, WorkoutSet } from '../../types';
 import { Card } from '../ui/Card';
 import { SpotlightButton } from '../ui/SpotlightButton';
 import { getMuscleForExercise, getLocalizedMuscleName } from '../../utils/exerciseData';
@@ -100,7 +100,7 @@ export const Journal: React.FC = () => {
     localStorage.setItem('neuroLift_history', JSON.stringify(updated));
   };
 
-  const handleUpdateWorkoutSet = (workoutId: string, exIdx: number, setIdx: number, field: 'weight' | 'reps', val: number) => {
+  const handleUpdateWorkoutSet = (workoutId: string, exIdx: number, setIdx: number, field: keyof WorkoutSet, val: number) => {
     const updatedHistory = history.map(w => {
       if (w.id === workoutId) {
         const newExs = [...w.exercises];
@@ -197,30 +197,65 @@ export const Journal: React.FC = () => {
                     {ex.name}
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {ex.sets.filter(s => s.completed).map((set, sIdx) => (
-                      <div key={set.id} className="px-3 py-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-[10px] font-bold shadow-sm flex items-center gap-1">
-                        <span className="text-zinc-400 dark:text-zinc-600 mr-1">S{sIdx + 1}:</span>
-                        {editingWorkoutId === workout.id ? (
-                          <div className="flex items-center gap-1">
-                            <input
-                              type="number"
-                              className="w-10 bg-zinc-100 dark:bg-black rounded px-1 outline-none text-teal-500"
-                              value={set.weight}
-                              onChange={(e) => handleUpdateWorkoutSet(workout.id, exIdx, sIdx, 'weight', parseInt(e.target.value) || 0)}
-                            />
-                            <span>kg ×</span>
-                            <input
-                              type="number"
-                              className="w-8 bg-zinc-100 dark:bg-black rounded px-1 outline-none text-teal-500"
-                              value={set.reps}
-                              onChange={(e) => handleUpdateWorkoutSet(workout.id, exIdx, sIdx, 'reps', parseInt(e.target.value) || 0)}
-                            />
-                          </div>
-                        ) : (
-                          <span className="text-zinc-900 dark:text-white">{set.weight}kg × {set.reps}</span>
-                        )}
-                      </div>
-                    ))}
+                    {ex.sets.filter(s => s.completed).map((set, sIdx) => {
+                      const isCardio = getMuscleForExercise(ex.name) === 'Cardio';
+
+                      return (
+                        <div key={set.id} className="px-3 py-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-[10px] font-bold shadow-sm flex items-center gap-1">
+                          <span className="text-zinc-400 dark:text-zinc-600 mr-1">S{sIdx + 1}:</span>
+                          {editingWorkoutId === workout.id ? (
+                            <div className="flex items-center gap-1">
+                              {isCardio ? (
+                                <>
+                                  <input
+                                    type="number"
+                                    className="w-10 bg-zinc-100 dark:bg-black rounded px-1 outline-none text-teal-500"
+                                    value={set.durationSeconds ? Math.floor(set.durationSeconds / 60) : 0}
+                                    onChange={(e) => {
+                                      const mins = parseInt(e.target.value) || 0;
+                                      const currentSeconds = (set.durationSeconds || 0) % 60;
+                                      handleUpdateWorkoutSet(workout.id, exIdx, sIdx, 'durationSeconds', mins * 60 + currentSeconds);
+                                    }}
+                                  />
+                                  <span>min</span>
+                                  <input
+                                    type="number"
+                                    step="0.1"
+                                    className="w-10 bg-zinc-100 dark:bg-black rounded px-1 outline-none text-teal-500"
+                                    value={set.distanceKm || 0}
+                                    onChange={(e) => handleUpdateWorkoutSet(workout.id, exIdx, sIdx, 'distanceKm', parseFloat(e.target.value) || 0)}
+                                  />
+                                  <span>km</span>
+                                </>
+                              ) : (
+                                <>
+                                  <input
+                                    type="number"
+                                    className="w-10 bg-zinc-100 dark:bg-black rounded px-1 outline-none text-teal-500"
+                                    value={set.weight}
+                                    onChange={(e) => handleUpdateWorkoutSet(workout.id, exIdx, sIdx, 'weight', parseInt(e.target.value) || 0)}
+                                  />
+                                  <span>kg ×</span>
+                                  <input
+                                    type="number"
+                                    className="w-8 bg-zinc-100 dark:bg-black rounded px-1 outline-none text-teal-500"
+                                    value={set.reps}
+                                    onChange={(e) => handleUpdateWorkoutSet(workout.id, exIdx, sIdx, 'reps', parseInt(e.target.value) || 0)}
+                                  />
+                                </>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-zinc-900 dark:text-white">
+                              {isCardio
+                                ? `${set.durationSeconds ? Math.floor(set.durationSeconds / 60) : 0}m | ${set.distanceKm || 0}km`
+                                : `${set.weight}kg × ${set.reps}`
+                              }
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
@@ -436,7 +471,7 @@ export const Journal: React.FC = () => {
 
 // Extracted VolumeChart for cleaner organization
 const VolumeChart = ({ history, t, selectedMuscle, onMuscleChange, language }: { history: CompletedWorkout[], t: any, selectedMuscle: string, onMuscleChange: (m: string) => void, language: any }) => {
-  const muscleGroups = ['Total', 'Chest', 'Back', 'Shoulders', 'Legs', 'Arms', 'Core'];
+  const muscleGroups = ['Total', 'Chest', 'Back', 'Shoulders', 'Legs', 'Arms', 'Core', 'Cardio'];
 
   const getVolumeForPoint = (workout: CompletedWorkout) => {
     if (selectedMuscle === 'Total') return workout.totalVolume;
