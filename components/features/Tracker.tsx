@@ -186,7 +186,7 @@ export const Tracker: React.FC = () => {
     return (
       <div className="mx-auto max-w-5xl px-6 py-24 text-center">
         <div className="mb-16">
-          <h2 className="text-4xl md:text-5xl font-black text-white mb-2 uppercase tracking-tight">{t('tracker_select_muscle')}</h2>
+          <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white mb-2 uppercase tracking-tight">{t('tracker_select_muscle')}</h2>
           <div className="h-1.5 w-24 bg-teal-500 mx-auto rounded-full mb-8"></div>
 
           {selectedMuscles.length > 0 && (
@@ -200,7 +200,27 @@ export const Tracker: React.FC = () => {
           )}
         </div>
 
-        <MuscleChecklist />
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-4xl mx-auto px-4 mb-16">
+          {selectableMuscles.map((muscle) => (
+            <button
+              key={muscle}
+              onClick={() => toggleMuscle(muscle)}
+              className={`group relative flex flex-col p-6 rounded-3xl border transition-all duration-300 ${selectedMuscles.includes(muscle)
+                ? 'bg-teal-500 border-teal-500 shadow-[0_0_25px_rgba(20,184,166,0.2)]'
+                : 'bg-zinc-900/40 border-zinc-800 hover:border-zinc-700 shadow-sm hover:shadow-md'
+                }`}
+            >
+              <div className="flex items-center justify-end mb-2">
+                <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${selectedMuscles.includes(muscle) ? 'bg-white border-white' : 'border-zinc-700 group-hover:border-zinc-600'}`}>
+                  {selectedMuscles.includes(muscle) && <svg className="w-3 h-3 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>}
+                </div>
+              </div>
+              <span className={`text-xl font-black text-left transition-colors ${selectedMuscles.includes(muscle) ? 'text-white' : 'text-zinc-400'}`}>
+                {getLocalizedMuscleName(muscle, language)}
+              </span>
+            </button>
+          ))}
+        </div>
 
         {selectedMuscles.length > 0 && (
           <div className="mt-4 animate-in slide-in-from-bottom-6 duration-500">
@@ -236,62 +256,73 @@ export const Tracker: React.FC = () => {
         </div>
 
         <div className="space-y-20 mb-32">
-          {selectedMuscles.map(muscle => (
-            <div key={muscle} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <h3 className="text-2xl font-black text-zinc-900 dark:text-white mb-8 uppercase tracking-widest flex items-center gap-4">
-                <span className="w-2.5 h-10 bg-teal-500 rounded-full shadow-[0_0_15px_rgba(20,184,166,0.2)]"></span>
-                {getLocalizedMuscleName(muscle, language)}
+          {selectedMuscles.map(majorMuscle => (
+            <div key={majorMuscle} className="space-y-12">
+              {/* Show Major Group Header */}
+              <h3 className="text-3xl font-black text-zinc-900 dark:text-white uppercase tracking-tighter flex items-center gap-4">
+                <span className="w-4 h-12 bg-teal-500 rounded-full"></span>
+                {getLocalizedMuscleName(majorMuscle, language)}
               </h3>
 
-              <div className="space-y-12">
-                {(['weightlifting', 'cables', 'bodyweight'] as const).map(category => {
-                  const exercises = exercisesByMuscle[muscle]?.[category] || [];
-                  if (exercises.length === 0) return null;
+              {/* Render functional sub-groups */}
+              {Object.keys(exercisesByMuscle[majorMuscle] || {}).map(subGroup => (
+                <div key={subGroup} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <h4 className="text-xl font-black text-zinc-800 dark:text-zinc-200 mb-8 uppercase tracking-widest flex items-center gap-4 ml-4">
+                    <span className="w-1.5 h-6 bg-teal-500/50 rounded-full"></span>
+                    {getLocalizedMuscleName(subGroup, language)}
+                  </h4>
 
-                  return (
-                    <div key={category}>
-                      <h4 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.4em] mb-6 ml-1 flex items-center gap-4">
-                        {category === 'weightlifting' ? 'Weightlifting' : category === 'cables' ? 'Cables' : 'Bodyweight'}
-                        <div className="h-px flex-1 bg-zinc-800"></div>
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {exercises.map(ex => (
-                          <div key={ex} className="relative group">
-                            <label className={`flex items-center gap-4 p-5 border-2 rounded-2xl cursor-pointer transition-all duration-300 ${selectedExercises.includes(ex)
-                              ? 'bg-teal-500/5 border-teal-500 shadow-md text-teal-400'
-                              : 'bg-zinc-900/30 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:bg-zinc-900/50'}`}>
-                              <input
-                                type="checkbox"
-                                checked={selectedExercises.includes(ex)}
-                                onChange={() => toggleExercise(ex)}
-                                className="hidden"
-                              />
-                              <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${selectedExercises.includes(ex) ? 'bg-teal-500 border-teal-500 text-white shadow-lg shadow-teal-500/20' : 'border-zinc-200 dark:border-zinc-700'}`}>
-                                {selectedExercises.includes(ex) && <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>}
+                  <div className="space-y-12 ml-4">
+                    {(['weightlifting', 'cables', 'bodyweight'] as const).map(category => {
+                      const exercises = exercisesByMuscle[majorMuscle]?.[subGroup]?.[category] || [];
+                      if (exercises.length === 0) return null;
+
+                      return (
+                        <div key={category}>
+                          <h5 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.4em] mb-6 ml-1 flex items-center gap-4">
+                            {category}
+                            <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800"></div>
+                          </h5>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {exercises.map(ex => (
+                              <div key={ex} className="relative group">
+                                <label className={`flex items-center gap-4 p-5 border-2 rounded-2xl cursor-pointer transition-all duration-300 ${selectedExercises.includes(ex)
+                                  ? 'bg-teal-500/5 border-teal-500 shadow-md text-teal-600 dark:text-teal-400'
+                                  : 'bg-white dark:bg-zinc-900/30 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-900/50'}`}>
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedExercises.includes(ex)}
+                                    onChange={() => toggleExercise(ex)}
+                                    className="hidden"
+                                  />
+                                  <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${selectedExercises.includes(ex) ? 'bg-teal-500 border-teal-500 text-white shadow-lg shadow-teal-500/20' : 'border-zinc-200 dark:border-zinc-700'}`}>
+                                    {selectedExercises.includes(ex) && <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>}
+                                  </div>
+                                  <span className="text-sm font-black tracking-wide flex-1 uppercase">{ex}</span>
+                                </label>
+
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setTutorialExercise(ex);
+                                  }}
+                                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2.5 text-zinc-400 dark:text-zinc-600 hover:text-teal-600 dark:hover:text-teal-400 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all z-10"
+                                  title={t('modal_watch_video')}
+                                >
+                                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                </button>
                               </div>
-                              <span className="text-sm font-black tracking-wide flex-1 uppercase">{ex}</span>
-                            </label>
-
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setTutorialExercise(ex);
-                              }}
-                              className="absolute right-4 top-1/2 -translate-y-1/2 p-2.5 text-zinc-300 dark:text-zinc-700 hover:text-teal-600 dark:hover:text-teal-400 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all z-10"
-                              title={t('modal_watch_video')}
-                            >
-                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                            </button>
+                            ))}
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
         </div>

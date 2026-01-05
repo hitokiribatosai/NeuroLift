@@ -7,6 +7,7 @@ import { getExerciseDatabase, getLocalizedMuscleName } from '../../utils/exercis
 export const ProgramPlanner: React.FC = () => {
   const { t, language } = useLanguage();
   const [selectedMuscle, setSelectedMuscle] = useState<string | null>(null);
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
   const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -14,13 +15,15 @@ export const ProgramPlanner: React.FC = () => {
   const muscleList = Object.keys(exerciseDB);
 
   const filteredExercises = searchQuery
-    ? Object.entries(exerciseDB).flatMap(([muscle, categories]) => {
-      const allExs: { name: string, muscle: string, category: string }[] = [];
-      (['weightlifting', 'cables', 'bodyweight'] as const).forEach(cat => {
-        categories[cat].forEach(ex => {
-          if (ex.toLowerCase().includes(searchQuery.toLowerCase())) {
-            allExs.push({ name: ex, muscle, category: cat });
-          }
+    ? Object.entries(exerciseDB).flatMap(([muscle, subCats]) => {
+      const allExs: { name: string, muscle: string, subCategory: string, category: string }[] = [];
+      Object.entries(subCats).forEach(([subName, categories]) => {
+        (['weightlifting', 'cables', 'bodyweight'] as const).forEach(cat => {
+          categories[cat].forEach(ex => {
+            if (ex.toLowerCase().includes(searchQuery.toLowerCase())) {
+              allExs.push({ name: ex, muscle, subCategory: subName, category: cat });
+            }
+          });
         });
       });
       return allExs;
@@ -59,6 +62,7 @@ export const ProgramPlanner: React.FC = () => {
               key={muscleKey}
               onClick={() => {
                 setSelectedMuscle(muscleKey);
+                setSelectedSubCategory(Object.keys(exerciseDB[muscleKey])[0]);
                 setSearchQuery('');
               }}
               className={`text-left px-6 py-4 rounded-2xl border transition-all duration-300 font-black uppercase tracking-widest text-[10px] sm:text-xs ${selectedMuscle === muscleKey
@@ -114,14 +118,32 @@ export const ProgramPlanner: React.FC = () => {
             </div>
           ) : selectedMuscle ? (
             <div className="animate-in slide-in-from-right-8 duration-500 space-y-12">
-              <h3 className="text-3xl font-black text-zinc-900 dark:text-white flex items-center gap-4 uppercase tracking-tighter">
-                <span className="w-3 h-10 bg-teal-500 rounded-full shadow-lg shadow-teal-500/20"></span>
-                {getLocalizedMuscleName(selectedMuscle, language)}
-              </h3>
+              <div className="flex flex-col gap-6">
+                <h3 className="text-3xl font-black text-zinc-900 dark:text-white flex items-center gap-4 uppercase tracking-tighter">
+                  <span className="w-3 h-10 bg-teal-500 rounded-full shadow-lg shadow-teal-500/20"></span>
+                  {getLocalizedMuscleName(selectedMuscle, language)}
+                </h3>
+
+                {/* Subcategory Navigation */}
+                <div className="flex flex-wrap gap-2">
+                  {Object.keys(exerciseDB[selectedMuscle]).map(subKey => (
+                    <button
+                      key={subKey}
+                      onClick={() => setSelectedSubCategory(subKey)}
+                      className={`px-4 py-2 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${selectedSubCategory === subKey
+                        ? 'bg-teal-500/10 border-teal-500/50 text-teal-600 dark:text-teal-400'
+                        : 'bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:border-zinc-300 dark:hover:border-zinc-700'
+                        }`}
+                    >
+                      {getLocalizedMuscleName(subKey, language)}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               <div className="space-y-12">
-                {(['weightlifting', 'cables', 'bodyweight'] as const).map(category => {
-                  const exercises = exerciseDB[selectedMuscle]?.[category] || [];
+                {selectedSubCategory && (['weightlifting', 'cables', 'bodyweight'] as const).map(category => {
+                  const exercises = exerciseDB[selectedMuscle]?.[selectedSubCategory]?.[category] || [];
                   if (exercises.length === 0) return null;
 
                   return (
@@ -134,13 +156,13 @@ export const ProgramPlanner: React.FC = () => {
                         {exercises.map((ex, i) => (
                           <Card
                             key={i}
-                            className="p-6 flex flex-col gap-5 bg-zinc-900/40 hover:bg-zinc-800/50 cursor-pointer group transition-all duration-300 border-zinc-800 shadow-sm"
+                            className="p-6 flex flex-col gap-5 bg-white dark:bg-zinc-900/40 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer group transition-all duration-300 border-zinc-200 dark:border-zinc-800 shadow-sm"
                           >
                             <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-zinc-500 font-black font-mono text-xs border border-zinc-700 group-hover:border-teal-500/50 group-hover:text-teal-600 transition-all">
+                              <div className="w-10 h-10 rounded-xl bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center text-zinc-400 dark:text-zinc-500 font-black font-mono text-xs border border-zinc-100 dark:border-zinc-700 group-hover:border-teal-500/50 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-all">
                                 {i + 1}
                               </div>
-                              <span className="text-zinc-200 font-black text-xs uppercase tracking-tight">{ex}</span>
+                              <span className="text-zinc-900 dark:text-zinc-200 font-black text-xs uppercase tracking-tight">{ex}</span>
                             </div>
 
                             <SpotlightButton

@@ -93,4 +93,5 @@ export interface CategorizedExercises {
   bodyweight: string[];
 }
 
-export type ExerciseDatabase = Record<string, CategorizedExercises>;
+// Hierarchical Structure: Major Category -> Muscle Sub-group -> Equipment Category
+export type ExerciseDatabase = Record<string, Record<string, CategorizedExercises>>;
