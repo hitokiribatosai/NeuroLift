@@ -15,6 +15,8 @@ export const Tracker: React.FC = () => {
   const [plateCalcWeight, setPlateCalcWeight] = useState<number | null>(null); // This will now represent "Per Side" input
   const [barWeight, setBarWeight] = useState<number>(20);
   const [activeSetInfo, setActiveSetInfo] = useState<{ exIdx: number, setIdx: number } | null>(null);
+  const [shareFeedback, setShareFeedback] = useState(false);
+
 
   // Active Session State
   const [activeExercises, setActiveExercises] = useState<ActiveExercise[]>([]);
@@ -46,6 +48,40 @@ export const Tracker: React.FC = () => {
     }
     return () => clearInterval(interval);
   }, [restRemaining]);
+
+  // Handle Shared Workouts from URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sharedData = params.get('share');
+    if (sharedData) {
+      try {
+        const decoded = JSON.parse(atob(sharedData));
+        if (Array.isArray(decoded)) {
+          setSelectedExercises(decoded);
+          // Infer muscles from exercises
+          const musclesToSelect = new Set<string>();
+          Object.entries(exercisesByMuscle).forEach(([muscle, subCats]) => {
+            Object.values(subCats).forEach(categories => {
+              Object.values(categories).forEach(exercises => {
+                exercises.forEach(ex => {
+                  if (decoded.includes(ex)) musclesToSelect.add(muscle);
+                });
+              });
+            });
+          });
+          setSelectedMuscles(Array.from(musclesToSelect));
+          setPhase('selection');
+
+          // Clear URL parameter without refreshing
+          const newUrl = window.location.pathname + window.location.hash;
+          window.history.replaceState({}, '', newUrl);
+        }
+      } catch (e) {
+        console.error("Failed to decode shared workout", e);
+      }
+    }
+  }, []);
+
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
@@ -156,6 +192,18 @@ export const Tracker: React.FC = () => {
     }
   };
 
+  const handleShareWorkout = () => {
+    try {
+      const encoded = btoa(JSON.stringify(selectedExercises));
+      const shareUrl = `${window.location.origin}${window.location.pathname}?share=${encoded}${window.location.hash}`;
+      navigator.clipboard.writeText(shareUrl);
+      setShareFeedback(true);
+      setTimeout(() => setShareFeedback(false), 2000);
+    } catch (e) {
+      console.error("Failed to generate share link", e);
+    }
+  };
+
   const MuscleChecklist = () => {
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-4xl mx-auto px-4 mb-16">
@@ -249,10 +297,31 @@ export const Tracker: React.FC = () => {
               ))}
             </div>
           </div>
-          <button onClick={() => setPhase('setup')} className="text-xs text-zinc-500 hover:text-teal-600 dark:hover:text-white uppercase tracking-widest font-black flex items-center gap-2 transition-colors">
-            <svg className="w-4 h-4 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-            {t('tracker_back')}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button onClick={() => setPhase('setup')} className="text-xs text-zinc-500 hover:text-teal-600 dark:hover:text-white uppercase tracking-widest font-black flex items-center gap-2 transition-colors">
+              <svg className="w-4 h-4 text-teal-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+              {t('tracker_back')}
+            </button>
+
+            <button
+              onClick={handleShareWorkout}
+              disabled={selectedExercises.length === 0}
+              className={`text-xs uppercase tracking-widest font-black flex items-center gap-2 transition-all px-3 py-1.5 rounded-xl border ${shareFeedback
+                ? 'bg-teal-500/20 border-teal-500 text-teal-600 dark:text-teal-400'
+                : 'text-zinc-500 hover:text-teal-600 dark:hover:text-white border-zinc-200 dark:border-zinc-800 hover:border-teal-500/50'
+                }`}
+            >
+              <svg className={`w-4 h-4 ${shareFeedback ? 'text-teal-500' : 'text-zinc-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                {shareFeedback ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                )}
+              </svg>
+              {shareFeedback ? t('save') : 'Share Plan'}
+            </button>
+          </div>
+
         </div>
 
         <div className="space-y-20 mb-32">
@@ -273,7 +342,7 @@ export const Tracker: React.FC = () => {
                   </h4>
 
                   <div className="space-y-12 ml-4">
-                    {(['weightlifting', 'cables', 'bodyweight', 'machines'] as const).map(category => {
+                    {(['machines', 'weightlifting', 'cables', 'bodyweight'] as const).map(category => {
                       const exercises = exercisesByMuscle[majorMuscle]?.[subGroup]?.[category] || [];
                       if (exercises.length === 0) return null;
 
