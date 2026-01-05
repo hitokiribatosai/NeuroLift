@@ -125,13 +125,29 @@ export const Tracker: React.FC = () => {
 
   const handleStartWorkout = () => {
     setPhase('active');
-    setTimerActive(true);
-    setMode('stopwatch');
-    setDuration(0);
-    setActiveExercises(selectedExercises.map(name => ({
-      name,
-      sets: [{ id: crypto.randomUUID(), weight: 0, reps: 0, completed: false }]
-    })));
+
+    // Merge logic: Preserve existing active exercises data
+    const newActiveExercises: ActiveExercise[] = selectedExercises.map(name => {
+      const existing = activeExercises.find(a => a.name === name);
+      if (existing) return existing;
+      return {
+        name,
+        sets: [{ id: crypto.randomUUID(), weight: 0, reps: 0, completed: false }]
+      };
+    });
+
+    setActiveExercises(newActiveExercises);
+
+    // Only reset/start timer if this is a fresh start (duration is 0)
+    if (duration === 0 && !timerActive) {
+      setTimerActive(true);
+      setMode('stopwatch');
+      setDuration(0);
+    } else if (!timerActive) {
+      // Resume timer if it was paused? Or just ensure we satisfy user intent.
+      // If user comes back, likely wants to continue.
+      setTimerActive(true);
+    }
   };
 
   const addSet = (exerciseIndex: number) => {
@@ -436,9 +452,19 @@ export const Tracker: React.FC = () => {
             <div className="text-[10px] text-zinc-400 dark:text-zinc-500 font-black uppercase tracking-[0.3em] mb-1">{selectedExercises.length} Exercises Picked</div>
             <div className="text-sm text-zinc-600 dark:text-zinc-400 font-bold max-w-[400px] truncate">{selectedExercises.join(', ')}</div>
           </div>
-          <SpotlightButton onClick={handleStartWorkout} disabled={selectedExercises.length === 0} className="w-full md:w-auto px-16 py-5 text-lg font-black uppercase tracking-widest shadow-lg shadow-teal-500/20">
-            {t('tracker_start')}
-          </SpotlightButton>
+          <div className="flex gap-4 w-full md:w-auto">
+            {activeExercises.length > 0 && (
+              <button
+                onClick={() => setPhase('active')}
+                className="flex-1 md:flex-none px-8 py-5 text-xs font-black uppercase tracking-widest text-zinc-500 hover:text-teal-600 dark:text-zinc-400 dark:hover:text-white transition-colors border border-zinc-200 dark:border-zinc-800 rounded-2xl"
+              >
+                {t('tracker_back')}
+              </button>
+            )}
+            <SpotlightButton onClick={handleStartWorkout} disabled={selectedExercises.length === 0} className="flex-1 md:flex-none px-16 py-5 text-lg font-black uppercase tracking-widest shadow-lg shadow-teal-500/20">
+              {activeExercises.length > 0 ? 'Resume' : t('tracker_start')}
+            </SpotlightButton>
+          </div>
         </div>
 
         {/* Tutorial Modal */}
@@ -504,8 +530,18 @@ export const Tracker: React.FC = () => {
         <div className="sticky top-20 z-40 bg-white/80 dark:bg-zinc-950/90 backdrop-blur-xl border border-zinc-200 dark:border-zinc-800 py-6 mb-12 px-8 rounded-[2.5rem] shadow-xl">
           <div className="flex flex-wrap justify-between items-center gap-6">
             <div className="flex flex-col">
-              <div className="text-5xl font-mono font-black text-teal-600 dark:text-teal-400 leading-none tracking-tighter">
-                {mode === 'stopwatch' ? formatTime(duration) : formatTime(countdownRemaining || 0)}
+              <div className="flex items-center gap-4">
+                <div className="text-5xl font-mono font-black text-teal-600 dark:text-teal-400 leading-none tracking-tighter">
+                  {mode === 'stopwatch' ? formatTime(duration) : formatTime(countdownRemaining || 0)}
+                </div>
+                {/* Add Exercise Button */}
+                <button
+                  onClick={() => setPhase('selection')}
+                  className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 hover:text-teal-600 dark:hover:text-teal-400 transition-colors shadow-sm"
+                  title={t('tracker_select_exercises')}
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                </button>
               </div>
               <div className="flex items-center gap-3 mt-4">
                 <button
