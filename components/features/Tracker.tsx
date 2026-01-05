@@ -155,9 +155,15 @@ export const Tracker: React.FC = () => {
       return acc + ex.sets.reduce((sAcc, s) => s.completed ? sAcc + (s.weight * s.reps) : sAcc, 0);
     }, 0);
 
+    const muscleNames = selectedMuscles.map(m => getLocalizedMuscleName(m, language));
+    const sessionName = muscleNames.length > 0
+      ? muscleNames.join(' & ')
+      : t('tracker_summary');
+
     const record: CompletedWorkout = {
       id: crypto.randomUUID(),
       date: new Date().toLocaleDateString(),
+      name: sessionName,
       durationSeconds: duration,
       exercises: activeExercises,
       totalVolume: volume

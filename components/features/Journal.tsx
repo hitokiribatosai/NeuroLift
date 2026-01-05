@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { JournalEntry, CustomMeasurement, CompletedWorkout } from '../../types';
+import { JournalEntry, CustomMeasurement, CompletedWorkout, ActiveExercise } from '../../types';
 import { Card } from '../ui/Card';
 import { SpotlightButton } from '../ui/SpotlightButton';
 
@@ -89,64 +89,80 @@ export const Journal: React.FC = () => {
     }
   };
 
-  const VolumeChart = () => {
-    const data = [...history].reverse().slice(-10);
-    if (data.length < 2) return null;
+  const handleShareWorkout = (exercises: ActiveExercise[]) => {
+    try {
+      const exerciseNames = exercises.map(ex => ex.name);
+      const encoded = btoa(JSON.stringify(exerciseNames));
+      const shareUrl = `${window.location.origin}${window.location.pathname}?share=${encoded}${window.location.hash}`;
+      navigator.clipboard.writeText(shareUrl);
+      alert(t('save') + '!');
+    } catch (e) {
+      console.error("Failed to generate share link", e);
+    }
+  };
 
-    const maxVolume = Math.max(...data.map(d => d.totalVolume), 1);
-    const chartHeight = 100;
-    const chartWidth = 300;
-    const padding = 20;
-
-    const points = data.map((d, i) => ({
-      x: (i / (data.length - 1)) * (chartWidth - padding * 2) + padding,
-      y: chartHeight - (d.totalVolume / maxVolume) * (chartHeight - padding * 2) - padding
-    }));
-
-    const pathData = `M ${points.map(p => `${p.x},${p.y}`).join(' L ')}`;
+  const WorkoutHistory = () => {
+    if (history.length === 0) return (
+      <div className="text-zinc-400 dark:text-zinc-600 text-center py-20 border-2 border-dashed border-zinc-100 dark:border-zinc-800 rounded-[3rem] bg-zinc-50/50 dark:bg-zinc-900/10">
+        <div className="text-[10px] font-black uppercase tracking-[0.4em] mb-2 text-zinc-300 dark:text-zinc-800">No History Found</div>
+        <p className="text-xs font-bold px-10">Complete a workout in the Tracker to see it here.</p>
+      </div>
+    );
 
     return (
-      <Card className="p-6 mb-8 bg-zinc-900/50 border-zinc-800">
-        <h3 className="text-sm font-bold text-zinc-400 mb-6 uppercase tracking-widest">{t('journal_volume_chart')}</h3>
-        <div className="relative w-full overflow-hidden">
-          <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-32 drop-shadow-[0_0_8px_rgba(20,184,166,0.3)]">
-            {[0, 0.5, 1].map(v => (
-              <line
-                key={v}
-                x1="0"
-                y1={padding + v * (chartHeight - padding * 2)}
-                x2={chartWidth}
-                y2={padding + v * (chartHeight - padding * 2)}
-                stroke="#27272a"
-                strokeWidth="1"
-              />
-            ))}
-            <path
-              d={pathData}
-              fill="none"
-              stroke="#14b8a6"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="animate-in fade-in duration-1000"
-            />
-            {points.map((p, i) => (
-              <circle
-                key={i}
-                cx={p.x}
-                cy={p.y}
-                r="3"
-                fill="#14b8a6"
-                className="animate-pulse"
-              />
-            ))}
-          </svg>
-          <div className="flex justify-between mt-4 text-[10px] text-zinc-500 font-mono">
-            <span>{data[0].date}</span>
-            <span>{data[data.length - 1].date}</span>
-          </div>
-        </div>
-      </Card>
+      <div className="space-y-6">
+        <h3 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight mb-4 flex items-center gap-3">
+          <span className="w-2 h-6 bg-teal-500 rounded-full"></span>
+          Workout Sessions
+        </h3>
+        {history.map((workout) => (
+          <Card key={workout.id} className="p-8 bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] shadow-sm hover:shadow-md transition-all group overflow-hidden">
+            <div className="flex justify-between items-start mb-6 pb-4 border-b border-zinc-100 dark:border-zinc-800">
+              <div>
+                <h4 className="text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tighter mb-1">
+                  {workout.name || t('tracker_summary')}
+                </h4>
+                <div className="flex gap-4 items-center">
+                  <span className="text-teal-600 dark:text-teal-400 font-black text-[10px] uppercase tracking-widest">{workout.date}</span>
+                  <span className="text-zinc-400 dark:text-zinc-500 font-bold text-[10px] uppercase tracking-widest">
+                    {Math.floor(workout.durationSeconds / 60)}m {workout.durationSeconds % 60}s
+                  </span>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-[10px] text-zinc-400 uppercase tracking-widest mb-1 font-black">Total Volume</div>
+                <div className="text-2xl font-black font-mono text-zinc-900 dark:text-white">{workout.totalVolume} <span className="text-xs font-bold text-teal-600">KG</span></div>
+              </div>
+            </div>
+
+            <div className="space-y-6 mb-8">
+              {workout.exercises.map((ex, idx) => (
+                <div key={idx} className="bg-zinc-50 dark:bg-zinc-950/40 p-5 rounded-3xl border border-zinc-100 dark:border-zinc-800/50">
+                  <div className="text-xs font-black text-teal-600 dark:text-teal-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <span className="w-1 h-1 bg-teal-500 rounded-full"></span>
+                    {ex.name}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {ex.sets.filter(s => s.completed).map((set, sIdx) => (
+                      <div key={set.id} className="px-3 py-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-[10px] font-bold shadow-sm">
+                        <span className="text-zinc-400 dark:text-zinc-600 mr-1">S{sIdx + 1}:</span>
+                        <span className="text-zinc-900 dark:text-white">{set.weight}kg × {set.reps}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <SpotlightButton
+              onClick={() => handleShareWorkout(workout.exercises)}
+              className="w-full justify-center py-4 text-[10px] font-black uppercase tracking-[0.3em] bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20 shadow-lg shadow-teal-500/5"
+            >
+              Share This Plan
+            </SpotlightButton>
+          </Card>
+        ))}
+      </div>
     );
   };
 
@@ -166,10 +182,10 @@ export const Journal: React.FC = () => {
     <div className="mx-auto max-w-6xl px-6 py-24">
       <h2 className="text-4xl font-black text-zinc-900 dark:text-white mb-8 uppercase tracking-tight">{t('journal_title')}</h2>
 
-      <VolumeChart />
+      <VolumeChart history={history} t={t} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1 space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div className="lg:col-span-1 space-y-8">
           <Card className={`p-8 space-y-6 rounded-[2.5rem] shadow-sm transition-all duration-300 ${editingId ? 'bg-teal-500/5 border-teal-500 shadow-teal-500/10' : 'bg-white dark:bg-zinc-900/80 border-zinc-200 dark:border-zinc-800'}`}>
             <div className="flex items-center justify-between">
               <div>
@@ -272,60 +288,133 @@ export const Journal: React.FC = () => {
           </Card>
         </div>
 
-        <div className="lg:col-span-2 space-y-6">
-          {entries.length === 0 ? (
-            <div className="text-zinc-400 dark:text-zinc-600 text-center py-32 border-2 border-dashed border-zinc-100 dark:border-zinc-800 rounded-[3rem] bg-zinc-50/50 dark:bg-zinc-900/10">
-              <div className="text-[10px] font-black uppercase tracking-[0.4em] mb-2 text-zinc-300 dark:text-zinc-800">No Entries Found</div>
-              <p className="text-xs font-bold px-10">Start tracking your comprehensive metrics today.</p>
-            </div>
-          ) : (
-            entries.map(entry => (
-              <div
-                key={entry.id}
-                onClick={() => handleSelectEntry(entry)}
-                className={`p-8 rounded-[2.5rem] border transition-all duration-500 cursor-pointer group relative shadow-sm ${editingId === entry.id
-                  ? 'border-teal-500 bg-teal-500/5 shadow-teal-500/10'
-                  : 'border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900/30 hover:bg-white dark:hover:bg-zinc-900 hover:border-zinc-200 dark:hover:border-zinc-700 hover:shadow-md'
-                  }`}
-              >
-                <button
-                  onClick={(e) => handleDeleteEntry(e, entry.id)}
-                  className="absolute top-6 right-6 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800 text-zinc-400 hover:bg-rose-500 hover:text-white md:opacity-0 group-hover:opacity-100 transition-all z-10 shadow-sm border border-zinc-100 dark:border-zinc-700"
-                  title="Delete entry"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
+        <div className="lg:col-span-2 space-y-12">
+          <WorkoutHistory />
 
-                <div className="flex justify-between items-center mb-6 border-b border-zinc-50 dark:border-zinc-800 pb-4">
-                  <span className="text-teal-600 dark:text-teal-400 font-black text-xs uppercase tracking-widest">{entry.date}</span>
-                  {entry.weight && <span className="text-zinc-900 dark:text-white font-black text-xl font-mono tracking-tighter">{entry.weight} <span className="text-[10px] text-zinc-400 dark:text-zinc-500">KG</span></span>}
+          <div className="pt-8 border-t border-zinc-100 dark:border-zinc-800">
+            <h3 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight mb-8 flex items-center gap-3">
+              <span className="w-2 h-6 bg-teal-500 rounded-full"></span>
+              Body Metrics
+            </h3>
+            <div className="space-y-6">
+              {entries.length === 0 ? (
+                <div className="text-zinc-400 dark:text-zinc-600 text-center py-32 border-2 border-dashed border-zinc-100 dark:border-zinc-800 rounded-[3rem] bg-zinc-50/50 dark:bg-zinc-900/10">
+                  <div className="text-[10px] font-black uppercase tracking-[0.4em] mb-2 text-zinc-300 dark:text-zinc-800">No Entries Found</div>
+                  <p className="text-xs font-bold px-10">Start tracking your comprehensive metrics today.</p>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-xs text-zinc-500 dark:text-zinc-400">
-                  {entry.chest && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Chest</span> <span className="text-zinc-900 dark:text-zinc-200 font-bold">{entry.chest} cm</span></div>}
-                  {entry.waist && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Waist</span> <span className="text-zinc-900 dark:text-zinc-200 font-bold">{entry.waist} cm</span></div>}
-                  {entry.biceps_right && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Arms</span> <span className="text-zinc-900 dark:text-zinc-200 font-bold">{entry.biceps_right} cm</span></div>}
-                  {entry.thigh_right && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Legs</span> <span className="text-zinc-900 dark:text-zinc-200 font-bold">{entry.thigh_right} cm</span></div>}
+              ) : (
+                entries.map(entry => (
+                  <div
+                    key={entry.id}
+                    onClick={() => handleSelectEntry(entry)}
+                    className={`p-8 rounded-[2.5rem] border transition-all duration-500 cursor-pointer group relative shadow-sm ${editingId === entry.id
+                      ? 'border-teal-500 bg-teal-500/5 shadow-teal-500/10'
+                      : 'border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900/30 hover:bg-white dark:hover:bg-zinc-900 hover:border-zinc-200 dark:hover:border-zinc-700 hover:shadow-md'
+                      }`}
+                  >
+                    <button
+                      onClick={(e) => handleDeleteEntry(e, entry.id)}
+                      className="absolute top-6 right-6 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800 text-zinc-400 hover:bg-rose-500 hover:text-white md:opacity-0 group-hover:opacity-100 transition-all z-10 shadow-sm border border-zinc-100 dark:border-zinc-700"
+                      title="Delete entry"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
 
-                  {entry.customMeasurements?.map(c => (
-                    <div key={c.id} className="flex flex-col gap-1">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-teal-600/50 dark:text-teal-500/50">{c.name}</span>
-                      <span className="text-teal-600 dark:text-teal-400 font-bold">{c.value} {c.unit}</span>
+                    <div className="flex justify-between items-center mb-6 border-b border-zinc-50 dark:border-zinc-800 pb-4">
+                      <span className="text-teal-600 dark:text-teal-400 font-black text-xs uppercase tracking-widest">{entry.date}</span>
+                      {entry.weight && <span className="text-zinc-900 dark:text-white font-black text-xl font-mono tracking-tighter">{entry.weight} <span className="text-[10px] text-zinc-400 dark:text-zinc-500">KG</span></span>}
                     </div>
-                  ))}
-                </div>
-                {editingId === entry.id && (
-                  <div className="mt-6 flex items-center justify-center gap-3 text-[9px] text-teal-600 dark:text-teal-400 font-black uppercase tracking-[0.4em] bg-teal-500/5 py-2 rounded-xl">
-                    <div className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse"></div>
-                    Currently Editing
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-xs text-zinc-500 dark:text-zinc-400">
+                      {entry.chest && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Chest</span> <span className="text-zinc-900 dark:text-zinc-200 font-bold">{entry.chest} cm</span></div>}
+                      {entry.waist && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Waist</span> <span className="text-zinc-900 dark:text-zinc-200 font-bold">{entry.waist} cm</span></div>}
+                      {entry.biceps_right && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Arms</span> <span className="text-zinc-900 dark:text-zinc-200 font-bold">{entry.biceps_right} cm</span></div>}
+                      {entry.thigh_right && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Legs</span> <span className="text-zinc-900 dark:text-zinc-200 font-bold">{entry.thigh_right} cm</span></div>}
+
+                      {entry.customMeasurements?.map(c => (
+                        <div key={c.id} className="flex flex-col gap-1">
+                          <span className="text-[8px] font-black uppercase tracking-widest text-teal-600/50 dark:text-teal-500/50">{c.name}</span>
+                          <span className="text-teal-600 dark:text-teal-400 font-bold">{c.value} {c.unit}</span>
+                        </div>
+                      ))}
+                    </div>
+                    {editingId === entry.id && (
+                      <div className="mt-6 flex items-center justify-center gap-3 text-[9px] text-teal-600 dark:text-teal-400 font-black uppercase tracking-[0.4em] bg-teal-500/5 py-2 rounded-xl">
+                        <div className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse"></div>
+                        Currently Editing
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            ))
-          )}
+                ))
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
+  );
+};
+
+// Extracted VolumeChart for cleaner organization
+const VolumeChart = ({ history, t }: { history: CompletedWorkout[], t?: any }) => {
+  const data = [...history].reverse().slice(-10);
+  if (data.length < 2) return null;
+
+  const maxVolume = Math.max(...data.map(d => d.totalVolume), 1);
+  const chartHeight = 100;
+  const chartWidth = 300;
+  const padding = 20;
+
+  const points = data.map((d, i) => ({
+    x: (i / (data.length - 1)) * (chartWidth - padding * 2) + padding,
+    y: chartHeight - (d.totalVolume / maxVolume) * (chartHeight - padding * 2) - padding
+  }));
+
+  const pathData = `M ${points.map(p => `${p.x},${p.y}`).join(' L ')}`;
+
+  return (
+    <Card className="p-8 bg-zinc-900/40 border-zinc-800 rounded-[2.5rem] shadow-sm mb-12">
+      <h3 className="text-[10px] font-black text-zinc-500 mb-8 uppercase tracking-[0.3em]">Volume Progression</h3>
+      <div className="relative w-full overflow-hidden">
+        <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-32 drop-shadow-[0_0_8px_rgba(20,184,166,0.2)]">
+          {[0, 0.5, 1].map(v => (
+            <line
+              key={v}
+              x1="0"
+              y1={padding + v * (chartHeight - padding * 2)}
+              x2={chartWidth}
+              y2={padding + v * (chartHeight - padding * 2)}
+              stroke="#27272a"
+              strokeWidth="0.5"
+              strokeDasharray="4 4"
+            />
+          ))}
+          <path
+            d={pathData}
+            fill="none"
+            stroke="#14b8a6"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="animate-in fade-in duration-1000"
+          />
+          {points.map((p, i) => (
+            <circle
+              key={i}
+              cx={p.x}
+              cy={p.y}
+              r="3"
+              fill="#14b8a6"
+              className="animate-pulse"
+            />
+          ))}
+        </svg>
+        <div className="flex justify-between mt-6 text-[10px] text-zinc-500 font-black uppercase tracking-widest opacity-50">
+          <span>{data[0].date}</span>
+          <span>{data[data.length - 1].date}</span>
+        </div>
+      </div>
+    </Card>
   );
 };

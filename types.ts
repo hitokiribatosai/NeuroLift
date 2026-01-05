@@ -82,6 +82,7 @@ export interface ActiveExercise {
 export interface CompletedWorkout {
   id: string;
   date: string;
+  name?: string;
   durationSeconds: number;
   exercises: ActiveExercise[];
   totalVolume: number;
