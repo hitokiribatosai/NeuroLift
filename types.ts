@@ -91,6 +91,7 @@ export interface CategorizedExercises {
   weightlifting: string[];
   cables: string[];
   bodyweight: string[];
+  machines: string[];
 }
 
 // Hierarchical Structure: Major Category -> Muscle Sub-group -> Equipment Category

@@ -18,7 +18,7 @@ export const ProgramPlanner: React.FC = () => {
     ? Object.entries(exerciseDB).flatMap(([muscle, subCats]) => {
       const allExs: { name: string, muscle: string, subCategory: string, category: string }[] = [];
       Object.entries(subCats).forEach(([subName, categories]) => {
-        (['weightlifting', 'cables', 'bodyweight'] as const).forEach(cat => {
+        (['weightlifting', 'cables', 'bodyweight', 'machines'] as const).forEach(cat => {
           categories[cat].forEach(ex => {
             if (ex.toLowerCase().includes(searchQuery.toLowerCase())) {
               allExs.push({ name: ex, muscle, subCategory: subName, category: cat });
@@ -142,7 +142,7 @@ export const ProgramPlanner: React.FC = () => {
               </div>
 
               <div className="space-y-12">
-                {selectedSubCategory && (['weightlifting', 'cables', 'bodyweight'] as const).map(category => {
+                {selectedSubCategory && (['weightlifting', 'cables', 'bodyweight', 'machines'] as const).map(category => {
                   const exercises = exerciseDB[selectedMuscle]?.[selectedSubCategory]?.[category] || [];
                   if (exercises.length === 0) return null;
 

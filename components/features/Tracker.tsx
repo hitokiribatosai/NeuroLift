@@ -273,7 +273,7 @@ export const Tracker: React.FC = () => {
                   </h4>
 
                   <div className="space-y-12 ml-4">
-                    {(['weightlifting', 'cables', 'bodyweight'] as const).map(category => {
+                    {(['weightlifting', 'cables', 'bodyweight', 'machines'] as const).map(category => {
                       const exercises = exercisesByMuscle[majorMuscle]?.[subGroup]?.[category] || [];
                       if (exercises.length === 0) return null;
 
