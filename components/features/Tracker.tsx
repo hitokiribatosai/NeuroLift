@@ -17,12 +17,22 @@ export const Tracker: React.FC = () => {
     return (saved && validPhases.includes(saved)) ? (saved as any) : 'setup';
   });
   const [selectedMuscles, setSelectedMuscles] = useState<string[]>(() => {
-    const saved = localStorage.getItem('neuroLift_tracker_muscles');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('neuroLift_tracker_muscles');
+      const parsed = saved ? JSON.parse(saved) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
   });
   const [selectedExercises, setSelectedExercises] = useState<string[]>(() => {
-    const saved = localStorage.getItem('neuroLift_tracker_selected_exercises');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('neuroLift_tracker_selected_exercises');
+      const parsed = saved ? JSON.parse(saved) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
   });
   const [tutorialExercise, setTutorialExercise] = useState<string | null>(null);
   const [plateCalcWeight, setPlateCalcWeight] = useState<number | null>(null);
@@ -34,8 +44,13 @@ export const Tracker: React.FC = () => {
 
   // Active Session State
   const [activeExercises, setActiveExercises] = useState<ActiveExercise[]>(() => {
-    const saved = localStorage.getItem('neuroLift_tracker_active_exercises');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('neuroLift_tracker_active_exercises');
+      const parsed = saved ? JSON.parse(saved) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
   });
   const [completedWorkout, setCompletedWorkout] = useState<CompletedWorkout | null>(null);
   const [restRemaining, setRestRemaining] = useState<number | null>(null);
