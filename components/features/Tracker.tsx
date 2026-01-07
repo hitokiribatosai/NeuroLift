@@ -8,31 +8,20 @@ import { useClock } from '../../contexts/ClockContext';
 import { playNotificationSound } from '../../utils/audio';
 import { ConfirmModal } from '../ui/ConfirmModal';
 import { generateId } from '../../utils/id';
+import { safeStorage } from '../../utils/storage';
 
 export const Tracker: React.FC = () => {
   const { t, language } = useLanguage();
   const [phase, setPhase] = useState<'setup' | 'selection' | 'active' | 'summary'>(() => {
-    const saved = localStorage.getItem('neuroLift_tracker_phase');
+    const saved = safeStorage.getItem('neuroLift_tracker_phase');
     const validPhases = ['setup', 'selection', 'active', 'summary'];
     return (saved && validPhases.includes(saved)) ? (saved as any) : 'setup';
   });
   const [selectedMuscles, setSelectedMuscles] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem('neuroLift_tracker_muscles');
-      const parsed = saved ? JSON.parse(saved) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
+    return safeStorage.getParsed<string[]>('neuroLift_tracker_muscles', []);
   });
   const [selectedExercises, setSelectedExercises] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem('neuroLift_tracker_selected_exercises');
-      const parsed = saved ? JSON.parse(saved) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
+    return safeStorage.getParsed<string[]>('neuroLift_tracker_selected_exercises', []);
   });
   const [tutorialExercise, setTutorialExercise] = useState<string | null>(null);
   const [plateCalcWeight, setPlateCalcWeight] = useState<number | null>(null);
@@ -44,13 +33,7 @@ export const Tracker: React.FC = () => {
 
   // Active Session State
   const [activeExercises, setActiveExercises] = useState<ActiveExercise[]>(() => {
-    try {
-      const saved = localStorage.getItem('neuroLift_tracker_active_exercises');
-      const parsed = saved ? JSON.parse(saved) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
+    return safeStorage.getParsed<ActiveExercise[]>('neuroLift_tracker_active_exercises', []);
   });
   const [completedWorkout, setCompletedWorkout] = useState<CompletedWorkout | null>(null);
   const [restRemaining, setRestRemaining] = useState<number | null>(null);
@@ -116,11 +99,18 @@ export const Tracker: React.FC = () => {
     }
   }, []);
 
+  // Safety Check: If in summary phase but no workout data, reset to setup
   useEffect(() => {
-    localStorage.setItem('neuroLift_tracker_phase', phase);
-    localStorage.setItem('neuroLift_tracker_muscles', JSON.stringify(selectedMuscles));
-    localStorage.setItem('neuroLift_tracker_selected_exercises', JSON.stringify(selectedExercises));
-    localStorage.setItem('neuroLift_tracker_active_exercises', JSON.stringify(activeExercises));
+    if (phase === 'summary' && !completedWorkout) {
+      setPhase('setup');
+    }
+  }, [phase, completedWorkout]);
+
+  useEffect(() => {
+    safeStorage.setItem('neuroLift_tracker_phase', phase);
+    safeStorage.setItem('neuroLift_tracker_muscles', JSON.stringify(selectedMuscles));
+    safeStorage.setItem('neuroLift_tracker_selected_exercises', JSON.stringify(selectedExercises));
+    safeStorage.setItem('neuroLift_tracker_active_exercises', JSON.stringify(activeExercises));
   }, [phase, selectedMuscles, selectedExercises, activeExercises]);
 
   const formatTime = (secs: number) => {
@@ -225,16 +215,16 @@ export const Tracker: React.FC = () => {
       totalVolume: volume
     };
 
-    const history = JSON.parse(localStorage.getItem('neuroLift_history') || '[]');
-    localStorage.setItem('neuroLift_history', JSON.stringify([record, ...history]));
+    const history = safeStorage.getParsed<CompletedWorkout[]>('neuroLift_history', []);
+    safeStorage.setItem('neuroLift_history', JSON.stringify([record, ...history]));
 
     setCompletedWorkout(record);
     setPhase('summary');
     // Clear persistence on completion
-    localStorage.removeItem('neuroLift_tracker_phase');
-    localStorage.removeItem('neuroLift_tracker_muscles');
-    localStorage.removeItem('neuroLift_tracker_selected_exercises');
-    localStorage.removeItem('neuroLift_tracker_active_exercises');
+    safeStorage.removeItem('neuroLift_tracker_phase');
+    safeStorage.removeItem('neuroLift_tracker_muscles');
+    safeStorage.removeItem('neuroLift_tracker_selected_exercises');
+    safeStorage.removeItem('neuroLift_tracker_active_exercises');
     resetClock();
   };
 
@@ -246,10 +236,10 @@ export const Tracker: React.FC = () => {
     setRestRemaining(null);
     setTimerActive(false);
     // Clear persistence on reset
-    localStorage.removeItem('neuroLift_tracker_phase');
-    localStorage.removeItem('neuroLift_tracker_muscles');
-    localStorage.removeItem('neuroLift_tracker_selected_exercises');
-    localStorage.removeItem('neuroLift_tracker_active_exercises');
+    safeStorage.removeItem('neuroLift_tracker_phase');
+    safeStorage.removeItem('neuroLift_tracker_muscles');
+    safeStorage.removeItem('neuroLift_tracker_selected_exercises');
+    safeStorage.removeItem('neuroLift_tracker_active_exercises');
     resetClock();
   };
 
