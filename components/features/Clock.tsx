@@ -58,24 +58,30 @@ export const Clock: React.FC = () => {
 
                     <div className="mt-10 space-y-6">
                         {mode === 'timer' && countdownRemaining === null && (
-                            <div className="flex gap-2">
+                            <div className="flex flex-col items-center gap-3">
+                                <label className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-black">
+                                    {t('timer_set')} (Seconds)
+                                </label>
                                 <input
                                     type="number"
                                     value={countdownInput}
                                     onChange={(e) => setCountdownInput(e.target.value)}
-                                    placeholder="Seconds"
-                                    className="flex-1 bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-zinc-900 dark:text-white font-bold focus:border-teal-500 outline-none"
+                                    placeholder="60"
+                                    className="w-full max-w-[200px] bg-zinc-50 dark:bg-black border-2 border-zinc-100 dark:border-zinc-800 rounded-2xl px-6 py-4 text-center text-2xl text-zinc-900 dark:text-white font-black font-mono focus:border-teal-500 shadow-inner outline-none transition-all"
                                 />
-                                <SpotlightButton onClick={() => startTimer(parseInt(countdownInput))} disabled={!countdownInput} className="px-6 rounded-xl font-black uppercase text-[10px] tracking-widest">
-                                    {t('timer_set')}
-                                </SpotlightButton>
                             </div>
                         )}
 
-                        <div className="flex gap-3">
+                        <div className="flex gap-3 pt-4">
                             <button
-                                onClick={() => setTimerActive(!timerActive)}
-                                className={`flex-1 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all active:scale-95 shadow-lg ${timerActive ? 'bg-rose-500 text-white shadow-rose-500/20' : 'bg-teal-600 text-white shadow-teal-500/20'
+                                onClick={() => {
+                                    if (mode === 'timer' && countdownRemaining === null) {
+                                        startTimer(parseInt(countdownInput) || 60);
+                                    } else {
+                                        setTimerActive(!timerActive);
+                                    }
+                                }}
+                                className={`flex-1 py-5 rounded-[2rem] font-black uppercase tracking-widest text-sm transition-all active:scale-95 shadow-xl ${timerActive ? 'bg-rose-500 text-white shadow-rose-500/20' : 'bg-teal-600 text-white shadow-teal-500/20'
                                     }`}
                             >
                                 {timerActive ? t('timer_stop') : (mode === 'stopwatch' && duration > 0 ? t('timer_resume') : t('timer_start'))}
@@ -85,7 +91,7 @@ export const Clock: React.FC = () => {
                                 <button
                                     onClick={addLap}
                                     disabled={!timerActive}
-                                    className="px-6 rounded-2xl border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800/50 disabled:opacity-20 transition-all font-black uppercase text-[10px] tracking-widest"
+                                    className="px-8 rounded-[2rem] border-2 border-zinc-100 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800/50 disabled:opacity-20 transition-all font-black uppercase text-[10px] tracking-widest"
                                 >
                                     {t('timer_lap')}
                                 </button>
@@ -94,7 +100,7 @@ export const Clock: React.FC = () => {
 
                         <button
                             onClick={resetClock}
-                            className="w-full text-[10px] text-zinc-400 hover:text-rose-500 uppercase tracking-[0.3em] font-black pt-4 transition-colors"
+                            className="w-full text-[10px] text-zinc-400 hover:text-rose-500 uppercase tracking-[0.3em] font-black pt-6 transition-colors"
                         >
                             {t('timer_reset')}
                         </button>
