@@ -7,6 +7,7 @@ import { getExerciseDatabase, getLocalizedMuscleName, getMuscleForExercise, getE
 import { useClock } from '../../contexts/ClockContext';
 import { playNotificationSound } from '../../utils/audio';
 import { ConfirmModal } from '../ui/ConfirmModal';
+import { generateId } from '../../utils/id';
 
 export const Tracker: React.FC = () => {
   const { t, language } = useLanguage();
@@ -137,7 +138,7 @@ export const Tracker: React.FC = () => {
       if (existing) return existing;
       return {
         name,
-        sets: [{ id: crypto.randomUUID(), weight: 0, reps: 0, completed: false }]
+        sets: [{ id: generateId(), weight: 0, reps: 0, completed: false }]
       };
     });
 
@@ -158,7 +159,7 @@ export const Tracker: React.FC = () => {
   const addSet = (exerciseIndex: number) => {
     const newExs = [...activeExercises];
     newExs[exerciseIndex].sets.push({
-      id: crypto.randomUUID(),
+      id: generateId(),
       weight: 0,
       reps: 0,
       completed: false
@@ -199,7 +200,7 @@ export const Tracker: React.FC = () => {
       : t('tracker_summary');
 
     const record: CompletedWorkout = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       date: new Date().toLocaleDateString(),
       name: sessionName,
       durationSeconds: duration,

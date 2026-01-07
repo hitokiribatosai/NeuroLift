@@ -6,6 +6,7 @@ import { Card } from '../ui/Card';
 import { SpotlightButton } from '../ui/SpotlightButton';
 import { getMuscleForExercise, getLocalizedMuscleName } from '../../utils/exerciseData';
 import { ConfirmModal } from '../ui/ConfirmModal';
+import { generateId } from '../../utils/id';
 
 export const Journal: React.FC = () => {
   const { t, language } = useLanguage();
@@ -71,7 +72,7 @@ export const Journal: React.FC = () => {
       localStorage.setItem('neuroLift_journal', JSON.stringify(updatedEntries));
     } else {
       const newEntry: JournalEntry = {
-        id: crypto.randomUUID(),
+        id: generateId(),
         date: new Date().toLocaleDateString(),
         ...formData,
         customMeasurements: customFields
@@ -91,7 +92,7 @@ export const Journal: React.FC = () => {
   const addCustomField = () => {
     if (newCustomField.name && newCustomField.value) {
       setCustomFields([...customFields, {
-        id: crypto.randomUUID(),
+        id: generateId(),
         name: newCustomField.name,
         value: parseFloat(newCustomField.value),
         unit: newCustomField.unit
