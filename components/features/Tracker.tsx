@@ -551,93 +551,105 @@ export const Tracker: React.FC = () => {
       <div className="mx-auto max-w-4xl px-4 md:px-6 py-20 pb-40">
         <div className="sticky top-0 z-50 -mx-6 mb-8 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-zinc-900 px-6 py-6 ring-1 ring-white/5" style={{ WebkitBackdropFilter: 'blur(24px)' }}>
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex flex-col">
+            <div className="flex flex-col gap-2">
               <div className="flex items-center gap-4">
-                <div className="text-4xl md:text-5xl font-mono font-black text-teal-400 leading-none tracking-tighter">
-                  {mode === 'stopwatch' ? formatTime(duration) : formatTime(countdownRemaining || 0)}
-                </div>
-                {/* Add Exercise Button */}
-                <button
-                  onClick={() => setPhase('selection')}
-                  className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-500 hover:text-teal-400 transition-colors shadow-sm"
-                  title={t('tracker_select_exercises')}
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
-                </button>
+                {mode === 'timer' && countdownRemaining === null ? (
+                  <div className="flex items-center gap-2 animate-in fade-in zoom-in duration-300">
+                    <input
+                      type="number"
+                      value={countdownMinutes}
+                      onChange={(e) => setCountdownMinutes(e.target.value.slice(-2))}
+                      placeholder="00"
+                      className="w-14 md:w-16 bg-zinc-900 border-b-2 border-teal-500/30 py-1 text-3xl md:text-4xl font-mono font-black text-white text-center outline-none focus:border-teal-500 focus:bg-teal-500/5 transition-all"
+                    />
+                    <span className="text-2xl font-black text-zinc-700">:</span>
+                    <input
+                      type="number"
+                      value={countdownSeconds}
+                      onChange={(e) => setCountdownSeconds(e.target.value.slice(-2))}
+                      placeholder="00"
+                      className="w-14 md:w-16 bg-zinc-900 border-b-2 border-teal-500/30 py-1 text-3xl md:text-4xl font-mono font-black text-white text-center outline-none focus:border-teal-500 focus:bg-teal-500/5 transition-all"
+                    />
+                    <button
+                      onClick={startTimerMode}
+                      className="ml-2 w-10 h-10 rounded-xl bg-teal-500 flex items-center justify-center text-white shadow-lg shadow-teal-500/20 active:scale-90 transition-all"
+                    >
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-4xl md:text-5xl font-mono font-black text-teal-400 leading-none tracking-tighter">
+                      {mode === 'stopwatch' ? formatTime(duration) : formatTime(countdownRemaining || 0)}
+                    </div>
+                    {/* Add Exercise Button moved here to keep header clean */}
+                    <button
+                      onClick={() => setPhase('selection')}
+                      className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-500 hover:text-teal-400 transition-colors shadow-sm"
+                      title={t('tracker_select_exercises')}
+                    >
+                      <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                    </button>
+                  </>
+                )}
               </div>
-              <div className="flex items-center gap-3 mt-4">
+
+              <div className="flex items-center gap-2 mt-2">
                 <button
                   onClick={() => { setMode('stopwatch'); setTimerActive(false); }}
-                  className={`px-3 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest transition-all ${mode === 'stopwatch' ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/30' : 'bg-zinc-800 text-zinc-500 hover:bg-zinc-700'}`}
+                  className={`px-3 py-1 rounded-full font-black text-[9px] uppercase tracking-widest transition-all ${mode === 'stopwatch' ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/30' : 'bg-zinc-800 text-zinc-500 hover:bg-zinc-700'}`}
                 >
                   {t('clock_stopwatch')}
                 </button>
                 <button
                   onClick={() => { setMode('timer'); setTimerActive(false); }}
-                  className={`px-3 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest transition-all ${mode === 'timer' ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/30' : 'bg-zinc-800 text-zinc-500 hover:bg-zinc-700'}`}
+                  className={`px-3 py-1 rounded-full font-black text-[9px] uppercase tracking-widest transition-all ${mode === 'timer' ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/30' : 'bg-zinc-800 text-zinc-500 hover:bg-zinc-700'}`}
                 >
                   {t('clock_timer')}
                 </button>
                 {restRemaining !== null && (
-                  <div className="flex items-center gap-2 text-[10px] font-black text-orange-400 animate-pulse bg-orange-500/10 px-3 py-1 rounded-full shadow-sm">
+                  <div className="flex items-center gap-1.5 text-[9px] font-black text-orange-400 animate-pulse bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/20">
                     <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
-                    {t('tracker_rest_timer')}: {restRemaining}s
+                    {restRemaining}s
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              {mode === 'timer' && countdownRemaining === null && (
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    value={countdownMinutes}
-                    onChange={(e) => setCountdownMinutes(e.target.value)}
-                    placeholder="Min"
-                    className="w-16 bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-700 rounded-xl px-2 py-3 text-zinc-900 dark:text-white font-bold text-center"
-                  />
-                  <span className="text-zinc-500 py-3">:</span>
-                  <input
-                    type="number"
-                    value={countdownSeconds}
-                    onChange={(e) => setCountdownSeconds(e.target.value)}
-                    placeholder="Sec"
-                    className="w-16 bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-700 rounded-xl px-2 py-3 text-zinc-900 dark:text-white font-bold text-center"
-                  />
-                  <SpotlightButton onClick={startTimerMode} className="px-6 rounded-xl font-black uppercase text-[10px] tracking-widest">
-                    {t('timer_set')}
-                  </SpotlightButton>
-                </div>
+            <div className="flex items-center gap-2">
+              {/* Play/Pause Button */}
+              {(countdownRemaining !== null || mode === 'stopwatch') && (
+                <button
+                  onClick={() => setTimerActive(!timerActive)}
+                  className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl border-2 transition-all duration-300 shadow-lg flex items-center justify-center ${timerActive
+                    ? 'bg-amber-500 text-white border-amber-400 shadow-amber-500/20'
+                    : 'bg-teal-500 text-white border-teal-400 shadow-teal-500/20'
+                    }`}
+                >
+                  {timerActive ? <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg> : <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>}
+                </button>
               )}
 
-              <button
-                onClick={() => setTimerActive(!timerActive)}
-                className={`p-4 rounded-2xl border-2 transition-all duration-300 shadow-lg ${timerActive
-                  ? 'bg-amber-500 text-white border-amber-400 shadow-amber-500/20'
-                  : 'bg-teal-500 text-white border-teal-400 shadow-teal-500/20'
-                  }`}
-              >
-                {timerActive ? <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg> : <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>}
-              </button>
+              {/* Lap/Reset Row */}
+              <div className="flex gap-1.5">
+                <button
+                  onClick={mode === 'stopwatch' ? addLap : undefined}
+                  disabled={!timerActive || mode !== 'stopwatch'}
+                  className="w-10 h-10 md:w-12 md:h-12 rounded-xl border border-zinc-800 text-zinc-500 hover:text-white disabled:opacity-30 bg-zinc-900/50 flex items-center justify-center"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </button>
 
-              <button
-                onClick={mode === 'stopwatch' ? addLap : undefined}
-                disabled={!timerActive || mode !== 'stopwatch'}
-                className="p-4 rounded-2xl border-2 border-zinc-800 text-zinc-400 hover:text-white disabled:opacity-30 bg-transparent shadow-md"
-              >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              </button>
-
-              <button onClick={resetCurrentTimer} className="p-4 rounded-2xl border-2 border-zinc-800 text-zinc-400 hover:text-rose-500 transition-colors bg-transparent shadow-md">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-              </button>
+                <button onClick={resetCurrentTimer} className="w-10 h-10 md:w-12 md:h-12 rounded-xl border border-zinc-800 text-zinc-500 hover:text-rose-500 transition-colors bg-zinc-900/50 flex items-center justify-center">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                </button>
+              </div>
 
               <SpotlightButton
                 variant="secondary"
                 onClick={finishWorkout}
                 spotlightColor="rgba(244, 63, 94, 0.2)"
-                className="h-[60px] px-6 md:px-8 text-[10px] md:text-xs font-black uppercase tracking-[0.2em] bg-rose-500/10 text-rose-400 border-rose-500/20 ml-0 md:ml-2 shadow-lg shadow-rose-500/10"
+                className="h-[48px] md:h-[56px] px-4 md:px-6 text-[9px] font-black uppercase tracking-widest bg-rose-500/10 text-rose-400 border-rose-500/20 ml-1 shadow-lg shadow-rose-500/10"
               >
                 {t('tracker_finish')}
               </SpotlightButton>
