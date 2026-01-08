@@ -13,13 +13,14 @@ import { AnimatePresence, motion } from 'framer-motion';
 
 function App() {
   const [currentView, setCurrentView] = React.useState(() => {
-    const hash = window.location.hash.replace('#', '');
+    const hash = window.location.hash.replace('#', '').split('?')[0].split('/')[0];
     return ['home', 'tracker', 'planner', 'nutrition', 'journal', 'clock'].includes(hash) ? hash : 'home';
   });
 
   React.useEffect(() => {
     const handlePopState = () => {
-      const hash = window.location.hash.replace('#', '');
+      // Split by ? to ignore query params, and / to ignore sub-paths if any
+      const hash = window.location.hash.replace('#', '').split('?')[0].split('/')[0];
       const validViews = ['home', 'tracker', 'planner', 'nutrition', 'journal', 'clock'];
       if (validViews.includes(hash)) {
         setCurrentView(hash);

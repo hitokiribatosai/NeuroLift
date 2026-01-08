@@ -3,6 +3,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { Card } from '../ui/Card';
 import { SpotlightButton } from '../ui/SpotlightButton';
 import { getExerciseDatabase, getLocalizedMuscleName, getExerciseLinks } from '../../utils/exerciseData';
+import { Modal } from '../ui/Modal';
 
 export const ProgramPlanner: React.FC = () => {
   const { t, language } = useLanguage();
@@ -199,11 +200,11 @@ export const ProgramPlanner: React.FC = () => {
       </div>
 
       {/* Video/Image Modal */}
-      {selectedExercise && (() => {
-        const links = getExerciseLinks(selectedExercise);
-        return (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/20 dark:bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
-            <div className="relative w-full max-w-2xl rounded-[3rem] border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-10 shadow-3xl overflow-hidden">
+      <Modal isOpen={!!selectedExercise} onClose={() => setSelectedExercise(null)}>
+        {selectedExercise && (() => {
+          const links = getExerciseLinks(selectedExercise);
+          return (
+            <div className="relative w-full max-w-2xl mx-auto rounded-[3rem] border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-10 shadow-3xl overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-2 bg-teal-500"></div>
               <button
                 onClick={() => setSelectedExercise(null)}
@@ -262,9 +263,9 @@ export const ProgramPlanner: React.FC = () => {
                 </button>
               </div>
             </div>
-          </div>
-        );
-      })()}
+          );
+        })()}
+      </Modal>
     </div>
   );
 };

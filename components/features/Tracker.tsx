@@ -9,6 +9,8 @@ import { playNotificationSound } from '../../utils/audio';
 import { ConfirmModal } from '../ui/ConfirmModal';
 import { generateId } from '../../utils/id';
 import { safeStorage } from '../../utils/storage';
+import { App as CapApp } from '@capacitor/app';
+import { Modal } from '../ui/Modal';
 
 export const Tracker: React.FC = () => {
   const { t, language } = useLanguage();
@@ -119,6 +121,82 @@ export const Tracker: React.FC = () => {
     safeStorage.setItem('neuroLift_tracker_selected_exercises', JSON.stringify(selectedExercises));
     safeStorage.setItem('neuroLift_tracker_active_exercises', JSON.stringify(activeExercises));
   }, [phase, selectedMuscles, selectedExercises, activeExercises]);
+
+  // Sync Phase with URL & Handle Back Navigation
+  useEffect(() => {
+    // 1. Handle Web Back Button (PopState)
+    const handlePopState = () => {
+      // Check if we are still in tracker view
+      const hash = window.location.hash;
+      if (!hash.startsWith('#tracker')) return;
+
+      const params = new URLSearchParams(hash.split('?')[1]);
+      const urlPhase = params.get('phase');
+      const validPhases = ['setup', 'selection', 'active', 'summary'];
+
+      if (urlPhase && validPhases.includes(urlPhase) && urlPhase !== phase) {
+        setPhase(urlPhase as any);
+      } else if (!urlPhase && phase !== 'setup') {
+        // If no phase param, assume setup (root of tracker)
+        setPhase('setup');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    // 2. Handle Android Hardware Back Button
+    let backListener: any;
+    const setupBackListener = async () => {
+      backListener = await CapApp.addListener('backButton', ({ canGoBack }: { canGoBack: boolean }) => {
+        if (phase === 'active') {
+          // If active, go back to selection (or maybe warn user? For now just go back)
+          // Better UX: Show confirm modal? User asked to "go back to add more devices" (selection)
+          setPhase('selection');
+          // Update URL to match
+          window.history.replaceState(null, '', '#tracker?phase=selection');
+        } else if (phase === 'selection') {
+          setPhase('setup');
+          window.history.replaceState(null, '', '#tracker?phase=setup');
+        } else if (phase === 'summary') {
+          // Summary -> Home or Setup? Usually Setup to start new.
+          setPhase('setup');
+          window.history.replaceState(null, '', '#tracker?phase=setup');
+        } else {
+          // We are in 'setup'. Let default happen (likely go Home via App.tsx routing or exit app)
+          // If we want to force go to Home:
+          if (window.location.hash.includes('tracker')) {
+            window.history.back(); // Let browser handle "back to home"
+          } else if (canGoBack) {
+            window.history.back();
+          } else {
+            CapApp.exitApp();
+          }
+        }
+      });
+    };
+    setupBackListener();
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      if (backListener) backListener.remove();
+    };
+  }, [phase]);
+
+  // Update URL when phase changes (Forward Navigation)
+  // We use a ref to track if the phase change was driven by popstate to avoid double pushing
+  // But strictly, we can just replaceState if we want to stay on "tracker" view but change params
+  // The user wants "Return" to work like back button.
+  // So when we transition Setup -> Selection normally, we MUST push state.
+  useEffect(() => {
+    const currentHash = window.location.hash;
+    const targetHash = `#tracker?phase=${phase}`;
+
+    // Check if URL needs update
+    if (!currentHash.includes(`phase=${phase}`)) {
+      // Using pushState creates a history entry, so "Back" will work
+      window.history.pushState({ phase }, '', targetHash);
+    }
+  }, [phase]);
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
@@ -487,11 +565,11 @@ export const Tracker: React.FC = () => {
         </div>
 
         {/* Tutorial Modal */}
-        {tutorialExercise && (() => {
-          const links = getExerciseLinks(tutorialExercise);
-          return (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
-              <div className="relative w-full max-w-xl rounded-[3rem] border border-zinc-800 bg-zinc-950 p-10 shadow-3xl overflow-hidden">
+        <Modal isOpen={!!tutorialExercise} onClose={() => setTutorialExercise(null)}>
+          {tutorialExercise && (() => {
+            const links = getExerciseLinks(tutorialExercise);
+            return (
+              <div className="relative w-full rounded-[3rem] border border-zinc-800 bg-zinc-950 p-10 shadow-3xl overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-2 bg-teal-500"></div>
                 <button
                   onClick={() => setTutorialExercise(null)}
@@ -554,9 +632,9 @@ export const Tracker: React.FC = () => {
                   </button>
                 </div>
               </div>
-            </div>
-          );
-        })()}
+            );
+          })()}
+        </Modal>
       </div>
     );
   }
@@ -800,9 +878,9 @@ export const Tracker: React.FC = () => {
         </div>
 
         {/* Plate Calculator Modal */}
-        {activeSetInfo !== null && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/20 dark:bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-300" style={{ WebkitBackdropFilter: 'blur(12px)' }}>
-            <div className="relative w-full max-w-md rounded-[3.5rem] border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-10 shadow-3xl">
+        <Modal isOpen={activeSetInfo !== null} onClose={() => setActiveSetInfo(null)}>
+          {activeSetInfo !== null && (
+            <div className="relative w-full max-w-md mx-auto rounded-[3.5rem] border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-10 shadow-3xl">
               <div className="absolute top-0 left-0 w-full h-2 bg-teal-500"></div>
               <button
                 onClick={() => setActiveSetInfo(null)}
@@ -871,15 +949,15 @@ export const Tracker: React.FC = () => {
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </Modal>
 
         {/* Tutorial Modal (Active Phase) */}
-        {tutorialExercise && (() => {
-          const links = getExerciseLinks(tutorialExercise);
-          return (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
-              <div className="relative w-full max-w-xl rounded-[3rem] border border-zinc-800 bg-zinc-950 p-10 shadow-3xl overflow-hidden">
+        <Modal isOpen={!!tutorialExercise} onClose={() => setTutorialExercise(null)}>
+          {tutorialExercise && (() => {
+            const links = getExerciseLinks(tutorialExercise);
+            return (
+              <div className="relative w-full max-w-xl mx-auto rounded-[3rem] border border-zinc-800 bg-zinc-950 p-10 shadow-3xl overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-2 bg-teal-500"></div>
                 <button
                   onClick={() => setTutorialExercise(null)}
@@ -942,9 +1020,9 @@ export const Tracker: React.FC = () => {
                   </button>
                 </div>
               </div>
-            </div>
-          );
-        })()}
+            );
+          })()}
+        </Modal>
 
         <ConfirmModal
           isOpen={showResetConfirm}
