@@ -87,6 +87,7 @@ export const ProgramPlanner: React.FC = () => {
                 {filteredExercises.map((feat, i) => (
                   <Card
                     key={i}
+                    onClick={() => setSelectedExercise(feat.name)}
                     className="p-6 flex flex-col gap-5 bg-white dark:bg-zinc-900/40 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer group transition-all duration-300 border-zinc-200 dark:border-zinc-800 shadow-sm"
                   >
                     <div className="flex items-center gap-4">
@@ -156,6 +157,7 @@ export const ProgramPlanner: React.FC = () => {
                         {exercises.map((ex, i) => (
                           <Card
                             key={i}
+                            onClick={() => setSelectedExercise(ex)}
                             className="p-6 flex flex-col gap-5 bg-white dark:bg-zinc-900/40 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer group transition-all duration-300 border-zinc-200 dark:border-zinc-800 shadow-sm"
                           >
                             <div className="flex items-center gap-4">

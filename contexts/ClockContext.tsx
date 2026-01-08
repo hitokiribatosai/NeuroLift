@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { playNotificationSound } from '../utils/audio';
+import { safeStorage } from '../utils/storage';
 
 type ClockMode = 'stopwatch' | 'timer';
 
@@ -26,40 +27,37 @@ const ClockContext = createContext<ClockContextType | undefined>(undefined);
 
 export const ClockProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [mode, setMode] = useState<ClockMode>(() => {
-        const saved = localStorage.getItem('neuroLift_clock_mode');
-        return (saved as ClockMode) || 'stopwatch';
+        return (safeStorage.getItem('neuroLift_clock_mode') as ClockMode) || 'stopwatch';
     });
     const [timerActive, setTimerActive] = useState(() => {
-        const saved = localStorage.getItem('neuroLift_clock_active');
-        return saved === 'true';
+        return safeStorage.getItem('neuroLift_clock_active') === 'true';
     });
     const [duration, setDuration] = useState(() => {
-        const saved = localStorage.getItem('neuroLift_clock_duration');
+        const saved = safeStorage.getItem('neuroLift_clock_duration');
         return saved ? parseInt(saved) : 0;
     });
     const [countdownRemaining, setCountdownRemaining] = useState<number | null>(() => {
-        const saved = localStorage.getItem('neuroLift_clock_countdown');
+        const saved = safeStorage.getItem('neuroLift_clock_countdown');
         return saved ? parseInt(saved) : null;
     });
     const [countdownMinutes, setCountdownMinutes] = useState(() => {
-        return localStorage.getItem('neuroLift_clock_mins') || '01';
+        return safeStorage.getItem('neuroLift_clock_mins') || '01';
     });
     const [countdownSeconds, setCountdownSeconds] = useState(() => {
-        return localStorage.getItem('neuroLift_clock_secs') || '00';
+        return safeStorage.getItem('neuroLift_clock_secs') || '00';
     });
     const [laps, setLaps] = useState<number[]>(() => {
-        const saved = localStorage.getItem('neuroLift_clock_laps');
-        return saved ? JSON.parse(saved) : [];
+        return safeStorage.getParsed<number[]>('neuroLift_clock_laps', []);
     });
 
     useEffect(() => {
-        localStorage.setItem('neuroLift_clock_mode', mode);
-        localStorage.setItem('neuroLift_clock_active', timerActive.toString());
-        localStorage.setItem('neuroLift_clock_duration', duration.toString());
-        localStorage.setItem('neuroLift_clock_countdown', countdownRemaining?.toString() || '');
-        localStorage.setItem('neuroLift_clock_mins', countdownMinutes);
-        localStorage.setItem('neuroLift_clock_secs', countdownSeconds);
-        localStorage.setItem('neuroLift_clock_laps', JSON.stringify(laps));
+        safeStorage.setItem('neuroLift_clock_mode', mode);
+        safeStorage.setItem('neuroLift_clock_active', timerActive.toString());
+        safeStorage.setItem('neuroLift_clock_duration', duration.toString());
+        safeStorage.setItem('neuroLift_clock_countdown', countdownRemaining?.toString() || '');
+        safeStorage.setItem('neuroLift_clock_mins', countdownMinutes);
+        safeStorage.setItem('neuroLift_clock_secs', countdownSeconds);
+        safeStorage.setItem('neuroLift_clock_laps', JSON.stringify(laps));
     }, [mode, timerActive, duration, countdownRemaining, countdownMinutes, countdownSeconds, laps]);
 
     useEffect(() => {

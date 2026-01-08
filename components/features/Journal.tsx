@@ -7,6 +7,7 @@ import { SpotlightButton } from '../ui/SpotlightButton';
 import { getMuscleForExercise, getLocalizedMuscleName } from '../../utils/exerciseData';
 import { ConfirmModal } from '../ui/ConfirmModal';
 import { generateId } from '../../utils/id';
+import { safeStorage } from '../../utils/storage';
 
 export const Journal: React.FC = () => {
   const { t, language } = useLanguage();
@@ -23,11 +24,8 @@ export const Journal: React.FC = () => {
   const [shareFeedback, setShareFeedback] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('neuroLift_journal');
-    if (saved) setEntries(JSON.parse(saved));
-
-    const savedHistory = localStorage.getItem('neuroLift_history');
-    if (savedHistory) setHistory(JSON.parse(savedHistory));
+    setEntries(safeStorage.getParsed<JournalEntry[]>('neuroLift_journal', []));
+    setHistory(safeStorage.getParsed<CompletedWorkout[]>('neuroLift_history', []));
   }, []);
 
   const resetFormContent = () => {
@@ -51,7 +49,7 @@ export const Journal: React.FC = () => {
   const performDeleteEntry = (id: string) => {
     const updated = entries.filter(ent => ent.id !== id);
     setEntries(updated);
-    localStorage.setItem('neuroLift_journal', JSON.stringify(updated));
+    safeStorage.setItem('neuroLift_journal', JSON.stringify(updated));
     if (editingId === id) resetFormContent();
     setDeleteConfirm(null);
   };
@@ -69,7 +67,7 @@ export const Journal: React.FC = () => {
         return ent;
       });
       setEntries(updatedEntries);
-      localStorage.setItem('neuroLift_journal', JSON.stringify(updatedEntries));
+      safeStorage.setItem('neuroLift_journal', JSON.stringify(updatedEntries));
     } else {
       const newEntry: JournalEntry = {
         id: generateId(),
@@ -80,7 +78,7 @@ export const Journal: React.FC = () => {
 
       const updated = [newEntry, ...entries];
       setEntries(updated);
-      localStorage.setItem('neuroLift_journal', JSON.stringify(updated));
+      safeStorage.setItem('neuroLift_journal', JSON.stringify(updated));
     }
     resetFormContent();
   };
@@ -109,7 +107,7 @@ export const Journal: React.FC = () => {
   const performDeleteWorkout = (id: string) => {
     const updated = history.filter(w => w.id !== id);
     setHistory(updated);
-    localStorage.setItem('neuroLift_history', JSON.stringify(updated));
+    safeStorage.setItem('neuroLift_history', JSON.stringify(updated));
     setDeleteConfirm(null);
   };
 
@@ -130,7 +128,7 @@ export const Journal: React.FC = () => {
       return w;
     });
     setHistory(updatedHistory);
-    localStorage.setItem('neuroLift_history', JSON.stringify(updatedHistory));
+    safeStorage.setItem('neuroLift_history', JSON.stringify(updatedHistory));
   };
 
   const handleShareWorkout = (exercises: ActiveExercise[]) => {
