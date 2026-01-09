@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useFontSize, FontSize } from '../contexts/FontSizeContext';
 import { Language, MuscleGroup } from '../types';
 
 interface NavbarProps {
@@ -11,7 +12,9 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) => {
   const [scrolled, setScrolled] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
+  const [isFontSizeOpen, setIsFontSizeOpen] = useState(false);
   const { language, setLanguage, t, dir } = useLanguage();
+  const { fontSize, setFontSize } = useFontSize();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,12 +31,15 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
       if (!target.closest('.lang-dropdown-container')) {
         setIsLangOpen(false);
       }
+      if (!target.closest('.font-size-dropdown-container')) {
+        setIsFontSizeOpen(false);
+      }
     };
-    if (isLangOpen) {
+    if (isLangOpen || isFontSizeOpen) {
       document.addEventListener('click', handleClickOutside);
     }
     return () => document.removeEventListener('click', handleClickOutside);
-  }, [isLangOpen]);
+  }, [isLangOpen, isFontSizeOpen]);
 
   const navItems = [
     { id: 'home', label: t('nav_home') },
@@ -56,6 +62,35 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
         {/* Logo */}
         <div className="flex shrink-0 items-center gap-2 cursor-pointer" onClick={() => setCurrentView('home')}>
           <img src="/logo.png" alt="NeuroLift" className="h-10 w-auto rounded-xl shadow-lg" />
+        </div>
+
+        {/* Font Size Selector */}
+        <div className="relative font-size-dropdown-container">
+          <button
+            onClick={(e) => { e.stopPropagation(); setIsFontSizeOpen(!isFontSizeOpen); }}
+            className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl border transition-all shadow-sm ${isFontSizeOpen ? 'bg-zinc-800 border-zinc-700 text-white' : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700'}`}
+            title="Font Size"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 5v14m0 0l-2-2m2 2l2-2m8-12v14m0 0l-2-2m2 2l2-2M3 17h6m6-14h6M9 3h12" />
+            </svg>
+            <svg className={`w-3 h-3 text-zinc-600 transition-transform duration-300 ${isFontSizeOpen ? 'rotate-180 text-teal-400' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg>
+          </button>
+
+          <div className={`absolute top-full mt-2 right-0 w-40 bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden transition-all duration-200 shadow-2xl z-[100] ${dir === 'rtl' ? 'left-0 right-auto' : 'right-0 left-auto'} ${isFontSizeOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
+            {(['small', 'medium', 'large', 'xlarge'] as FontSize[]).map((size) => (
+              <button
+                key={size}
+                onClick={() => { setFontSize(size); setIsFontSizeOpen(false); }}
+                className={`w-full px-5 py-3 text-start transition-colors flex items-center justify-between ${fontSize === size ? 'text-teal-400 bg-teal-500/10' : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300'}`}
+              >
+                <span className="text-[10px] font-black uppercase tracking-widest">
+                  {size === 'small' ? 'Small' : size === 'medium' ? 'Medium' : size === 'large' ? 'Large' : 'X-Large'}
+                </span>
+                <span className="font-bold" style={{ fontSize: size === 'small' ? '0.875rem' : size === 'medium' ? '1rem' : size === 'large' ? '1.125rem' : '1.25rem' }}>Aa</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Language Switcher - Premium Dropdown for All Screens */}

@@ -220,6 +220,8 @@ export const Journal: React.FC = () => {
                                 <>
                                   <input
                                     type="number"
+                                    inputMode="decimal"
+                                    onClick={(e) => e.stopPropagation()}
                                     className="w-10 bg-zinc-100 dark:bg-black rounded px-1 outline-none text-teal-500"
                                     value={set.durationSeconds ? Math.floor(set.durationSeconds / 60) : 0}
                                     onChange={(e) => {
@@ -231,7 +233,9 @@ export const Journal: React.FC = () => {
                                   <span>min</span>
                                   <input
                                     type="number"
+                                    inputMode="decimal"
                                     step="0.1"
+                                    onClick={(e) => e.stopPropagation()}
                                     className="w-10 bg-zinc-100 dark:bg-black rounded px-1 outline-none text-teal-500"
                                     value={set.distanceKm || 0}
                                     onChange={(e) => handleUpdateWorkoutSet(workout.id, exIdx, sIdx, 'distanceKm', parseFloat(e.target.value) || 0)}
@@ -242,6 +246,8 @@ export const Journal: React.FC = () => {
                                 <>
                                   <input
                                     type="number"
+                                    inputMode="decimal"
+                                    onClick={(e) => e.stopPropagation()}
                                     className="w-10 bg-zinc-100 dark:bg-black rounded px-1 outline-none text-teal-500"
                                     value={set.weight}
                                     onChange={(e) => handleUpdateWorkoutSet(workout.id, exIdx, sIdx, 'weight', parseInt(e.target.value) || 0)}
@@ -249,6 +255,8 @@ export const Journal: React.FC = () => {
                                   <span>kg ×</span>
                                   <input
                                     type="number"
+                                    inputMode="decimal"
+                                    onClick={(e) => e.stopPropagation()}
                                     className="w-8 bg-zinc-100 dark:bg-black rounded px-1 outline-none text-teal-500"
                                     value={set.reps}
                                     onChange={(e) => handleUpdateWorkoutSet(workout.id, exIdx, sIdx, 'reps', parseInt(e.target.value) || 0)}
@@ -289,8 +297,10 @@ export const Journal: React.FC = () => {
       <label className="text-xs text-zinc-500 block mb-1">{label}</label>
       <input
         type="number"
+        inputMode="decimal"
         value={formData[field] || ''}
         onChange={e => handleChange(field, e.target.value)}
+        onClick={(e) => e.stopPropagation()}
         className="w-full bg-black border border-zinc-700 rounded px-3 py-2 text-white focus:border-teal-500 outline-none"
       />
     </div>
