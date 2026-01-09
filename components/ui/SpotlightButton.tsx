@@ -46,7 +46,6 @@ export const SpotlightButton: React.FC<SpotlightButtonProps> = ({
 
   return (
     <button
-      ref={divRef}
       onMouseMove={handleMouseMove}
       onFocus={handleFocus}
       onBlur={handleBlur}

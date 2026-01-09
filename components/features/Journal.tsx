@@ -164,7 +164,7 @@ export const Journal: React.FC = () => {
         </div>
         {history.map((workout) => (
           <Card key={workout.id} className="p-8 bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
-            <div className="absolute top-3 right-4 flex gap-2 md:opacity-0 md:group-hover:opacity-100 opacity-100 transition-all z-10">
+            <div className="absolute top-1 right-4 flex gap-2 md:opacity-0 md:group-hover:opacity-100 opacity-100 transition-all z-10">
               <button
                 onClick={() => setEditingWorkoutId(editingWorkoutId === workout.id ? null : workout.id)}
                 className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 text-zinc-400 hover:text-teal-500 transition-colors shadow-sm backdrop-blur-sm"
@@ -444,7 +444,7 @@ export const Journal: React.FC = () => {
                   >
                     <button
                       onClick={(e) => handleDeleteEntry(e, entry.id)}
-                      className="absolute top-3 right-4 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/80 text-zinc-400 hover:bg-rose-500 hover:text-white md:opacity-0 group-hover:opacity-100 opacity-100 transition-all z-10 shadow-sm border border-zinc-100 dark:border-zinc-700 backdrop-blur-sm"
+                      className="absolute top-1 right-4 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/80 text-zinc-400 hover:bg-rose-500 hover:text-white md:opacity-0 group-hover:opacity-100 opacity-100 transition-all z-10 shadow-sm border border-zinc-100 dark:border-zinc-700 backdrop-blur-sm"
                       style={{ WebkitBackdropFilter: 'blur(8px)' }}
                       title="Delete entry"
                     >

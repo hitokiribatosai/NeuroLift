@@ -109,7 +109,15 @@ export const translations = {
     confirm_delete_workout: "Do you really want to delete this workout session?",
     confirm_delete_entry: "Do you really want to delete this journal entry?",
     confirm_reset_timer: "Do you really want to reset the current timer?",
-    confirm_reset_workout: "Do you really want to reset your current setup?"
+    confirm_reset_workout: "Do you really want to reset your current setup?",
+
+    // Insights Info
+    streak_info_title: "Consistency vs Perfection",
+    streak_info_desc: "A resilient habit is built on consistency, not perfection. Your streak remains active as long as you work out at least once every 3 days. This provides room for recovery and sustainable growth.",
+    sci_score_title: "How it's Calculated",
+    sci_score_consistency: "Consistency (30%): Rewards staying on your routine.",
+    sci_score_frequency: "Frequency (30%): Tracks activity over the last 7 days.",
+    sci_score_progression: "Progression (40%): The 'Overload Principle'. It compares your latest volume to your recent average. Pushing heavier or doing more reps increases this score."
   },
   fr: {
     // Nav
@@ -215,7 +223,15 @@ export const translations = {
     confirm_delete_workout: "Voulez-vous vraiment supprimer cette séance ?",
     confirm_delete_entry: "Voulez-vous vraiment supprimer cette entrée ?",
     confirm_reset_timer: "Voulez-vous vraiment réinitialiser le minuteur ?",
-    confirm_reset_workout: "Voulez-vous vraiment réinitialiser votre configuration ?"
+    confirm_reset_workout: "Voulez-vous vraiment réinitialiser votre configuration ?",
+
+    // Insights Info
+    streak_info_title: "Consistance vs Perfection",
+    streak_info_desc: "Une habitude résiliente repose sur la régularité, pas la perfection. Votre série reste active tant que vous vous entraînez au moins une fois tous les 3 jours. Cela laisse de la place pour la récupération.",
+    sci_score_title: "Comment c'est Calculé",
+    sci_score_consistency: "Régularité (30%) : Récompense le respect de votre routine.",
+    sci_score_frequency: "Fréquence (30%) : Suit votre activité sur les 7 derniers jours.",
+    sci_score_progression: "Progression (40%) : Le 'Principe de Surcharge'. Compare votre volume actuel à votre moyenne récente."
   },
   ar: {
     // Nav
@@ -321,7 +337,15 @@ export const translations = {
     confirm_delete_workout: "هل تريد حقًا حذف جلسة التمرين هذه؟",
     confirm_delete_entry: "هل تريد حقًا حذف هذا الإدخال؟",
     confirm_reset_timer: "هل تريد حقًا إعادة ضبط المؤقت؟",
-    confirm_reset_workout: "هل تريد حقًا إعادة ضبط إعداداتك؟"
+    confirm_reset_workout: "هل تريد حقًا إعادة ضبط إعداداتك؟",
+
+    // Insights Info
+    streak_info_title: "الاستمرارية مقابل المثالية",
+    streak_info_desc: "تُبنى العادات المرنة على الاستمرارية وليس المثالية. يظل سجلك نشطًا طالما أنك تتمرن مرة واحدة على الأقل كل 3 أيام. هذا يمنحك مساحة للتعافي والنمو المستدام.",
+    sci_score_title: "كيف يتم الحساب",
+    sci_score_consistency: "الاستمرارية (30%): تكافئ الالتزام بروتينك.",
+    sci_score_frequency: "التكرار (30%): تتبع نشاطك خلال آخر 7 أيام.",
+    sci_score_progression: "التقدم (40%): 'مبدأ الزيادة التدريجية'. يقارن حجم تمرينك الأخير بمتوسطك الأخير."
   }
 };
 

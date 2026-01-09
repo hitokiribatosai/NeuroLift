@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '../contexts/LanguageContext';
 import { SpotlightButton } from './ui/SpotlightButton';
 import { Card } from './ui/Card';
+import { Modal } from './ui/Modal';
 import { safeStorage } from '../utils/storage';
 import { CompletedWorkout } from '../types';
 
@@ -12,6 +13,8 @@ interface DashboardProps {
 
 export const Dashboard: React.FC<DashboardProps> = ({ setCurrentView }) => {
     const { t, language } = useLanguage();
+    const [showStreakInfo, setShowStreakInfo] = useState(false);
+    const [showScientificInfo, setShowScientificInfo] = useState(false);
 
     const history = useMemo(() =>
         safeStorage.getParsed<CompletedWorkout[]>('neuroLift_history', []),
@@ -140,7 +143,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentView }) => {
                         </div>
                         <div>
                             <div className="text-3xl font-black font-mono text-white leading-none">{streak}</div>
-                            <div className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mt-1">Day Streak</div>
+                            <div className="flex items-center gap-2 mt-1">
+                                <div className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">Day Streak</div>
+                                <button
+                                    onClick={() => setShowStreakInfo(true)}
+                                    className="p-1 rounded-full bg-zinc-800/50 text-zinc-500 hover:text-teal-400 transition-colors"
+                                >
+                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </motion.div>
                 </div>
@@ -214,7 +227,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentView }) => {
                         <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-8">Insights</h3>
                         <div className="space-y-6">
                             <div className="flex justify-between items-center group">
-                                <span className="text-[11px] font-bold text-zinc-400 group-hover:text-white transition-colors uppercase tracking-widest">Scientific Score</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[11px] font-bold text-zinc-400 group-hover:text-white transition-colors uppercase tracking-widest">Scientific Score</span>
+                                    <button
+                                        onClick={() => setShowScientificInfo(true)}
+                                        className="p-1 rounded-full bg-zinc-800/50 text-zinc-500 hover:text-teal-400 transition-colors"
+                                    >
+                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </button>
+                                </div>
                                 <span className="text-lg font-black font-mono text-teal-400">{scientificScore}%</span>
                             </div>
                             <div className="h-px bg-zinc-800"></div>
@@ -296,6 +319,60 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentView }) => {
                         </div>
                     </Card>
                 )}
+
+                {/* Info Modals */}
+                <Modal isOpen={showStreakInfo} onClose={() => setShowStreakInfo(false)}>
+                    <div className="p-10 bg-zinc-950 border border-zinc-900 rounded-[3rem] text-center space-y-6 relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-500 to-rose-500"></div>
+                        <div className="w-16 h-16 bg-orange-500/10 rounded-full flex items-center justify-center mx-auto text-orange-500 mb-4">
+                            <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1014 0c0-1.187-.268-2.312-.733-3.32a1 1 0 00-.671-.563 1 1 0 00-1.207.306 4.415 4.415 0 01-.584.548c-.015.011-.03.023-.044.034a10.02 10.02 0 00-1.39-2.912c-.272-.397-.599-.79-.944-1.14a1 1 0 00-.032-1.402z" clipRule="evenodd" />
+                            </svg>
+                        </div>
+                        <h3 className="text-2xl font-black text-white uppercase italic tracking-tight">{t('streak_info_title')}</h3>
+                        <p className="text-zinc-400 font-bold text-sm leading-relaxed uppercase tracking-wide">
+                            {t('streak_info_desc')}
+                        </p>
+                        <button
+                            onClick={() => setShowStreakInfo(false)}
+                            className="w-full py-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-zinc-800 transition-colors"
+                        >
+                            {t('modal_close')}
+                        </button>
+                    </div>
+                </Modal>
+
+                <Modal isOpen={showScientificInfo} onClose={() => setShowScientificInfo(false)}>
+                    <div className="p-10 bg-zinc-950 border border-zinc-900 rounded-[3rem] space-y-8 relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-2 bg-teal-500"></div>
+                        <div className="text-center">
+                            <h3 className="text-2xl font-black text-white uppercase italic tracking-tight mb-2">{t('sci_score_title')}</h3>
+                            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">Scientific Training Protocol</p>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl">
+                                <h4 className="text-xs font-black text-teal-400 uppercase tracking-widest mb-2">Consistency</h4>
+                                <p className="text-[10px] text-zinc-400 font-bold uppercase leading-relaxed">{t('sci_score_consistency')}</p>
+                            </div>
+                            <div className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl">
+                                <h4 className="text-xs font-black text-teal-400 uppercase tracking-widest mb-2">Frequency</h4>
+                                <p className="text-[10px] text-zinc-400 font-bold uppercase leading-relaxed">{t('sci_score_frequency')}</p>
+                            </div>
+                            <div className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl">
+                                <h4 className="text-xs font-black text-teal-400 uppercase tracking-widest mb-2">Progression</h4>
+                                <p className="text-[10px] text-zinc-400 font-bold uppercase leading-relaxed">{t('sci_score_progression')}</p>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={() => setShowScientificInfo(false)}
+                            className="w-full py-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-zinc-800 transition-colors"
+                        >
+                            {t('modal_close')}
+                        </button>
+                    </div>
+                </Modal>
             </div>
         </section>
     );
