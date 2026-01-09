@@ -13,7 +13,7 @@ export const translations = {
     // Hero
     hero_title_1: "Scientific Growth.",
     hero_title_2: "Precision Training.",
-    hero_subtitle: "Stop guessing. NeuroLift uses biomechanical analysis to help you build hypertrophy programs based on your specific anatomy.",
+    hero_subtitle: "Stop guessing. NeuroLift uses science-based exercises backed by EMG analysis to help you reach your maximum potential.",
     btn_learn: "Learn the Science",
 
     // Features
@@ -123,7 +123,7 @@ export const translations = {
     // Hero
     hero_title_1: "Croissance Scientifique.",
     hero_title_2: "Entraînement Précis.",
-    hero_subtitle: "Arrêtez de deviner. NeuroLift utilise l'analyse biomécanique pour créer des programmes d'hypertrophie basés sur votre anatomie.",
+    hero_subtitle: "Arrêtez de deviner. NeuroLift utilise des exercices scientifiques basés sur l'analyse EMG pour vous aider à atteindre votre potentiel maximum.",
     btn_learn: "La Science",
 
     // Features
@@ -229,7 +229,7 @@ export const translations = {
     // Hero
     hero_title_1: "نمو علمي.",
     hero_title_2: "تدريب دقيق.",
-    hero_subtitle: "توقف عن التخمين. يستخدم NeuroLift التحليل الميكانيكي الحيوي لإنشاء برامج تضخم بناءً على تشريحك الخاص.",
+    hero_subtitle: "توقف عن التخمين. يستخدم NeuroLift تمارين مبنية على أسس علمية مدعومة بتحليل EMG لمساعدتك في الوصول إلى أقصى إمكاناتك.",
     btn_learn: "تعلم العلم",
 
     // Features

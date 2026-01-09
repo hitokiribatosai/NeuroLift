@@ -153,7 +153,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
     <>
       {/* Top Navbar: Always visible, houses Logo and Settings Gear */}
       <nav
-        className={`fixed top-0 z-50 w-full transition-all duration-300 ${scrolled ? 'bg-[#0a0a0a]/80 backdrop-blur-md border-b border-zinc-800 shadow-sm' : 'bg-transparent'}`}
+        className={`fixed top-0 z-50 w-full transition-all duration-500 ${scrolled ? 'bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-zinc-800/50 shadow-xl' : 'bg-gradient-to-b from-[#0a0a0a]/80 to-transparent'}`}
         dir={dir}
         style={{
           paddingTop: 'env(safe-area-inset-top)',
