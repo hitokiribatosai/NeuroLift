@@ -18,84 +18,82 @@ function App() {
     return ['home', 'tracker', 'planner', 'nutrition', 'journal', 'clock'].includes(hash) ? hash : 'home';
   });
 
+  const [direction, setDirection] = useState(0);
+  const viewOrder = ['home', 'planner', 'tracker', 'journal', 'clock', 'nutrition'];
+
   React.useEffect(() => {
-    const [direction, setDirection] = useState(0);
+    const handlePopState = () => {
+      const hash = window.location.hash.replace('#', '').split('?')[0].split('/')[0];
+      const validViews = ['home', 'tracker', 'planner', 'nutrition', 'journal', 'clock'];
+      const newView = validViews.includes(hash) ? hash : 'home';
 
-    const viewOrder = ['home', 'planner', 'tracker', 'journal', 'clock', 'nutrition'];
+      const oldIndex = viewOrder.indexOf(currentView);
+      const newIndex = viewOrder.indexOf(newView);
+      setDirection(newIndex < oldIndex ? -1 : 1);
+      setCurrentView(newView);
+    };
 
-    React.useEffect(() => {
-      const handlePopState = () => {
-        const hash = window.location.hash.replace('#', '').split('?')[0].split('/')[0];
-        const validViews = ['home', 'tracker', 'planner', 'nutrition', 'journal', 'clock'];
-        const newView = validViews.includes(hash) ? hash : 'home';
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [currentView, viewOrder]);
 
-        const oldIndex = viewOrder.indexOf(currentView);
-        const newIndex = viewOrder.indexOf(newView);
-        setDirection(newIndex < oldIndex ? -1 : 1);
-        setCurrentView(newView);
-      };
+  const handleSetView = (view: string) => {
+    if (view !== currentView) {
+      const oldIndex = viewOrder.indexOf(currentView);
+      const newIndex = viewOrder.indexOf(view);
+      setDirection(newIndex < oldIndex ? -1 : 1);
+      window.history.pushState(null, '', `/#${view}`);
+      setCurrentView(view);
+      window.scrollTo(0, 0);
+    }
+  };
 
-      window.addEventListener('popstate', handlePopState);
-      return () => window.removeEventListener('popstate', handlePopState);
-    }, [currentView]);
-
-    const handleSetView = (view: string) => {
-      if (view !== currentView) {
-        const oldIndex = viewOrder.indexOf(currentView);
-        const newIndex = viewOrder.indexOf(view);
-        setDirection(newIndex < oldIndex ? -1 : 1);
-        window.history.pushState(null, '', `/#${view}`);
-        setCurrentView(view);
-        window.scrollTo(0, 0);
+  const renderView = () => {
+    const viewContent = (() => {
+      switch (currentView) {
+        case 'home': return <Home setCurrentView={handleSetView} />;
+        case 'tracker': return <Tracker />;
+        case 'planner': return <ProgramPlanner />;
+        case 'nutrition': return <Nutrition />;
+        case 'journal': return <Journal />;
+        case 'clock': return <Clock />;
+        default: return <Home setCurrentView={handleSetView} />;
       }
-    };
-
-    const renderView = () => {
-      const viewContent = (() => {
-        switch (currentView) {
-          case 'home': return <Home setCurrentView={handleSetView} />;
-          case 'tracker': return <Tracker />;
-          case 'planner': return <ProgramPlanner />;
-          case 'nutrition': return <Nutrition />;
-          case 'journal': return <Journal />;
-          case 'clock': return <Clock />;
-          default: return <Home setCurrentView={handleSetView} />;
-        }
-      })();
-
-      return (
-        <motion.div
-          key={currentView}
-          initial={{ opacity: 0, x: direction * 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: direction * -50 }}
-          transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-          className="w-full h-full"
-        >
-          {viewContent}
-        </motion.div>
-      );
-    };
+    })();
 
     return (
-      <ThemeProvider>
-        <LanguageProvider>
-          <FontSizeProvider>
-            <ClockProvider>
-              <div className="min-h-screen bg-[#0a0a0a] text-white transition-colors duration-300 selection:bg-teal-500/30 selection:text-teal-200 overflow-x-hidden">
-                <Navbar currentView={currentView} setCurrentView={handleSetView} />
-
-                <main className="pt-16 pb-32 min-h-screen relative overflow-x-hidden">
-                  <AnimatePresence mode="wait">
-                    {renderView()}
-                  </AnimatePresence>
-                </main>
-              </div>
-            </ClockProvider>
-          </FontSizeProvider>
-        </LanguageProvider>
-      </ThemeProvider>
+      <motion.div
+        key={currentView}
+        initial={{ opacity: 0, x: direction * 50 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: direction * -50 }}
+        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+        className="w-full h-full"
+      >
+        {viewContent}
+      </motion.div>
     );
-  }
+  };
+
+  return (
+    <ThemeProvider>
+      <LanguageProvider>
+        <FontSizeProvider>
+          <ClockProvider>
+            <div className="min-h-screen bg-[#0a0a0a] text-white transition-colors duration-300 selection:bg-teal-500/30 selection:text-teal-200 overflow-x-hidden">
+              <Navbar currentView={currentView} setCurrentView={handleSetView} />
+
+              <main className="pt-16 pb-32 min-h-screen relative overflow-x-hidden">
+                <AnimatePresence mode="wait">
+                  {renderView()}
+                </AnimatePresence>
+              </main>
+            </div>
+          </ClockProvider>
+        </FontSizeProvider>
+      </LanguageProvider>
+    </ThemeProvider>
+  );
+}
 
 export default App;

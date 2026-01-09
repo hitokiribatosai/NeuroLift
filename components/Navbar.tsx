@@ -114,14 +114,15 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
             </h3>
             <div className="grid grid-cols-1 gap-1">
               {languages.map((lang) => (
-                <button
+                <motion.button
                   key={lang.code}
                   onClick={() => { setLanguage(lang.code); }}
+                  whileTap={{ scale: 0.95 }}
                   className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all ${language === lang.code ? 'bg-teal-500/10 text-teal-400' : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'}`}
                 >
                   <span className="text-xs font-bold">{lang.label}</span>
                   {language === lang.code && <div className="w-1.5 h-1.5 rounded-full bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.6)]" />}
-                </button>
+                </motion.button>
               ))}
             </div>
           </div>
@@ -133,14 +134,15 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
             </h3>
             <div className="grid grid-cols-2 gap-2">
               {fontSizes.map((size) => (
-                <button
+                <motion.button
                   key={size.id}
                   onClick={() => setFontSize(size.id)}
+                  whileTap={{ scale: 0.95 }}
                   className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all ${fontSize === size.id ? 'bg-teal-500/10 border-teal-500/50 text-teal-400 shadow-sm' : 'bg-zinc-900/50 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300'}`}
                 >
                   <span className="text-[0.625rem] font-bold mb-1">{size.label}</span>
                   <span className="font-black" style={{ fontSize: size.id === 'small' ? '0.75rem' : size.id === 'medium' ? '0.875rem' : size.id === 'large' ? '1rem' : '1.125rem' }}>Aa</span>
-                </button>
+                </motion.button>
               ))}
             </div>
           </div>
@@ -188,7 +190,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
                     transition={{ type: 'spring', bounce: 0.25, duration: 0.5 }}
                   />
                 )}
-              </button>
+              </motion.button>
             ))}
           </div>
 
@@ -210,7 +212,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </motion.svg>
-            </button>
+            </motion.button>
             <SettingsDropdown />
           </div>
         </div>
@@ -241,7 +243,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
                   transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                 />
               )}
-            </button>
+            </motion.button>
           ))}
         </div>
       </div>
