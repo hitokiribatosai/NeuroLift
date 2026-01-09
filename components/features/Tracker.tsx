@@ -380,7 +380,7 @@ export const Tracker: React.FC = () => {
 
   if (phase === 'setup') {
     return (
-      <div className="mx-auto max-w-5xl px-6 pt-4 pb-8 text-center">
+      <div className="mx-auto max-w-5xl px-6 pt-4 pb-32 text-center">
         <div className="mb-12">
           <h2 className="text-4xl md:text-5xl font-black text-white mb-2 uppercase tracking-tight">{t('tracker_select_muscle')}</h2>
           <div className="h-1.5 w-24 bg-teal-500 mx-auto rounded-full mb-8"></div>
@@ -431,7 +431,7 @@ export const Tracker: React.FC = () => {
 
   if (phase === 'selection') {
     return (
-      <div className="mx-auto max-w-4xl px-6 pt-4 pb-8">
+      <div className="mx-auto max-w-4xl px-6 pt-4 pb-32">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-b border-zinc-200 dark:border-zinc-800 pb-8">
           <div>
             <h2 className="text-3xl font-black text-white uppercase tracking-tight mb-2">
@@ -1043,7 +1043,7 @@ export const Tracker: React.FC = () => {
 
   if (phase === 'summary' && completedWorkout) {
     return (
-      <div className="mx-auto max-w-2xl px-6 py-32 text-center animate-in zoom-in duration-500">
+      <div className="mx-auto max-w-2xl px-6 pt-32 pb-48 text-center animate-in zoom-in duration-500">
         <div className="inline-flex h-24 w-24 items-center justify-center rounded-[2rem] bg-teal-500/10 dark:bg-teal-500/20 mb-8 shadow-2xl shadow-teal-500/20 rotate-12">
           <svg className="h-12 w-12 text-teal-600 dark:text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />

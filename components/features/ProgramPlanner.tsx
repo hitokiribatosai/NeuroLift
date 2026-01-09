@@ -32,7 +32,7 @@ export const ProgramPlanner: React.FC = () => {
     : [];
 
   return (
-    <div className="mx-auto max-w-7xl px-6 py-24 min-h-screen">
+    <div className="mx-auto max-w-7xl px-6 pt-4 pb-32 min-h-screen">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12">
         <div>
           <h2 className="text-4xl font-black text-zinc-900 dark:text-white mb-2 uppercase tracking-tight">{t('planner_title')}</h2>

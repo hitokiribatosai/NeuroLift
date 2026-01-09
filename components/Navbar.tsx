@@ -153,7 +153,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
     <>
       {/* Top Navbar: Always visible, houses Logo and Settings Gear */}
       <nav
-        className={`fixed top-0 z-50 w-full transition-all duration-500 ${scrolled ? 'bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-zinc-800/50 shadow-xl' : 'bg-gradient-to-b from-[#0a0a0a]/80 to-transparent'}`}
+        className={`fixed top-0 z-[60] w-full transition-all duration-500 ${scrolled ? 'bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-zinc-800/50 shadow-xl' : 'bg-gradient-to-b from-[#0a0a0a]/80 to-transparent'}`}
         dir={dir}
         style={{
           paddingTop: 'env(safe-area-inset-top)',
@@ -211,7 +211,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
       </nav>
 
       {/* Bottom Tab Bar: Visible only on smaller screens */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[60] pointer-events-none">
         <div className="w-full bg-[#0a0a0a]/95 backdrop-blur-xl border-t border-zinc-800 shadow-2xl flex items-center justify-around p-2 pb-[calc(env(safe-area-inset-bottom)+8px)] pointer-events-auto relative overflow-hidden">
           {navItems.map((item) => (
             <button

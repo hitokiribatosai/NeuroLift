@@ -294,7 +294,7 @@ export const Journal: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-24">
+    <div className="mx-auto max-w-6xl px-6 pt-4 pb-32">
       <h2 className="text-4xl font-black text-zinc-900 dark:text-white mb-8 uppercase tracking-tight">{t('journal_title')}</h2>
 
       <VolumeChart

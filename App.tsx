@@ -58,11 +58,11 @@ function App() {
     return (
       <motion.div
         key={currentView}
-        initial={{ opacity: 0, scale: 0.98, filter: 'blur(10px)' }}
-        animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-        exit={{ opacity: 0, scale: 1.02, filter: 'blur(10px)' }}
-        transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-        className="w-full"
+        initial={{ opacity: 0, x: 10 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -10 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+        className="w-full h-full"
       >
         {viewContent}
       </motion.div>
@@ -77,7 +77,7 @@ function App() {
             <div className="min-h-screen bg-[#0a0a0a] text-white transition-colors duration-300 selection:bg-teal-500/30 selection:text-teal-200 overflow-x-hidden">
               <Navbar currentView={currentView} setCurrentView={handleSetView} />
 
-              <main className="pt-16 min-h-screen relative overflow-hidden">
+              <main className="pt-16 pb-32 min-h-screen relative overflow-x-hidden">
                 <AnimatePresence mode="wait">
                   {renderView()}
                 </AnimatePresence>
