@@ -84,7 +84,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
                 onClick={() => { setFontSize(size); setIsFontSizeOpen(false); }}
                 className={`w-full px-5 py-3 text-start transition-colors flex items-center justify-between ${fontSize === size ? 'text-teal-400 bg-teal-500/10' : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300'}`}
               >
-                <span className="text-[10px] font-black uppercase tracking-widest">
+                <span className="text-[0.625rem] font-black uppercase tracking-widest">
                   {size === 'small' ? 'Small' : size === 'medium' ? 'Medium' : size === 'large' ? 'Large' : 'X-Large'}
                 </span>
                 <span className="font-bold" style={{ fontSize: size === 'small' ? '0.875rem' : size === 'medium' ? '1rem' : size === 'large' ? '1.125rem' : '1.25rem' }}>Aa</span>
@@ -97,7 +97,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
         <div className="relative lang-dropdown-container">
           <button
             onClick={(e) => { e.stopPropagation(); setIsLangOpen(!isLangOpen); }}
-            className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl border transition-all shadow-sm text-[10px] font-black uppercase tracking-widest ${isLangOpen ? 'bg-zinc-800 border-zinc-700 text-white' : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700'}`}
+            className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl border transition-all shadow-sm text-[0.625rem] font-black uppercase tracking-widest ${isLangOpen ? 'bg-zinc-800 border-zinc-700 text-white' : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700'}`}
           >
             {language}
             <svg className={`w-3 h-3 text-zinc-600 transition-transform duration-300 ${isLangOpen ? 'rotate-180 text-teal-400' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg>
@@ -108,7 +108,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
               <button
                 key={lang}
                 onClick={() => { setLanguage(lang); setIsLangOpen(false); }}
-                className={`w-full px-5 py-3 text-start text-[10px] font-black uppercase tracking-widest transition-colors ${language === lang ? 'text-teal-400 bg-teal-500/10' : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300'}`}
+                className={`w-full px-5 py-3 text-start text-[0.625rem] font-black uppercase tracking-widest transition-colors ${language === lang ? 'text-teal-400 bg-teal-500/10' : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300'}`}
               >
                 {lang === 'en' ? 'English' : lang === 'fr' ? 'Français' : 'العربية'}
               </button>
@@ -123,7 +123,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
               <button
                 key={item.id}
                 onClick={() => setCurrentView(item.id)}
-                className={`relative py-1 transition-colors hover:text-white shrink-0 uppercase tracking-widest text-[10px] ${currentView === item.id ? 'text-teal-400' : ''}`}
+                className={`relative py-1 transition-colors hover:text-white shrink-0 uppercase tracking-widest text-[0.625rem] ${currentView === item.id ? 'text-teal-400' : ''}`}
               >
                 <span className="relative z-10">{item.label}</span>
                 {currentView === item.id && (

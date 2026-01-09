@@ -388,7 +388,7 @@ export const Tracker: React.FC = () => {
           {selectedMuscles.length > 0 && (
             <div className="flex flex-wrap justify-center gap-2 mb-4 animate-in fade-in zoom-in duration-300">
               {selectedMuscles.map(m => (
-                <span key={m} className="px-5 py-2 bg-teal-500/10 border border-teal-500/30 text-teal-400 text-[10px] font-black rounded-full uppercase tracking-[0.2em] shadow-sm">
+                <span key={m} className="px-5 py-2 bg-teal-500/10 border border-teal-500/30 text-teal-300 text-[0.625rem] font-black rounded-full uppercase tracking-[0.2em] shadow-sm">
                   {getLocalizedMuscleName(m, language)}
                 </span>
               ))}
@@ -411,7 +411,7 @@ export const Tracker: React.FC = () => {
                   {selectedMuscles.includes(muscle) && <svg className="w-3 h-3 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>}
                 </div>
               </div>
-              <span className={`text-xl font-black text-left transition-colors ${selectedMuscles.includes(muscle) ? 'text-white' : 'text-zinc-400'}`}>
+              <span className={`text-xl font-black text-left transition-colors ${selectedMuscles.includes(muscle) ? 'text-white' : 'text-zinc-100'}`}>
                 {getLocalizedMuscleName(muscle, language)}
               </span>
             </button>
@@ -439,7 +439,7 @@ export const Tracker: React.FC = () => {
             </h2>
             <div className="flex flex-wrap gap-2">
               {selectedMuscles.map(m => (
-                <span key={m} className="text-[10px] text-teal-600 dark:text-teal-500 font-bold uppercase tracking-widest px-2 py-0.5 bg-teal-500/10 rounded shadow-sm">
+                <span key={m} className="text-[0.625rem] text-teal-300 dark:text-teal-300 font-bold uppercase tracking-widest px-2 py-0.5 bg-teal-500/10 rounded shadow-sm">
                   {getLocalizedMuscleName(m, language)}
                 </span>
               ))}
@@ -496,7 +496,7 @@ export const Tracker: React.FC = () => {
 
                       return (
                         <div key={category}>
-                          <h5 className="text-[10px] font-black text-zinc-300 uppercase tracking-[0.4em] mb-6 ml-1 flex items-center gap-4">
+                          <h5 className="text-[0.625rem] font-black text-zinc-100 uppercase tracking-[0.4em] mb-6 ml-1 flex items-center gap-4">
                             {category}
                             <div className="h-px flex-1 bg-zinc-800"></div>
                           </h5>
