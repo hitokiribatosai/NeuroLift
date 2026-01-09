@@ -164,10 +164,11 @@ export const Journal: React.FC = () => {
         </div>
         {history.map((workout) => (
           <Card key={workout.id} className="p-8 bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
-            <div className="absolute top-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+            <div className="absolute top-6 right-6 flex gap-2 md:opacity-0 md:group-hover:opacity-100 opacity-100 transition-all z-10">
               <button
                 onClick={() => setEditingWorkoutId(editingWorkoutId === workout.id ? null : workout.id)}
-                className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-300 hover:text-teal-500 transition-colors shadow-sm"
+                className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 text-zinc-400 hover:text-teal-500 transition-colors shadow-sm backdrop-blur-sm"
+                style={{ WebkitBackdropFilter: 'blur(8px)' }}
                 title="Edit workout"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -176,7 +177,8 @@ export const Journal: React.FC = () => {
               </button>
               <button
                 onClick={() => handleDeleteWorkout(workout.id)}
-                className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-300 hover:text-rose-500 transition-colors shadow-sm"
+                className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 text-zinc-400 hover:text-rose-500 transition-colors shadow-sm backdrop-blur-sm"
+                style={{ WebkitBackdropFilter: 'blur(8px)' }}
                 title="Delete workout"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

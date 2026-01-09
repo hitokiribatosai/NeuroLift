@@ -96,6 +96,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentView }) => {
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         className="bg-zinc-900/50 backdrop-blur-xl border border-zinc-800 p-6 rounded-[2.5rem] flex items-center gap-6 shadow-2xl"
+                        style={{ WebkitBackdropFilter: 'blur(24px)' }}
                     >
                         <div className={`relative flex items-center justify-center ${streak > 0 ? 'text-orange-500' : 'text-zinc-700'}`}>
                             <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">

@@ -63,3 +63,8 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+.safari-blur {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}

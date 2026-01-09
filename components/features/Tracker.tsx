@@ -561,7 +561,10 @@ export const Tracker: React.FC = () => {
                 ))}
               </div>
 
-              <div className="sticky bottom-0 md:bottom-6 bg-black/80 backdrop-blur-2xl p-6 md:p-8 rounded-t-[2.5rem] md:rounded-[2.5rem] border-t md:border border-zinc-800 shadow-2xl flex items-center justify-between z-40 pb-[calc(1.5rem+env(safe-area-inset-bottom))] md:pb-8">
+              <div
+                className="sticky bottom-0 md:bottom-6 bg-black/80 backdrop-blur-2xl p-6 md:p-8 rounded-t-[2.5rem] md:rounded-[2.5rem] border-t md:border border-zinc-800 shadow-2xl flex items-center justify-between z-40 pb-[calc(2rem+env(safe-area-inset-bottom))] md:pb-8"
+                style={{ WebkitBackdropFilter: 'blur(24px)' }}
+              >
                 <div className="hidden md:block">
                   <div className="text-[10px] text-zinc-300 font-black uppercase tracking-[0.3em] mb-1">{selectedExercises.length} Exercises Picked</div>
                   <div className="text-sm text-zinc-200 font-bold max-w-[400px] truncate">{selectedExercises.join(', ')}</div>
@@ -575,7 +578,11 @@ export const Tracker: React.FC = () => {
                       {t('tracker_back')}
                     </button>
                   )}
-                  <SpotlightButton onClick={handleStartWorkout} disabled={selectedExercises.length === 0} className="flex-1 md:flex-none px-16 py-5 text-lg font-black uppercase tracking-widest shadow-lg shadow-teal-500/20">
+                  <SpotlightButton
+                    onClick={handleStartWorkout}
+                    disabled={selectedExercises.length === 0}
+                    className="flex-1 md:flex-none px-6 md:px-16 py-5 text-sm md:text-lg font-black uppercase tracking-widest shadow-lg shadow-teal-500/20 flex items-center justify-center"
+                  >
                     {activeExercises.length > 0 ? 'Resume' : t('tracker_start')}
                   </SpotlightButton>
                 </div>
@@ -757,7 +764,7 @@ export const Tracker: React.FC = () => {
                       variant="secondary"
                       onClick={finishWorkout}
                       spotlightColor="rgba(244, 63, 94, 0.2)"
-                      className="h-[48px] md:h-[56px] px-4 md:px-6 text-[9px] font-black uppercase tracking-widest bg-rose-500/10 text-rose-400 border-rose-500/20 ml-1 shadow-lg shadow-rose-500/10"
+                      className="h-[48px] md:h-[56px] px-auto md:px-6 flex items-center justify-center text-[9px] font-black uppercase tracking-widest bg-rose-500/10 text-rose-400 border-rose-500/20 ml-1 shadow-lg shadow-rose-500/10 min-w-[80px]"
                     >
                       {t('tracker_finish')}
                     </SpotlightButton>
