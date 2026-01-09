@@ -561,7 +561,7 @@ export const Tracker: React.FC = () => {
                 ))}
               </div>
 
-              <div className="sticky bottom-6 bg-black/80 backdrop-blur-2xl p-6 md:p-8 rounded-[2.5rem] border border-zinc-800 shadow-2xl flex items-center justify-between z-40">
+              <div className="sticky bottom-0 md:bottom-6 bg-black/80 backdrop-blur-2xl p-6 md:p-8 rounded-t-[2.5rem] md:rounded-[2.5rem] border-t md:border border-zinc-800 shadow-2xl flex items-center justify-between z-40 pb-[calc(1.5rem+env(safe-area-inset-bottom))] md:pb-8">
                 <div className="hidden md:block">
                   <div className="text-[10px] text-zinc-300 font-black uppercase tracking-[0.3em] mb-1">{selectedExercises.length} Exercises Picked</div>
                   <div className="text-sm text-zinc-200 font-bold max-w-[400px] truncate">{selectedExercises.join(', ')}</div>
@@ -657,7 +657,7 @@ export const Tracker: React.FC = () => {
 
           {phase === 'active' && (
             <div className="mx-auto max-w-4xl px-4 md:px-6 py-20 pb-40">
-              <div className="sticky top-0 z-50 -mx-6 mb-8 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-zinc-900 px-6 py-6 ring-1 ring-white/5" style={{ WebkitBackdropFilter: 'blur(24px)' }}>
+              <div className="sticky top-0 z-50 -mx-6 mb-8 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-zinc-900 px-6 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-6 ring-1 ring-white/5" style={{ WebkitBackdropFilter: 'blur(24px)' }}>
                 <div className="flex flex-col md:flex-row justify-between items-center gap-6">
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-4">

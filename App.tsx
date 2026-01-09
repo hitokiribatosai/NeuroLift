@@ -80,10 +80,10 @@ function App() {
       <LanguageProvider>
         <FontSizeProvider>
           <ClockProvider>
-            <div className="min-h-screen bg-[#0a0a0a] text-white transition-colors duration-300 selection:bg-teal-500/30 selection:text-teal-200 overflow-x-hidden">
+            <div className="min-h-screen bg-[#0a0a0a] text-white transition-colors duration-300 selection:bg-teal-500/30 selection:text-teal-200 overflow-x-hidden flex flex-col">
               <Navbar currentView={currentView} setCurrentView={handleSetView} />
 
-              <main className="pt-16 pb-32 min-h-screen relative overflow-x-hidden">
+              <main className="flex-1 pt-16 pb-[calc(8rem+env(safe-area-inset-bottom))] min-h-screen relative overflow-x-hidden">
                 <AnimatePresence mode="wait">
                   {renderView()}
                 </AnimatePresence>
