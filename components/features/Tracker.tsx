@@ -152,40 +152,30 @@ export const Tracker: React.FC = () => {
     window.addEventListener('popstate', handlePopState);
 
     // 2. Handle Android Hardware Back Button
-    let backListener: any;
-    const setupBackListener = async () => {
-      backListener = await CapApp.addListener('backButton', ({ canGoBack }: { canGoBack: boolean }) => {
-        if (phase === 'active') {
-          // If active, go back to selection (or maybe warn user? For now just go back)
-          // Better UX: Show confirm modal? User asked to "go back to add more devices" (selection)
-          setPhase('selection');
-          // Update URL to match
-          window.history.replaceState(null, '', '#tracker?phase=selection');
-        } else if (phase === 'selection') {
-          setPhase('setup');
-          window.history.replaceState(null, '', '#tracker?phase=setup');
-        } else if (phase === 'summary') {
-          // Summary -> Home or Setup? Usually Setup to start new.
-          setPhase('setup');
-          window.history.replaceState(null, '', '#tracker?phase=setup');
+    const backListenerPromise = CapApp.addListener('backButton', ({ canGoBack }: { canGoBack: boolean }) => {
+      if (phase === 'active') {
+        setPhase('selection');
+        window.history.replaceState(null, '', '#tracker?phase=selection');
+      } else if (phase === 'selection') {
+        setPhase('setup');
+        window.history.replaceState(null, '', '#tracker?phase=setup');
+      } else if (phase === 'summary') {
+        setPhase('setup');
+        window.history.replaceState(null, '', '#tracker?phase=setup');
+      } else {
+        if (window.location.hash.includes('tracker')) {
+          window.history.back();
+        } else if (canGoBack) {
+          window.history.back();
         } else {
-          // We are in 'setup'. Let default happen (likely go Home via App.tsx routing or exit app)
-          // If we want to force go to Home:
-          if (window.location.hash.includes('tracker')) {
-            window.history.back(); // Let browser handle "back to home"
-          } else if (canGoBack) {
-            window.history.back();
-          } else {
-            CapApp.exitApp();
-          }
+          CapApp.exitApp();
         }
-      });
-    };
-    setupBackListener();
+      }
+    });
 
     return () => {
       window.removeEventListener('popstate', handlePopState);
-      if (backListener) backListener.remove();
+      backListenerPromise.then(l => l.remove());
     };
   }, [phase]);
 
@@ -263,6 +253,7 @@ export const Tracker: React.FC = () => {
   };
 
   const addSet = (exerciseIndex: number) => {
+    if (!activeExercises[exerciseIndex]) return;
     const newExs = [...activeExercises];
     newExs[exerciseIndex].sets.push({
       id: generateId(),
@@ -274,6 +265,7 @@ export const Tracker: React.FC = () => {
   };
 
   const updateSet = (exIdx: number, setIdx: number, field: keyof WorkoutSet, val: string) => {
+    if (!activeExercises[exIdx]?.sets[setIdx]) return;
     const newExs = [...activeExercises];
     const value = parseFloat(val) || 0;
     (newExs[exIdx].sets[setIdx] as any)[field] = value;
@@ -281,6 +273,7 @@ export const Tracker: React.FC = () => {
   };
 
   const toggleSetComplete = (exIdx: number, setIdx: number) => {
+    if (!activeExercises[exIdx]?.sets[setIdx]) return;
     const newExs = [...activeExercises];
     const isNowCompleted = !newExs[exIdx].sets[setIdx].completed;
     newExs[exIdx].sets[setIdx].completed = isNowCompleted;

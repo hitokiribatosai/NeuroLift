@@ -114,13 +114,15 @@ export const Journal: React.FC = () => {
   const handleUpdateWorkoutSet = (workoutId: string, exIdx: number, setIdx: number, field: keyof WorkoutSet, val: number) => {
     const updatedHistory = history.map(w => {
       if (w.id === workoutId) {
+        if (!w.exercises[exIdx]?.sets[setIdx]) return w;
         const newExs = [...w.exercises];
         const newSets = [...newExs[exIdx].sets];
         (newSets[setIdx] as any)[field] = val;
-        newExs[exIdx].sets = newSets;
+        const updatedEx = { ...newExs[exIdx], sets: newSets };
+        newExs[exIdx] = updatedEx;
 
         const newVolume = newExs.reduce((acc, ex) => {
-          return acc + ex.sets.reduce((sAcc, s) => s.completed ? sAcc + (s.weight * s.reps) : sAcc, 0);
+          return acc + (ex?.sets || []).reduce((sAcc, s) => s.completed ? sAcc + (s.weight * s.reps) : sAcc, 0);
         }, 0);
 
         return { ...w, exercises: newExs, totalVolume: newVolume };
@@ -512,10 +514,10 @@ const VolumeChart = ({ history, t, selectedMuscle, onMuscleChange, language }: {
   const getVolumeForPoint = (workout: CompletedWorkout) => {
     if (selectedMuscle === 'Total') return workout.totalVolume;
 
-    return workout.exercises.reduce((acc, ex) => {
+    return (workout.exercises || []).reduce((acc, ex) => {
       const muscle = getMuscleForExercise(ex.name);
       if (muscle === selectedMuscle) {
-        return acc + ex.sets.reduce((sAcc, s) => s.completed ? sAcc + (s.weight * s.reps) : sAcc, 0);
+        return acc + (ex.sets || []).reduce((sAcc, s) => s.completed ? sAcc + (s.weight * s.reps) : sAcc, 0);
       }
       return acc;
     }, 0);

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Language } from '../types';
 import { translations } from '../utils/translations';
+import { safeStorage } from '../utils/storage';
 
 interface LanguageContextType {
   language: Language;
@@ -13,7 +14,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>(() => {
-    const saved = localStorage.getItem('language') as Language;
+    const saved = safeStorage.getItem('language') as Language;
     return (saved === 'en' || saved === 'fr' || saved === 'ar') ? saved : 'en';
   });
 
@@ -21,7 +22,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const dir = language === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.dir = dir;
     document.documentElement.lang = language;
-    localStorage.setItem('language', language);
+    safeStorage.setItem('language', language);
   }, [language]);
 
   const t = (key: keyof typeof translations['en']) => {

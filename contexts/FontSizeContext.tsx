@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { safeStorage } from '../utils/storage';
 
 export type FontSize = 'small' | 'medium' | 'large' | 'xlarge';
 
@@ -18,7 +19,7 @@ const fontSizeMap: Record<FontSize, string> = {
 
 export const FontSizeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [fontSize, setFontSizeState] = useState<FontSize>(() => {
-        const saved = localStorage.getItem('neuroLift_fontSize') as FontSize;
+        const saved = safeStorage.getItem('neuroLift_fontSize') as FontSize;
         return (saved === 'small' || saved === 'medium' || saved === 'large' || saved === 'xlarge')
             ? saved
             : 'medium';
@@ -27,7 +28,7 @@ export const FontSizeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     useEffect(() => {
         // Update CSS variable
         document.documentElement.style.setProperty('--base-font-size', fontSizeMap[fontSize]);
-        localStorage.setItem('neuroLift_fontSize', fontSize);
+        safeStorage.setItem('neuroLift_fontSize', fontSize);
     }, [fontSize]);
 
     const setFontSize = (size: FontSize) => {

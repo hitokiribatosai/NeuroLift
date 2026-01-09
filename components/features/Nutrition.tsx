@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { Card } from '../ui/Card';
+import { safeStorage } from '../../utils/storage';
 
 interface DailyLog {
   date: string;
@@ -17,26 +18,26 @@ export const Nutrition: React.FC = () => {
   const today = new Date().toLocaleDateString();
 
   useEffect(() => {
-    const savedDaily = localStorage.getItem('neuroLift_daily_cal');
-    const savedDate = localStorage.getItem('neuroLift_cal_date');
-    const savedHistory = localStorage.getItem('neuroLift_cal_history');
+    const savedDaily = safeStorage.getItem('neuroLift_daily_cal');
+    const savedDate = safeStorage.getItem('neuroLift_cal_date');
+    const savedHistory = safeStorage.getParsed<DailyLog[]>('neuroLift_cal_history', []);
 
     if (savedDate === today) {
       if (savedDaily) setDailyCalories(parseInt(savedDaily));
+      setHistory(savedHistory);
     } else if (savedDate) {
       // New day detected
       const lastDayLog = { date: savedDate, calories: parseInt(savedDaily || '0') };
-      const newHistory = [lastDayLog, ...JSON.parse(savedHistory || '[]')].slice(0, 7);
+      const newHistory = [lastDayLog, ...savedHistory].slice(0, 7);
       setHistory(newHistory);
-      localStorage.setItem('neuroLift_cal_history', JSON.stringify(newHistory));
-      localStorage.setItem('neuroLift_cal_date', today);
-      localStorage.setItem('neuroLift_daily_cal', '0');
+      safeStorage.setItem('neuroLift_cal_history', JSON.stringify(newHistory));
+      safeStorage.setItem('neuroLift_cal_date', today);
+      safeStorage.setItem('neuroLift_daily_cal', '0');
       setDailyCalories(0);
     } else {
-      localStorage.setItem('neuroLift_cal_date', today);
+      safeStorage.setItem('neuroLift_cal_date', today);
+      setHistory(savedHistory);
     }
-
-    if (savedHistory) setHistory(JSON.parse(savedHistory));
   }, [today]);
 
   const addCalories = () => {
@@ -44,14 +45,14 @@ export const Nutrition: React.FC = () => {
     if (!isNaN(amount)) {
       const newVal = dailyCalories + amount;
       setDailyCalories(newVal);
-      localStorage.setItem('neuroLift_daily_cal', newVal.toString());
+      safeStorage.setItem('neuroLift_daily_cal', newVal.toString());
       setCaloriesInput('');
     }
   };
 
   const resetDay = () => {
     setDailyCalories(0);
-    localStorage.setItem('neuroLift_daily_cal', '0');
+    safeStorage.setItem('neuroLift_daily_cal', '0');
   };
 
   return (
