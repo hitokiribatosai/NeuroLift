@@ -169,8 +169,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
             onClick={() => setCurrentView('home')}
             whileTap={{ scale: 0.95 }}
           >
-            <img src="/logo.png" alt="NeuroLift" className="h-10 w-auto rounded-xl shadow-lg" />
-            <span className="text-white font-black tracking-tighter text-lg hidden sm:block">NeuroLift</span>
+            <img src="/logo.png" alt="NeuroLift" className="h-12 w-auto rounded-xl shadow-lg" />
+            <span className="text-white font-black tracking-tighter text-lg">NeuroLift</span>
           </motion.div>
 
           {/* Desktop Navigation Items - Hidden on Mobile */}
