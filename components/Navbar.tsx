@@ -211,8 +211,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
       </nav>
 
       {/* Bottom Tab Bar: Visible only on smaller screens */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 px-4 pb-6 pt-2 pointer-events-none">
-        <div className="mx-auto max-w-sm w-full bg-[#0a0a0a]/90 backdrop-blur-xl border border-zinc-800 rounded-3xl shadow-2xl flex items-center justify-around p-2 pointer-events-auto relative overflow-hidden">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
+        <div className="w-full bg-[#0a0a0a]/95 backdrop-blur-xl border-t border-zinc-800 shadow-2xl flex items-center justify-around p-2 pb-[calc(env(safe-area-inset-bottom)+8px)] pointer-events-auto relative overflow-hidden">
           {navItems.map((item) => (
             <button
               key={item.id}

@@ -380,8 +380,8 @@ export const Tracker: React.FC = () => {
 
   if (phase === 'setup') {
     return (
-      <div className="mx-auto max-w-5xl px-6 py-24 text-center">
-        <div className="mb-16">
+      <div className="mx-auto max-w-5xl px-6 pt-12 pb-8 text-center">
+        <div className="mb-12">
           <h2 className="text-4xl md:text-5xl font-black text-white mb-2 uppercase tracking-tight">{t('tracker_select_muscle')}</h2>
           <div className="h-1.5 w-24 bg-teal-500 mx-auto rounded-full mb-8"></div>
 
@@ -431,11 +431,11 @@ export const Tracker: React.FC = () => {
 
   if (phase === 'selection') {
     return (
-      <div className="mx-auto max-w-4xl px-6 py-24">
+      <div className="mx-auto max-w-4xl px-6 pt-12 pb-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-b border-zinc-200 dark:border-zinc-800 pb-8">
           <div>
             <h2 className="text-3xl font-black text-white uppercase tracking-tight mb-2">
-              {t('tracker_summary')}
+              {t('tracker_add_to_workout')}
             </h2>
             <div className="flex flex-wrap gap-2">
               {selectedMuscles.map(m => (
@@ -472,7 +472,7 @@ export const Tracker: React.FC = () => {
 
         </div>
 
-        <div className="space-y-20 mb-32">
+        <div className="space-y-20 mb-20">
           {selectedMuscles.map(majorMuscle => (
             <div key={majorMuscle} className="space-y-12">
               {/* Show Major Group Header */}
