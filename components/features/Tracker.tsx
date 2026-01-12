@@ -668,7 +668,7 @@ export const Tracker: React.FC = () => {
           )}
 
           {phase === 'active' && (
-            <div className="mx-auto max-w-4xl px-4 md:px-6 py-6 pb-[200px]">
+            <div className="mx-auto max-w-4xl px-4 md:px-6 py-6 pb-[120px]">
               {/* Back to Selection */}
               <div className="mb-6">
                 <button
@@ -680,7 +680,7 @@ export const Tracker: React.FC = () => {
                 </button>
               </div>
 
-              <div className="space-y-12">
+              <div className="space-y-12 mb-12">
                 {activeExercises.map((ex, exIdx) => (
                   <Card key={exIdx} className="p-8 bg-zinc-900/40 border-zinc-800 rounded-[3rem] shadow-sm overflow-hidden">
                     <h3 className="text-2xl font-black text-white mb-8 flex items-center gap-4 uppercase tracking-tight">
@@ -763,30 +763,36 @@ export const Tracker: React.FC = () => {
                     </div>
                   </Card>
                 ))}
-
-                <Card className="p-8 bg-zinc-900/40 border-zinc-800 rounded-[3rem] shadow-sm overflow-hidden flex flex-col items-center text-center">
-                  <h3 className="text-xl font-black text-white uppercase tracking-tight mb-2">Next Exercise?</h3>
-                  <p className="text-zinc-400 text-sm mb-6">Finished with this batch? Add more exercises to continue.</p>
-                  <button
-                    onClick={() => setPhase('selection')}
-                    className="px-8 py-4 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-black uppercase tracking-widest rounded-2xl border border-zinc-700 transition-all"
-                  >
-                    Select Exercises
-                  </button>
-                </Card>
               </div>
 
-              {/* FLOATING BOTTOM BAR */}
-              <div className="fixed bottom-0 left-0 w-full z-50 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">
-                <div className="max-w-4xl mx-auto rounded-[2rem] bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] p-4 flex flex-col gap-4 ring-1 ring-white/5">
+              {/* Bottom Actions: Add Exercise & Finish */}
+              <div className="flex flex-col gap-4">
+                <button
+                  onClick={() => setPhase('selection')}
+                  className="w-full py-4 bg-zinc-800/50 hover:bg-zinc-800 text-zinc-400 hover:text-white text-xs font-black uppercase tracking-widest rounded-2xl border border-zinc-700/50 hover:border-zinc-600 transition-all flex items-center justify-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                  Add Exercises
+                </button>
 
-                  {/* Top Row: Timer Display & Controls */}
+                <SpotlightButton
+                  onClick={finishWorkout}
+                  variant="secondary"
+                  spotlightColor="rgba(244, 63, 94, 0.4)"
+                  className="w-full py-5 bg-rose-500/10 border-rose-500/20 text-rose-500 hover:text-rose-400 font-black uppercase tracking-[0.2em] text-sm shadow-none hover:shadow-lg hover:shadow-rose-500/10"
+                >
+                  {t('tracker_finish')}
+                </SpotlightButton>
+              </div>
+
+              {/* FLOATING BOTTOM BAR (Only Timer) */}
+              <div className="fixed bottom-0 left-0 w-full z-50 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 pointer-events-none">
+                <div className="max-w-4xl mx-auto rounded-2xl bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] p-3 ring-1 ring-white/5 pointer-events-auto inline-block w-full">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      {/* Timer / Stopwatch */}
                       <div className="flex flex-col">
                         <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-0.5">
-                          {mode === 'stopwatch' ? 'Session Time' : 'Timer'}
+                          {mode === 'stopwatch' ? 'Time' : 'Timer'}
                         </span>
                         {mode === 'timer' && countdownRemaining === null ? (
                           <div className="flex items-center gap-1">
@@ -816,7 +822,6 @@ export const Tracker: React.FC = () => {
                         )}
                       </div>
 
-                      {/* Rest Timer Badge */}
                       {restRemaining !== null && (
                         <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-xl animate-pulse">
                           <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">Rest</span>
@@ -826,7 +831,6 @@ export const Tracker: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {/* Mode Toggle */}
                       <button
                         onClick={() => { setMode(mode === 'stopwatch' ? 'timer' : 'stopwatch'); setTimerActive(false); }}
                         className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
@@ -838,7 +842,6 @@ export const Tracker: React.FC = () => {
                         )}
                       </button>
 
-                      {/* Play/Pause */}
                       <button
                         onClick={() => setTimerActive(!timerActive)}
                         className={`w-12 h-12 rounded-xl flex items-center justify-center text-white transition-all shadow-lg ${timerActive ? 'bg-amber-500 shadow-amber-500/20' : 'bg-teal-500 shadow-teal-500/20'}`}
@@ -847,16 +850,6 @@ export const Tracker: React.FC = () => {
                       </button>
                     </div>
                   </div>
-
-                  {/* Bottom Row: Finish Button */}
-                  <SpotlightButton
-                    onClick={finishWorkout}
-                    variant="secondary"
-                    spotlightColor="rgba(244, 63, 94, 0.4)"
-                    className="w-full py-4 bg-rose-500/10 border-rose-500/20 text-rose-500 hover:text-rose-400 font-black uppercase tracking-[0.2em] text-xs shadow-none hover:shadow-lg hover:shadow-rose-500/10"
-                  >
-                    {t('tracker_finish')}
-                  </SpotlightButton>
                 </div>
               </div>
             </div>
