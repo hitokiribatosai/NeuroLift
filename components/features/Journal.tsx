@@ -135,6 +135,30 @@ export const Journal: React.FC = () => {
     safeStorage.setItem('neuroLift_history', JSON.stringify(updatedHistory));
   };
 
+  const handleDeleteSet = (workoutId: string, exIdx: number, setId: string) => {
+    const updatedHistory = history.map(w => {
+      if (w.id === workoutId) {
+        const newExs = [...w.exercises];
+        const setIndex = newExs[exIdx].sets.findIndex(s => s.id === setId);
+        if (setIndex === -1) return w;
+
+        newExs[exIdx].sets.splice(setIndex, 1);
+
+        // If no sets left, remove exercise? Optional. Keeping empty exercise is fine or we can remove it.
+        // Let's just remove the set for now.
+
+        const newVolume = newExs.reduce((acc, ex) => {
+          return acc + (ex?.sets || []).reduce((sAcc, s) => s.completed ? sAcc + (s.weight * s.reps) : sAcc, 0);
+        }, 0);
+
+        return { ...w, exercises: newExs, totalVolume: newVolume };
+      }
+      return w;
+    });
+    setHistory(updatedHistory);
+    safeStorage.setItem('neuroLift_history', JSON.stringify(updatedHistory));
+  };
+
   const handleShareWorkout = async (exercises: ActiveExercise[]) => {
     try {
       const exerciseNames = exercises.map(ex => ex.name);
@@ -300,6 +324,12 @@ export const Journal: React.FC = () => {
                                   />
                                 </>
                               )}
+                              <button
+                                onClick={() => handleDeleteSet(workout.id, exIdx, set.id)}
+                                className="ml-1 p-1 text-zinc-400 hover:text-rose-500 transition-colors"
+                              >
+                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+                              </button>
                             </div>
                           ) : (
                             <span className="text-zinc-900 dark:text-white">

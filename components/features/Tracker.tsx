@@ -860,7 +860,7 @@ export const Tracker: React.FC = () => {
 
                       <div className="space-y-3">
                         {ex.sets.map((set, setIdx) => (
-                          <div key={set.id} className={`grid grid-cols-12 gap-3 items-center rounded-2xl p-2 md:p-3 bg-black/20 border border-zinc-800/50 transition-all ${set.completed ? 'opacity-50' : 'opacity-100'}`}>
+                          <div key={set.id} className={`grid grid-cols-12 gap-1 md:gap-3 items-center rounded-2xl p-2 md:p-3 bg-black/20 border border-zinc-800/50 transition-all ${set.completed ? 'opacity-50' : 'opacity-100'}`}>
                             <div className="col-span-2 flex justify-center">
                               <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] font-black text-zinc-200">
                                 {setIdx + 1}
