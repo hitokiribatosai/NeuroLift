@@ -356,7 +356,7 @@ export const Tracker: React.FC = () => {
   const handleShareWorkout = async () => {
     try {
       const encoded = btoa(JSON.stringify(selectedExercises));
-      const shareUrl = `${window.location.origin}${window.location.pathname}?share=${encoded}${window.location.hash}`;
+      const shareUrl = `https://neurolift.vercel.app?share=${encoded}${window.location.hash}`;
 
       if (Capacitor.isNativePlatform()) {
         await Share.share({
@@ -900,7 +900,7 @@ export const Tracker: React.FC = () => {
                               />
                             </div>
 
-                            <div className="col-span-2 flex justify-center">
+                            <div className="col-span-3 flex justify-center">
                               <button
                                 onClick={() => toggleSetComplete(exIdx, setIdx)}
                                 className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${set.completed

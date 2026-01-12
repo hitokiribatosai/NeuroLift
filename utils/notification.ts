@@ -1,4 +1,5 @@
 import { LocalNotifications } from '@capacitor/local-notifications';
+import { Capacitor } from '@capacitor/core';
 
 export const requestNotificationPermissions = async () => {
     try {
@@ -53,6 +54,16 @@ export const cancelRestNotification = async () => {
 
 export const registerWorkoutActionTypes = async () => {
     try {
+        if (Capacitor.isNativePlatform()) {
+            await LocalNotifications.createChannel({
+                id: 'workout_timer',
+                name: 'Workout Tracker',
+                description: 'Active workout and rest timer notifications',
+                importance: 5,
+                visibility: 1,
+                vibration: false
+            });
+        }
         await LocalNotifications.registerActionTypes({
             types: [
                 {
@@ -83,6 +94,7 @@ export const updateWorkoutNotification = async (timeText: string, isPaused: bool
                     ongoing: true,
                     autoCancel: false,
                     actionTypeId: 'WORKOUT_ACTIONS',
+                    channelId: 'workout_timer',
                     smallIcon: 'ic_stat_icon_config_sample'
                 }
             ]
