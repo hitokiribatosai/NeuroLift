@@ -755,37 +755,9 @@ export const Tracker: React.FC = () => {
                     <div className="text-7xl md:text-8xl font-black text-teal-400 font-mono tracking-tighter drop-shadow-[0_0_30px_rgba(20,184,166,0.3)]">
                       {mode === 'stopwatch' ? formatTime(duration) : formatTime(countdownRemaining || 0)}
                     </div>
-                    {(mode === 'stopwatch' || (mode === 'timer' && countdownRemaining !== null)) && (
-                      <button
-                        onClick={() => {
-                          if (mode === 'stopwatch') setDuration(d => d + 60);
-                          else {
-                            // If timer is active, we could adjust it here or just show the button
-                            // Following the visual from the image which shows a '+' next to the timer
-                          }
-                        }}
-                        className="w-12 h-12 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-all shadow-xl"
-                      >
-                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 6v12m6-6H6" /></svg>
-                      </button>
-                    )}
                   </div>
                 </div>
 
-                <div className="flex justify-center gap-3 mt-8 mb-8">
-                  <button
-                    onClick={() => { setMode('stopwatch'); setTimerActive(false); }}
-                    className={`px-8 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all ${mode === 'stopwatch' ? 'bg-teal-500 text-white shadow-[0_0_20px_rgba(20,184,166,0.4)]' : 'bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800'}`}
-                  >
-                    Stopwatch
-                  </button>
-                  <button
-                    onClick={() => { setMode('timer'); setTimerActive(false); }}
-                    className={`px-8 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all ${mode === 'timer' ? 'bg-teal-500 text-white shadow-[0_0_20px_rgba(20,184,166,0.4)]' : 'bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800'}`}
-                  >
-                    Timer
-                  </button>
-                </div>
 
                 <div className="flex items-center justify-center gap-4">
                   <button
@@ -814,22 +786,16 @@ export const Tracker: React.FC = () => {
                   </button>
 
                   {restRemaining !== null && (
-                    <div className="ml-4 flex flex-col items-center px-4 py-2 bg-orange-500/10 border border-orange-500/20 rounded-2xl">
+                    <button
+                      onClick={() => setRestRemaining((prev) => (prev || 0) + 10)}
+                      className="ml-4 flex flex-col items-center px-4 py-2 bg-orange-500/10 border border-orange-500/20 rounded-2xl hover:bg-orange-500/20 transition-all active:scale-95"
+                    >
                       <span className="text-[8px] font-black text-orange-500 uppercase tracking-widest mb-0.5 animate-pulse">Rest</span>
                       <span className="text-xl font-mono font-black text-orange-400">{restRemaining}s</span>
-                    </div>
+                    </button>
                   )}
                 </div>
 
-                <div className="mt-8">
-                  <button
-                    onClick={() => setPhase('selection')}
-                    className="text-[10px] text-zinc-300 hover:text-white uppercase tracking-[0.3em] font-black flex items-center gap-2 transition-colors mx-auto"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                    Exercise Info
-                  </button>
-                </div>
               </div>
 
               {/* 2. Exercise List */}
