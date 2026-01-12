@@ -1,9 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { playNotificationSound } from '../utils/audio';
 import { safeStorage } from '../utils/storage';
-import { LocalNotifications } from '@capacitor/local-notifications';
-import { Capacitor } from '@capacitor/core';
-import { registerWorkoutActionTypes, updateWorkoutNotification, cancelWorkoutNotification } from '../utils/notification';
 
 type ClockMode = 'stopwatch' | 'timer';
 
@@ -57,28 +54,9 @@ export const ClockProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [restRemaining, setRestRemaining] = useState<number | null>(null);
 
     // Initial Registration
+    // Initial Registration
     useEffect(() => {
-        let listenerHandle: any = null;
-
-        if (Capacitor.isNativePlatform()) {
-            registerWorkoutActionTypes();
-
-            const setupListener = async () => {
-                listenerHandle = await LocalNotifications.addListener('localNotificationActionPerformed', (notification) => {
-                    if (notification.actionId === 'PAUSE') {
-                        setTimerActive(prev => !prev);
-                    } else if (notification.actionId === 'RESET') {
-                        resetClock();
-                    }
-                });
-            };
-
-            setupListener();
-
-            return () => {
-                if (listenerHandle) listenerHandle.remove();
-            };
-        }
+        // Platform check removed as notification logic is disabled
     }, []);
 
     useEffect(() => {
@@ -116,24 +94,6 @@ export const ClockProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 }
 
                 // Update Native Notification
-                if (Capacitor.isNativePlatform()) {
-                    const formatTime = (s: number) => {
-                        const h = Math.floor(s / 3600);
-                        const m = Math.floor((s % 3600) / 60);
-                        const sec = s % 60;
-                        return h > 0
-                            ? `${h}:${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`
-                            : `${m}:${sec.toString().padStart(2, '0')}`;
-                    };
-
-                    const timeText = mode === 'stopwatch'
-                        ? formatTime(duration)
-                        : formatTime(countdownRemaining || 0);
-
-                    const restText = restRemaining !== null ? `${restRemaining}s` : undefined;
-
-                    updateWorkoutNotification(timeText, !timerActive, restText);
-                }
             }, 1000);
         }
         return () => clearInterval(interval);
@@ -151,7 +111,6 @@ export const ClockProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setCountdownRemaining(null);
         setTimerActive(false);
         setRestRemaining(null);
-        if (Capacitor.isNativePlatform()) cancelWorkoutNotification();
     };
 
     const startTimer = (mins: number, secs: number) => {
