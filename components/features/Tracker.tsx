@@ -45,7 +45,7 @@ export const Tracker: React.FC = () => {
 
   const phaseOrder = ['setup', 'selection', 'active', 'summary'];
 
-  // Use Global Clock for Workout Session
+  // Use Global Clock for Workouts
   const {
     mode, setMode,
     timerActive, setTimerActive,
@@ -188,17 +188,12 @@ export const Tracker: React.FC = () => {
   }, [phase]);
 
   // Update URL when phase changes (Forward Navigation)
-  // We use a ref to track if the phase change was driven by popstate to avoid double pushing
-  // But strictly, we can just replaceState if we want to stay on "tracker" view but change params
-  // The user wants "Return" to work like back button.
-  // So when we transition Setup -> Selection normally, we MUST push state.
   useEffect(() => {
     const currentHash = window.location.hash;
     const targetHash = `#tracker?phase=${phase}`;
 
     if (!currentHash.includes(`phase=${phase}`)) {
-      const oldIdx = phaseOrder.indexOf(phase); // This is actually tricky here as phase already changed
-      // But we can usually infer direction from the setter functions.
+      const oldIdx = phaseOrder.indexOf(phase);
       window.history.pushState({ phase }, '', targetHash);
     }
   }, [phase]);
@@ -219,7 +214,6 @@ export const Tracker: React.FC = () => {
   const toggleMuscle = (m: string) => {
     if (selectedMuscles.includes(m)) {
       setSelectedMuscles(selectedMuscles.filter(x => x !== m));
-      // Optionally remove exercises if muscle deselected
     } else {
       setSelectedMuscles([...selectedMuscles, m]);
     }
@@ -254,8 +248,6 @@ export const Tracker: React.FC = () => {
       setMode('stopwatch');
       setDuration(0);
     } else if (!timerActive) {
-      // Resume timer if it was paused? Or just ensure we satisfy user intent.
-      // If user comes back, likely wants to continue.
       setTimerActive(true);
     }
   };
@@ -786,7 +778,7 @@ export const Tracker: React.FC = () => {
               </div>
 
               {/* FLOATING BOTTOM BAR (Only Timer) */}
-              <div className="fixed bottom-0 left-0 w-full z-50 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 pointer-events-none">
+              <div className="fixed bottom-0 left-0 w-full z-[70] px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 pointer-events-none">
                 <div className="max-w-4xl mx-auto rounded-2xl bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] p-3 ring-1 ring-white/5 pointer-events-auto inline-block w-full">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
