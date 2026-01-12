@@ -23,10 +23,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-
-  /* Prevent content overlapping notch or home indicator globally if needed */
-  padding-top: var(--safe-area-top);
-  padding-bottom: var(--safe-area-bottom);
 }
 
 .grid-bg {

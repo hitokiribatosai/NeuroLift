@@ -160,7 +160,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
         className={`fixed top-0 z-[60] w-full transition-all duration-500 ${scrolled ? 'bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-zinc-800/50 shadow-xl' : 'bg-gradient-to-b from-[#0a0a0a]/80 to-transparent'}`}
         dir={dir}
         style={{
-          paddingTop: isNative ? 'max(env(safe-area-inset-top), 30px)' : 'env(safe-area-inset-top)',
+          paddingTop: 'env(safe-area-inset-top)',
           ...(scrolled ? { WebkitBackdropFilter: 'blur(12px)' } : {})
         }}
       >
