@@ -93,10 +93,11 @@ export const updateWorkoutNotification = async (timeText: string, isPaused: bool
                     id: 2,
                     ongoing: true,
                     autoCancel: false,
+                    onlyAlertOnce: true,
                     actionTypeId: 'WORKOUT_ACTIONS',
                     channelId: 'workout_timer',
                     smallIcon: 'ic_stat_icon_config_sample'
-                }
+                } as any
             ]
         });
     } catch (e) {
