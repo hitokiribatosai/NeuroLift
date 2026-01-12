@@ -660,18 +660,87 @@ export const Tracker: React.FC = () => {
           )}
 
           {phase === 'active' && (
-            <div className="mx-auto max-w-4xl px-4 md:px-6 py-6 pb-[120px]">
-              {/* Back to Selection */}
-              <div className="mb-6">
-                <button
-                  onClick={() => setPhase('selection')}
-                  className="text-xs text-zinc-500 hover:text-white uppercase tracking-widest font-black flex items-center gap-2 transition-colors px-2 py-1"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                  {t('tracker_select_exercises')}
-                </button>
+            <div className="mx-auto max-w-4xl px-4 md:px-6 py-6">
+              {/* 1. Header (Select Muscle & Sticky Timer) */}
+              <div className="sticky top-0 z-50 mb-8 bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-zinc-900 -mx-6 px-6 py-4 shadow-xl">
+                <div className="flex flex-col gap-4">
+                  <div className="flex justify-between items-center">
+                    <button
+                      onClick={() => setPhase('selection')}
+                      className="text-xs text-zinc-500 hover:text-white uppercase tracking-widest font-black flex items-center gap-2 transition-colors px-2 py-1"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                      {t('tracker_select_exercises')}
+                    </button>
+
+                    <div className="flex items-center gap-4">
+                      {restRemaining !== null && (
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-xl animate-pulse">
+                          <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">Rest</span>
+                          <span className="text-lg font-mono font-black text-orange-400">{restRemaining}s</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Timer Control Row */}
+                  <div className="flex items-center justify-between bg-zinc-900/50 rounded-2xl p-2 border border-zinc-800/50">
+                    <div className="flex flex-col px-3">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-0.5">
+                        {mode === 'stopwatch' ? 'Time' : 'Timer'}
+                      </span>
+                      {mode === 'timer' && countdownRemaining === null ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="number"
+                            value={countdownMinutes}
+                            onClick={(e) => (e.target as HTMLInputElement).select()}
+                            onChange={(e) => setCountdownMinutes(e.target.value.slice(-2))}
+                            placeholder="00"
+                            className="w-8 bg-transparent text-xl font-mono font-black text-white text-center outline-none border-b border-zinc-700 focus:border-teal-500 p-0"
+                          />
+                          <span className="text-xl font-black text-zinc-600">:</span>
+                          <input
+                            type="number"
+                            value={countdownSeconds}
+                            onClick={(e) => (e.target as HTMLInputElement).select()}
+                            onChange={(e) => setCountdownSeconds(e.target.value.slice(-2))}
+                            placeholder="00"
+                            className="w-8 bg-transparent text-xl font-mono font-black text-white text-center outline-none border-b border-zinc-700 focus:border-teal-500 p-0"
+                          />
+                          <button onClick={startTimerMode} className="ml-2 p-1.5 bg-teal-500 rounded-lg text-white shadow-lg shadow-teal-500/20 active:scale-95 transition-transform"><svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg></button>
+                        </div>
+                      ) : (
+                        <div className="text-2xl font-mono font-black text-white leading-none tracking-tight">
+                          {mode === 'stopwatch' ? formatTime(duration) : formatTime(countdownRemaining || 0)}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => { setMode(mode === 'stopwatch' ? 'timer' : 'stopwatch'); setTimerActive(false); }}
+                        className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
+                      >
+                        {mode === 'stopwatch' ? (
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        ) : (
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        )}
+                      </button>
+
+                      <button
+                        onClick={() => setTimerActive(!timerActive)}
+                        className={`w-12 h-12 rounded-xl flex items-center justify-center text-white transition-all shadow-lg ${timerActive ? 'bg-amber-500 shadow-amber-500/20' : 'bg-teal-500 shadow-teal-500/20'}`}
+                      >
+                        {timerActive ? <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg> : <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>}
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
 
+              {/* 2. Exercise List */}
               <div className="space-y-12 mb-12">
                 {activeExercises.map((ex, exIdx) => (
                   <Card key={exIdx} className="p-8 bg-zinc-900/40 border-zinc-800 rounded-[3rem] shadow-sm overflow-hidden">
@@ -775,74 +844,6 @@ export const Tracker: React.FC = () => {
                 >
                   {t('tracker_finish')}
                 </SpotlightButton>
-              </div>
-
-              {/* FLOATING BOTTOM BAR (Only Timer) */}
-              <div className="fixed bottom-0 left-0 w-full z-[70] px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 pointer-events-none">
-                <div className="max-w-4xl mx-auto rounded-2xl bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] p-3 ring-1 ring-white/5 pointer-events-auto inline-block w-full">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="flex flex-col">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-0.5">
-                          {mode === 'stopwatch' ? 'Time' : 'Timer'}
-                        </span>
-                        {mode === 'timer' && countdownRemaining === null ? (
-                          <div className="flex items-center gap-1">
-                            <input
-                              type="number"
-                              value={countdownMinutes}
-                              onClick={(e) => (e.target as HTMLInputElement).select()}
-                              onChange={(e) => setCountdownMinutes(e.target.value.slice(-2))}
-                              placeholder="00"
-                              className="w-8 bg-transparent text-xl font-mono font-black text-white text-center outline-none border-b border-zinc-700 focus:border-teal-500 p-0"
-                            />
-                            <span className="text-xl font-black text-zinc-600">:</span>
-                            <input
-                              type="number"
-                              value={countdownSeconds}
-                              onClick={(e) => (e.target as HTMLInputElement).select()}
-                              onChange={(e) => setCountdownSeconds(e.target.value.slice(-2))}
-                              placeholder="00"
-                              className="w-8 bg-transparent text-xl font-mono font-black text-white text-center outline-none border-b border-zinc-700 focus:border-teal-500 p-0"
-                            />
-                            <button onClick={startTimerMode} className="ml-2 p-1.5 bg-teal-500 rounded-lg text-white shadow-lg shadow-teal-500/20 active:scale-95 transition-transform"><svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg></button>
-                          </div>
-                        ) : (
-                          <div className="text-2xl font-mono font-black text-white leading-none tracking-tight">
-                            {mode === 'stopwatch' ? formatTime(duration) : formatTime(countdownRemaining || 0)}
-                          </div>
-                        )}
-                      </div>
-
-                      {restRemaining !== null && (
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-xl animate-pulse">
-                          <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">Rest</span>
-                          <span className="text-lg font-mono font-black text-orange-400">{restRemaining}s</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => { setMode(mode === 'stopwatch' ? 'timer' : 'stopwatch'); setTimerActive(false); }}
-                        className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
-                      >
-                        {mode === 'stopwatch' ? (
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        ) : (
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        )}
-                      </button>
-
-                      <button
-                        onClick={() => setTimerActive(!timerActive)}
-                        className={`w-12 h-12 rounded-xl flex items-center justify-center text-white transition-all shadow-lg ${timerActive ? 'bg-amber-500 shadow-amber-500/20' : 'bg-teal-500 shadow-teal-500/20'}`}
-                      >
-                        {timerActive ? <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg> : <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>}
-                      </button>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           )}
