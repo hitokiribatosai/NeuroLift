@@ -14,8 +14,11 @@ import { Modal } from '../ui/Modal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
+import { useGymMode } from '../../contexts/GymModeContext';
+import { hapticFeedback } from '../../utils/haptics';
 
 export const Tracker: React.FC = () => {
+  const { isGymMode, enableGymMode, disableGymMode } = useGymMode();
   const { t, language } = useLanguage();
   const [phase, setPhase] = useState<'setup' | 'selection' | 'active' | 'summary'>(() => {
     const saved = safeStorage.getItem('neuroLift_tracker_phase');
@@ -219,6 +222,7 @@ export const Tracker: React.FC = () => {
   };
 
   const handleStartWorkout = () => {
+    enableGymMode();
     handleSetPhase('active');
 
     // Merge logic: Preserve existing active exercises data
@@ -278,6 +282,7 @@ export const Tracker: React.FC = () => {
     setActiveExercises(newExs);
 
     if (isNowCompleted) {
+      hapticFeedback.light();
       setRestRemaining(90);
     } else {
       setRestRemaining(null);
@@ -285,6 +290,8 @@ export const Tracker: React.FC = () => {
   };
 
   const finishWorkout = () => {
+    disableGymMode();
+    hapticFeedback.success();
     setTimerActive(false);
     setRestRemaining(null);
     const volume = activeExercises.reduce((acc, ex) => {
@@ -305,6 +312,10 @@ export const Tracker: React.FC = () => {
       totalVolume: volume
     };
 
+    // Save to IndexedDB
+    safeStorage.saveWorkout(record.id, record);
+
+    // Legacy backup (for now)
     const history = safeStorage.getParsed<CompletedWorkout[]>('neuroLift_history', []);
     safeStorage.setItem('neuroLift_history', JSON.stringify([record, ...history]));
 
@@ -319,6 +330,7 @@ export const Tracker: React.FC = () => {
   };
 
   const reset = () => {
+    disableGymMode();
     setPhase('setup');
     setSelectedMuscles([]);
     setSelectedExercises([]);
@@ -835,7 +847,47 @@ export const Tracker: React.FC = () => {
           {phase === 'active' && (
             <div className="mx-auto max-w-4xl px-4 md:px-6 py-6">
               <div className="text-center mb-12">
-                <div className="inline-flex flex-col items-center">
+                <div className="inline-flex flex-col items-center relative">
+                  {/* Gym Mode Badge */}
+                  {isGymMode && (
+                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-zinc-800/80 backdrop-blur border border-zinc-700 rounded-full px-3 py-1 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                      <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-widest">Gym Mode Active</span>
+                    </div>
+                  )}
+
+                  {/* Rest Timer Overlay */}
+                  <AnimatePresence>
+                    {restRemaining !== null && restRemaining > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md"
+                      >
+                        <h3 className="text-zinc-500 text-sm font-black uppercase tracking-[0.5em] mb-8">Resting</h3>
+                        <div className="text-[12rem] font-black text-orange-500 font-mono leading-none tracking-tighter tabular-nums mb-12">
+                          {restRemaining}
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                          <button
+                            onClick={() => setRestRemaining((prev) => (prev || 0) + 30)}
+                            className="px-8 py-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-zinc-400 font-bold hover:text-white hover:border-zinc-700 transition-all uppercase tracking-widest text-xs"
+                          >
+                            +30s
+                          </button>
+                          <button
+                            onClick={() => setRestRemaining(null)}
+                            className="px-8 py-4 bg-teal-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-teal-500/20 hover:scale-105 transition-all"
+                          >
+                            Skip Rest
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   <span className="text-[10px] font-black text-zinc-300 uppercase tracking-[0.3em] mb-4">
                     {mode === 'stopwatch' ? 'Total Time' : 'Time Remaining'}
                   </span>
@@ -874,15 +926,7 @@ export const Tracker: React.FC = () => {
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                   </button>
 
-                  {restRemaining !== null && (
-                    <button
-                      onClick={() => setRestRemaining((prev) => (prev || 0) + 10)}
-                      className="ml-4 flex flex-col items-center px-4 py-2 bg-orange-500/10 border border-orange-500/20 rounded-2xl hover:bg-orange-500/20 transition-all active:scale-95"
-                    >
-                      <span className="text-[8px] font-black text-orange-500 uppercase tracking-widest mb-0.5 animate-pulse">Rest</span>
-                      <span className="text-xl font-mono font-black text-orange-400">{restRemaining}s</span>
-                    </button>
-                  )}
+                  {/* Small timer removed in favor of overlay */}
                 </div>
 
               </div>

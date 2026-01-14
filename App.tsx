@@ -10,9 +10,19 @@ import { LanguageProvider } from './contexts/LanguageContext';
 import { ClockProvider } from './contexts/ClockContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { FontSizeProvider } from './contexts/FontSizeContext';
+import { GymModeProvider } from './contexts/GymModeContext';
 import { AnimatePresence, motion } from 'framer-motion';
+import { OfflineIndicator } from './components/ui/OfflineIndicator';
+import { migrateToIndexedDB } from './utils/storage';
 
 function App() {
+  React.useEffect(() => {
+    const migrated = localStorage.getItem('db-migration-complete');
+    if (!migrated) {
+      migrateToIndexedDB();
+    }
+  }, []);
+
   const [currentView, setCurrentView] = React.useState(() => {
     const hash = window.location.hash.replace('#', '').split('?')[0].split('/')[0];
     return ['home', 'tracker', 'planner', 'nutrition', 'journal', 'clock'].includes(hash) ? hash : 'home';
@@ -80,15 +90,18 @@ function App() {
       <LanguageProvider>
         <FontSizeProvider>
           <ClockProvider>
-            <div className="min-h-screen bg-[#0a0a0a] text-white transition-colors duration-300 selection:bg-teal-500/30 selection:text-teal-200 overflow-x-hidden flex flex-col">
-              <Navbar currentView={currentView} setCurrentView={handleSetView} />
+            <GymModeProvider>
+              <OfflineIndicator />
+              <div className="min-h-screen bg-[#0a0a0a] text-white transition-colors duration-300 selection:bg-teal-500/30 selection:text-teal-200 overflow-x-hidden flex flex-col">
+                <Navbar currentView={currentView} setCurrentView={handleSetView} />
 
-              <main className="flex-1 pt-16 pb-[calc(8rem+env(safe-area-inset-bottom))] min-h-screen relative overflow-x-hidden">
-                <AnimatePresence mode="wait">
-                  {renderView()}
-                </AnimatePresence>
-              </main>
-            </div>
+                <main className="flex-1 pt-16 pb-[calc(8rem+env(safe-area-inset-bottom))] min-h-screen relative overflow-x-hidden">
+                  <AnimatePresence mode="wait">
+                    {renderView()}
+                  </AnimatePresence>
+                </main>
+              </div>
+            </GymModeProvider>
           </ClockProvider>
         </FontSizeProvider>
       </LanguageProvider>

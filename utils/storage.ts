@@ -1,3 +1,4 @@
+import { dbStorage } from './db';
 
 export const safeStorage = {
     getItem: (key: string): string | null => {
@@ -38,5 +39,60 @@ export const safeStorage = {
             console.warn(`Error parsing localStorage key "${key}":`, e);
             return fallback;
         }
+    },
+
+    // New IndexedDB methods
+    async getWorkout(id: string) {
+        return dbStorage.getItem('workouts', id);
+    },
+
+    async saveWorkout(id: string, workout: any) {
+        return dbStorage.setItem('workouts', id, workout);
+    },
+
+    async getAllWorkouts() {
+        return dbStorage.getAll('workouts');
+    },
+
+    async getJournalEntry(id: string) {
+        return dbStorage.getItem('journal', id);
+    },
+
+    async saveJournalEntry(id: string, entry: any) {
+        return dbStorage.setItem('journal', id, entry);
+    },
+
+    async getAllJournalEntries() {
+        return dbStorage.getAll('journal');
+    }
+};
+
+// Migration helper: Move localStorage data to IndexedDB
+export const migrateToIndexedDB = async () => {
+    try {
+        // Migrate workouts
+        const workoutsData = localStorage.getItem('completedWorkouts');
+        if (workoutsData) {
+            const workouts = JSON.parse(workoutsData);
+            for (const workout of workouts) {
+                await safeStorage.saveWorkout(workout.id, workout);
+            }
+            console.log('Migrated workouts to IndexedDB');
+        }
+
+        // Migrate journal entries
+        const journalData = localStorage.getItem('journalEntries');
+        if (journalData) {
+            const entries = JSON.parse(journalData);
+            for (const entry of entries) {
+                await safeStorage.saveJournalEntry(entry.id, entry);
+            }
+            console.log('Migrated journal entries to IndexedDB');
+        }
+
+        // Mark migration as complete
+        localStorage.setItem('db-migration-complete', 'true');
+    } catch (error) {
+        console.error('Migration failed:', error);
     }
 };

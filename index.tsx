@@ -13,3 +13,6 @@ root.render(
     <App />
   </React.StrictMode>
 );
+
+import { registerServiceWorker } from './utils/sw-registration';
+registerServiceWorker();
