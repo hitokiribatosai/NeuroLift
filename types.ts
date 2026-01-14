@@ -99,3 +99,14 @@ export interface CategorizedExercises {
 
 // Hierarchical Structure: Major Category -> Muscle Sub-group -> Equipment Category
 export type ExerciseDatabase = Record<string, Record<string, CategorizedExercises>>;
+
+export interface ExerciseHistory {
+  exerciseName: string;
+  lastPerformed: string; // ISO date
+  lastSets: WorkoutSet[];
+  personalRecord: {
+    maxWeight: number;
+    maxReps: number;
+    maxVolume: number; // weight × reps
+  };
+}

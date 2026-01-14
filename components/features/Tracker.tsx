@@ -16,6 +16,11 @@ import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { useGymMode } from '../../contexts/GymModeContext';
 import { hapticFeedback } from '../../utils/haptics';
+import { exerciseHistoryService } from '../../utils/exerciseHistory';
+import { PlateCalculator } from '../ui/PlateCalculator';
+import { SubstitutionModal } from '../ui/SubstitutionModal';
+import { FormCueModal } from '../ui/FormCueModal';
+import { getFormCues, FormCue } from '../../utils/formCues';
 
 export const Tracker: React.FC = () => {
   const { isGymMode, enableGymMode, disableGymMode } = useGymMode();
@@ -37,6 +42,28 @@ export const Tracker: React.FC = () => {
   const [activeSetInfo, setActiveSetInfo] = useState<{ exIdx: number, setIdx: number } | null>(null);
   const [shareFeedback, setShareFeedback] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [exerciseHistory, setExerciseHistory] = useState<Map<string, any>>(new Map());
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
+  const [substitutionTarget, setSubstitutionTarget] = useState<{ idx: number, name: string } | null>(null);
+  const [activeFormCue, setActiveFormCue] = useState<FormCue | null>(null);
+
+  // Load history when selected exercises change
+  useEffect(() => {
+    const loadHistory = async () => {
+      const historyMap = new Map();
+      for (const exercise of selectedExercises) {
+        const history = await exerciseHistoryService.getExerciseHistory(exercise);
+        if (history) {
+          historyMap.set(exercise, history);
+        }
+      }
+      setExerciseHistory(historyMap);
+    };
+
+    if (selectedExercises.length > 0) {
+      loadHistory();
+    }
+  }, [selectedExercises]);
 
 
   // Active Session State
@@ -247,6 +274,25 @@ export const Tracker: React.FC = () => {
     }
   };
 
+  const handleQuickLoad = async (exerciseIndex: number, exerciseName: string) => {
+    const suggestion = await exerciseHistoryService.getProgressiveOverloadSuggestion(exerciseName);
+
+    if (suggestion) {
+      const newActiveExercises = [...activeExercises];
+      // Ensure sets have unique IDs
+      const uniqueSets = suggestion.suggestedSets.map((s: any, i: number) => ({
+        ...s,
+        id: generateId(),
+        completed: false
+      }));
+
+      newActiveExercises[exerciseIndex].sets = uniqueSets;
+      setActiveExercises(newActiveExercises);
+
+      hapticFeedback.success(); // Feedback
+    }
+  };
+
   const removeSet = (exerciseIndex: number, setIndex: number) => {
     if (!activeExercises[exerciseIndex]) return;
     const newExs = [...activeExercises];
@@ -314,6 +360,9 @@ export const Tracker: React.FC = () => {
 
     // Save to IndexedDB
     safeStorage.saveWorkout(record.id, record);
+
+    // Update Exercise History
+    exerciseHistoryService.updateHistory(record);
 
     // Legacy backup (for now)
     const history = safeStorage.getParsed<CompletedWorkout[]>('neuroLift_history', []);
@@ -938,16 +987,65 @@ export const Tracker: React.FC = () => {
                     <h3 className="text-2xl font-black text-white mb-8 flex items-center gap-4 uppercase tracking-tight">
                       <span className="w-2.5 h-8 bg-teal-500 rounded-full shadow-lg shadow-teal-500/20"></span>
                       {ex.name}
-                      <button
-                        onClick={() => setTutorialExercise(ex.name)}
-                        className="ml-auto p-2 text-zinc-600 hover:text-teal-400 transition-colors"
-                        title={t('modal_watch_video')}
-                      >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </button>
+                      <div className="ml-auto flex items-center gap-2">
+                        <button
+                          onClick={() => setSubstitutionTarget({ idx: exIdx, name: ex.name })}
+                          className="p-2 text-zinc-600 hover:text-orange-400 transition-colors"
+                          title="Swap Exercise"
+                        >
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                          </svg>
+                        </button>
+
+                        {getFormCues(ex.name) && (
+                          <button
+                            onClick={() => setActiveFormCue(getFormCues(ex.name))}
+                            className="p-2 text-zinc-600 hover:text-blue-400 transition-colors"
+                            title="Form Tips"
+                          >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => setTutorialExercise(ex.name)}
+                          className="p-2 text-zinc-600 hover:text-teal-400 transition-colors"
+                          title={t('modal_watch_video')}
+                        >
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </button>
+                      </div>
                     </h3>
+
+                    {/* History & Quick Load */}
+                    {exerciseHistory.get(ex.name) && (
+                      <div className="mb-6 px-4">
+                        <div className="flex items-center justify-between bg-zinc-800/50 rounded-xl p-3 border border-zinc-700/50">
+                          <div>
+                            <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Last Session</div>
+                            <div className="text-xs text-zinc-300 font-mono">
+                              {exerciseHistory.get(ex.name).lastSets.length} sets × {exerciseHistory.get(ex.name).lastSets[0]?.reps} reps @ {exerciseHistory.get(ex.name).lastSets[0]?.weight}kg
+                            </div>
+                          </div>
+
+                          {/* Only show Quick Load if current sets are empty/default */}
+                          {ex.sets.every(s => s.weight === 0 && s.reps === 0) && (
+                            <button
+                              onClick={() => handleQuickLoad(exIdx, ex.name)}
+                              className="px-3 py-1.5 bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 text-[10px] font-black uppercase tracking-widest rounded-lg border border-teal-500/30 transition-all flex items-center gap-2"
+                            >
+                              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                              Quick Load
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
                     <div className="space-y-4">
                       <div className="grid grid-cols-12 gap-3 text-[10px] text-zinc-100 mb-2 px-4 font-black uppercase tracking-[0.3em]">
                         <div className="col-span-2 text-center">{t('tracker_header_set')}</div>
@@ -1062,6 +1160,43 @@ export const Tracker: React.FC = () => {
                   </SpotlightButton>
                 </div>
               </div>
+
+              {/* Plate Calculator Floating Button */}
+              <button
+                onClick={() => setCalculatorOpen(true)}
+                className="fixed bottom-24 right-4 md:bottom-8 md:right-8 w-14 h-14 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-center shadow-2xl hover:bg-zinc-800 transition-all z-40 group"
+                title="Plate Calculator"
+              >
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-teal-500 rounded-full animate-ping opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+              </button>
+
+              <PlateCalculator
+                isOpen={calculatorOpen}
+                onClose={() => setCalculatorOpen(false)}
+              />
+
+              <SubstitutionModal
+                isOpen={!!substitutionTarget}
+                onClose={() => setSubstitutionTarget(null)}
+                originalExercise={substitutionTarget?.name || ''}
+                onSubstitute={(newName) => {
+                  if (substitutionTarget) {
+                    const newExs = [...activeExercises];
+                    newExs[substitutionTarget.idx].name = newName;
+                    setActiveExercises(newExs);
+                  }
+                }}
+              />
+
+              <FormCueModal
+                isOpen={!!activeFormCue}
+                onClose={() => setActiveFormCue(null)}
+                cues={activeFormCue}
+              />
+
             </div>
           )}
 
