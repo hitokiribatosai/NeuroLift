@@ -1026,7 +1026,17 @@ export const Tracker: React.FC = () => {
 
                 <div className="flex items-center justify-center gap-4">
                   <button
-                    onClick={() => setTimerActive(!timerActive)}
+                    onClick={() => {
+                      if (!timerActive) {
+                        // If starting and we're in timer mode but it's done/empty, switch back to stopwatch
+                        if (mode === 'timer' && (!countdownRemaining || countdownRemaining === 0)) {
+                          setMode('stopwatch');
+                        }
+                        setTimerActive(true);
+                      } else {
+                        setTimerActive(false);
+                      }
+                    }}
                     className={`w-16 h-16 rounded-2xl flex items-center justify-center text-white transition-all shadow-2xl ${timerActive ? 'bg-amber-500 shadow-amber-500/30' : 'bg-teal-500 shadow-teal-500/30'}`}
                   >
                     {timerActive ? (
