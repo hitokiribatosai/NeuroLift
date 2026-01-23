@@ -11,8 +11,6 @@ import { ConfirmModal } from '../ui/ConfirmModal';
 import { generateId } from '../../utils/id';
 import { safeStorage } from '../../utils/storage';
 import { clearDemoData, hasDemoData } from '../../utils/demoData';
-import { firestoreService } from '../../utils/firestoreService';
-import { authService } from '../../utils/authService';
 
 export const Journal: React.FC = () => {
   const { t, language } = useLanguage();
@@ -75,11 +73,7 @@ export const Journal: React.FC = () => {
       setEntries(updatedEntries);
       safeStorage.setItem('neuroLift_journal', JSON.stringify(updatedEntries));
 
-      // Sync updated entry to Firestore if user is authenticated
-      const updatedEntry = updatedEntries.find(ent => ent.id === editingId);
-      if (updatedEntry && authService.getCurrentUser()) {
-        firestoreService.syncJournalEntry(updatedEntry);
-      }
+
     } else {
       const newEntry: JournalEntry = {
         id: generateId(),
@@ -92,10 +86,7 @@ export const Journal: React.FC = () => {
       setEntries(updated);
       safeStorage.setItem('neuroLift_journal', JSON.stringify(updated));
 
-      // Sync new entry to Firestore if user is authenticated
-      if (authService.getCurrentUser()) {
-        firestoreService.syncJournalEntry(newEntry);
-      }
+
     }
     resetFormContent();
   };
