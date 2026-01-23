@@ -5,6 +5,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   onAuthStateChanged,
+  sendEmailVerification,
   User,
   AuthError
 } from 'firebase/auth';
@@ -24,7 +25,7 @@ export class AuthService {
   private sessionStartTime: number | null = null;
   private readonly SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours
 
-  private constructor() {}
+  private constructor() { }
 
   static getInstance(): AuthService {
     if (!AuthService.instance) {
@@ -49,6 +50,9 @@ export class AuthService {
       const result = await createUserWithEmailAndPassword(auth, email, password);
       this.sessionStartTime = Date.now();
 
+      // Send email verification
+      await this.sendVerificationEmail(result.user);
+
       securityMonitor.logEvent('auth_success', {
         action: 'signup',
         userId: result.user.uid,
@@ -66,11 +70,27 @@ export class AuthService {
     }
   }
 
+   // Send verification email
+   async sendVerificationEmail(user: User): Promise<void> {
+     try {
+       await sendEmailVerification(user);
+     } catch (error) {
+       console.error("Error sending verification email:", error);
+       throw this.handleAuthError(error as AuthError);
+     }
+   }
+
   // Sign in with email and password
   async signIn(email: string, password: string): Promise<AuthUser> {
     try {
       securityMonitor.logEvent('auth_attempt', { action: 'signin', email });
       const result = await signInWithEmailAndPassword(auth, email, password);
+
+      // Check if email is verified
+      if (!result.user.emailVerified) {
+        throw new Error('Please verify your email address before signing in. Check your email for the verification link.');
+      }
+
       this.sessionStartTime = Date.now();
 
       securityMonitor.logEvent('auth_success', {

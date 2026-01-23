@@ -7,11 +7,12 @@ import { authService, AuthUser } from '../../utils/authService';
 
 interface AuthProps {
   onAuthSuccess: (user: AuthUser) => void;
+  onSkip?: () => void;
 }
 
 type AuthMode = 'login' | 'signup';
 
-export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
+export const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onSkip }) => {
   const { t } = useLanguage();
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
@@ -19,6 +20,7 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showVerificationMessage, setShowVerificationMessage] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +35,8 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
           throw new Error('Passwords do not match');
         }
         user = await authService.signUp(email, password);
+        setShowVerificationMessage(true);
+        return; // Don't call onAuthSuccess for signup, user needs to verify email first
       } else {
         user = await authService.signIn(email, password);
       }
@@ -64,6 +68,7 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
     setError(null);
     setPassword('');
     setConfirmPassword('');
+    setShowVerificationMessage(false);
   };
 
   return (
@@ -192,6 +197,16 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
               {t('auth_continue_with_google')}
             </button>
 
+            {onSkip && (
+              <button
+                type="button"
+                onClick={onSkip}
+                className="w-full py-3 px-4 bg-zinc-800 border border-zinc-600 rounded-lg text-zinc-300 hover:bg-zinc-700 hover:text-white transition-colors text-sm font-bold uppercase tracking-widest"
+              >
+                Skip / Continue as Guest
+              </button>
+            )}
+
             <div className="text-center">
               <button
                 type="button"
@@ -202,6 +217,27 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
               </button>
             </div>
           </form>
+
+          <AnimatePresence>
+            {showVerificationMessage && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="mt-6 p-4 bg-teal-500/10 border border-teal-500/20 rounded-lg"
+              >
+                <p className="text-teal-400 text-sm font-medium text-center">
+                  Check your email for verification. Verify your email before signing in.
+                </p>
+                <button
+                  onClick={() => setShowVerificationMessage(false)}
+                  className="mt-2 text-xs text-zinc-400 hover:text-white underline"
+                >
+                  Back to sign in
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </Card>
       </div>
     </div>
