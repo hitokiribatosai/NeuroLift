@@ -1,0 +1,35 @@
+// Firebase Storage Security Rules
+// Deploy this to your Firebase project: firebase deploy --only storage
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // User profile images
+    match /users/{userId}/profile/{fileName} {
+      // Allow authenticated users to upload their own profile images
+      allow read, write: if request.auth != null &&
+                           request.auth.uid == userId &&
+                           request.resource.size < 5 * 1024 * 1024 && // 5MB limit
+                           request.resource.contentType.matches('image/.*');
+
+      // Allow public read access for profile images
+      allow read: if true;
+    }
+
+    // Workout media (future feature)
+    match /users/{userId}/workouts/{workoutId}/{fileName} {
+      allow read, write: if request.auth != null &&
+                           request.auth.uid == userId &&
+                           request.resource.size < 10 * 1024 * 1024 && // 10MB limit
+                           (request.resource.contentType.matches('image/.*') ||
+                            request.resource.contentType.matches('video/.*'));
+    }
+
+    // Temporary files (for processing)
+    match /temp/{fileName} {
+      allow read, write: if request.auth != null &&
+                           request.resource.size < 50 * 1024 * 1024; // 50MB limit for temp files
+      // Auto-delete temp files after 24 hours (implement in Cloud Functions)
+    }
+  }
+}

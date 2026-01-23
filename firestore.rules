@@ -1,0 +1,82 @@
+// Firebase Security Rules for Firestore
+// Deploy this to your Firebase project: firebase deploy --only firestore:rules
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidUser() {
+      return isAuthenticated() &&
+             request.auth.token.email_verified == true;
+    }
+
+    function validateWorkoutData() {
+      return request.resource.data.keys().hasAll(['id', 'date', 'durationSeconds', 'exercises', 'totalVolume']) &&
+             request.resource.data.id is string &&
+             request.resource.data.date is string &&
+             request.resource.data.durationSeconds is number &&
+             request.resource.data.exercises is list &&
+             request.resource.data.totalVolume is number &&
+             request.resource.data.durationSeconds >= 0 &&
+             request.resource.data.totalVolume >= 0;
+    }
+
+    function validateJournalEntry() {
+      return request.resource.data.keys().hasAll(['id', 'date']) &&
+             request.resource.data.id is string &&
+             request.resource.data.date is string;
+    }
+
+    function validateTemplate() {
+      return request.resource.data.keys().hasAll(['id', 'name', 'exercises', 'createdAt']) &&
+             request.resource.data.id is string &&
+             request.resource.data.name is string &&
+             request.resource.data.exercises is list &&
+             request.resource.data.createdAt is string;
+    }
+
+    // User-specific data collections
+    match /users/{userId} {
+      // Allow read/write for authenticated users to their own data
+      allow read, write: if isOwner(userId) && isValidUser();
+
+      // Workouts subcollection
+      match /workouts/{workoutId} {
+        allow read, write: if isOwner(userId) && isValidUser() && validateWorkoutData();
+        allow delete: if isOwner(userId) && isValidUser();
+      }
+
+      // Journal entries subcollection
+      match /journal/{entryId} {
+        allow read, write: if isOwner(userId) && isValidUser() && validateJournalEntry();
+        allow delete: if isOwner(userId) && isValidUser();
+      }
+
+      // Templates subcollection
+      match /templates/{templateId} {
+        allow read, write: if isOwner(userId) && isValidUser() && validateTemplate();
+        allow delete: if isOwner(userId) && isValidUser();
+      }
+    }
+
+    // Public read-only data (if needed in future)
+    match /public/{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Admin operations (for future use)
+    match /admin/{document=**} {
+      allow read, write: if isAuthenticated() &&
+                           request.auth.token.admin == true;
+    }
+  }
+}
