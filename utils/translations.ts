@@ -231,6 +231,34 @@ export const translations = {
     template_delete_confirm: "Delete this template?",
     template_delete_warning: "This action cannot be undone.",
 
+    // Authentication
+    auth_sign_in: "Sign In",
+    auth_sign_up: "Sign Up",
+    auth_sign_in_subtitle: "Welcome back to NeuroLift",
+    auth_sign_up_subtitle: "Create your account to get started",
+    auth_email: "Email",
+    auth_password: "Password",
+    auth_confirm_password: "Confirm Password",
+    auth_continue_with_google: "Continue with Google",
+    auth_or: "or",
+    auth_need_account: "Need an account? Sign up",
+    auth_have_account: "Already have an account? Sign in",
+    auth_loading: "Loading...",
+    auth_forgot_password: "Forgot password?",
+
+    // Profile
+    profile_title: "Profile",
+    profile_settings: "Settings",
+    profile_language: "Language",
+    profile_units: "Units",
+    profile_sign_out: "Sign Out",
+    profile_delete_account: "Delete Account",
+    profile_total_workouts: "Total Workouts",
+    profile_total_volume: "Total Volume (kg)",
+    profile_avg_volume: "Avg Volume (kg)",
+    profile_delete_confirm_title: "Delete Account",
+    profile_delete_confirm_desc: "This will permanently delete your account and all associated data. This action cannot be undone.",
+
     // Tooltips
     tooltip_muscle_selector_title: 'Select Muscle Groups',
     tooltip_muscle_selector_desc: 'Tap any muscle to add exercises targeting that area',
@@ -471,6 +499,34 @@ export const translations = {
     template_exercise_notes: "Notes",
     template_delete_confirm: "Supprimer ce modèle ?",
     template_delete_warning: "Cette action ne peut pas être annulée.",
+
+    // Authentication
+    auth_sign_in: "Se Connecter",
+    auth_sign_up: "S'Inscrire",
+    auth_sign_in_subtitle: "Bienvenue de retour sur NeuroLift",
+    auth_sign_up_subtitle: "Créez votre compte pour commencer",
+    auth_email: "Email",
+    auth_password: "Mot de passe",
+    auth_confirm_password: "Confirmer le mot de passe",
+    auth_continue_with_google: "Continuer avec Google",
+    auth_or: "ou",
+    auth_need_account: "Besoin d'un compte ? S'inscrire",
+    auth_have_account: "Déjà un compte ? Se connecter",
+    auth_loading: "Chargement...",
+    auth_forgot_password: "Mot de passe oublié ?",
+
+    // Profile
+    profile_title: "Profil",
+    profile_settings: "Paramètres",
+    profile_language: "Langue",
+    profile_units: "Unités",
+    profile_sign_out: "Se Déconnecter",
+    profile_delete_account: "Supprimer le compte",
+    profile_total_workouts: "Total des entraînements",
+    profile_total_volume: "Volume total (kg)",
+    profile_avg_volume: "Volume moyen (kg)",
+    profile_delete_confirm_title: "Supprimer le compte",
+    profile_delete_confirm_desc: "Cela supprimera définitivement votre compte et toutes les données associées. Cette action ne peut pas être annulée.",
 
     // Tooltips
     tooltip_muscle_selector_title: 'Sélectionner les Groupes Musculaires',
@@ -715,6 +771,34 @@ export const translations = {
     template_exercise_notes: "ملاحظات",
     template_delete_confirm: "حذف هذا القالب؟",
     template_delete_warning: "لا يمكن التراجع عن هذا الإجراء.",
+
+    // Authentication
+    auth_sign_in: "تسجيل الدخول",
+    auth_sign_up: "إنشاء حساب",
+    auth_sign_in_subtitle: "مرحباً بعودتك إلى NeuroLift",
+    auth_sign_up_subtitle: "أنشئ حسابك للبدء",
+    auth_email: "البريد الإلكتروني",
+    auth_password: "كلمة المرور",
+    auth_confirm_password: "تأكيد كلمة المرور",
+    auth_continue_with_google: "المتابعة مع Google",
+    auth_or: "أو",
+    auth_need_account: "تحتاج حساب؟ سجل",
+    auth_have_account: "لديك حساب بالفعل؟ ادخل",
+    auth_loading: "جاري التحميل...",
+    auth_forgot_password: "نسيت كلمة المرور؟",
+
+    // Profile
+    profile_title: "الملف الشخصي",
+    profile_settings: "الإعدادات",
+    profile_language: "اللغة",
+    profile_units: "الوحدات",
+    profile_sign_out: "تسجيل الخروج",
+    profile_delete_account: "حذف الحساب",
+    profile_total_workouts: "إجمالي التمارين",
+    profile_total_volume: "إجمالي الحجم (كجم)",
+    profile_avg_volume: "متوسط الحجم (كجم)",
+    profile_delete_confirm_title: "حذف الحساب",
+    profile_delete_confirm_desc: "سيؤدي هذا إلى حذف حسابك نهائياً وجميع البيانات المرتبطة به. لا يمكن التراجع عن هذا الإجراء.",
 
     // Tooltips
     tooltip_muscle_selector_title: 'اختر مجموعات العضلات',

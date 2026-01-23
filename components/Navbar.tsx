@@ -4,13 +4,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useFontSize, FontSize } from '../contexts/FontSizeContext';
 import { Language } from '../types';
+import { AuthUser } from '../utils/authService';
 
 interface NavbarProps {
   currentView: string;
   setCurrentView: (view: string) => void;
+  user?: AuthUser | null;
+  onShowProfile?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) => {
+export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, user, onShowProfile }) => {
   const [scrolled, setScrolled] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { language, setLanguage, t, dir } = useLanguage();
@@ -195,6 +198,28 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
               </motion.button>
             ))}
           </div>
+
+          {/* Profile Section */}
+          {user && onShowProfile && (
+            <motion.button
+              onClick={onShowProfile}
+              whileTap={{ scale: 0.9 }}
+              className="flex items-center justify-center w-10 h-10 rounded-xl border border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:text-white hover:border-zinc-700 transition-all mr-2"
+              title="Profile"
+            >
+              {user.photoURL ? (
+                <img
+                  src={user.photoURL}
+                  alt="Profile"
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+              ) : (
+                <span className="text-sm font-bold">
+                  {user.displayName?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'}
+                </span>
+              )}
+            </motion.button>
+          )}
 
           {/* Settings Section */}
           <div className="relative settings-container">

@@ -11,6 +11,8 @@ import { Tooltip } from '../ui/Tooltip';
 import { generateId } from '../../utils/id';
 import { safeStorage } from '../../utils/storage';
 import { useTooltip } from '../../hooks/useTooltip';
+import { firestoreService } from '../../utils/firestoreService';
+import { authService } from '../../utils/authService';
 import { App as CapApp } from '@capacitor/app';
 import { Modal } from '../ui/Modal';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -383,7 +385,7 @@ export const Tracker: React.FC = () => {
     }
   };
 
-  const finishWorkout = () => {
+  const finishWorkout = async () => {
     hapticFeedback.success();
     setTimerActive(false);
     stopRestTimer();
@@ -414,6 +416,11 @@ export const Tracker: React.FC = () => {
     // Legacy backup (for now)
     const history = safeStorage.getParsed<CompletedWorkout[]>('neuroLift_history', []);
     safeStorage.setItem('neuroLift_history', JSON.stringify([record, ...history]));
+
+    // Sync to Firestore if user is authenticated
+    if (authService.getCurrentUser()) {
+      firestoreService.syncWorkout(record);
+    }
 
     setCompletedWorkout(record);
     handleSetPhase('summary');
@@ -489,6 +496,12 @@ export const Tracker: React.FC = () => {
 
     await safeStorage.saveTemplate(newTemplate.id, newTemplate);
     setTemplates(prev => [newTemplate, ...prev]);
+
+    // Sync to Firestore if user is authenticated
+    if (authService.getCurrentUser()) {
+      firestoreService.syncTemplate(newTemplate);
+    }
+
     setShowSaveTemplateModal(false);
     setTemplateName('');
     hapticFeedback.success();
@@ -544,6 +557,12 @@ export const Tracker: React.FC = () => {
     if (editingTemplate) {
       await safeStorage.saveTemplate(editingTemplate.id, editingTemplate);
       setTemplates(prev => prev.map(t => t.id === editingTemplate.id ? editingTemplate : t));
+
+      // Sync to Firestore if user is authenticated
+      if (authService.getCurrentUser()) {
+        firestoreService.syncTemplate(editingTemplate);
+      }
+
       setEditingTemplate(null);
       setShowEditTemplateModal(false);
       hapticFeedback.success();

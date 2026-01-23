@@ -15,8 +15,12 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { OfflineIndicator } from './components/ui/OfflineIndicator';
 import Onboarding from './components/features/Onboarding';
 import { GoalSetting } from './components/features/GoalSetting';
+import { Auth } from './components/features/Auth';
+import { Profile } from './components/features/Profile';
 import { migrateToIndexedDB, safeStorage } from './utils/storage';
 import { insertDemoData } from './utils/demoData';
+import { authService, AuthUser } from './utils/authService';
+import { firestoreService } from './utils/firestoreService';
 
 function App() {
   React.useEffect(() => {
@@ -88,11 +92,52 @@ function App() {
     );
   };
 
-  /* Onboarding & Goal Setting Logic */
+  /* Authentication, Onboarding & Goal Setting Logic */
+  const [user, setUser] = React.useState<AuthUser | null>(null);
+  const [showAuth, setShowAuth] = React.useState(false);
+  const [showProfile, setShowProfile] = React.useState(false);
   const [showOnboarding, setShowOnboarding] = React.useState(false);
   const [showGoalSetting, setShowGoalSetting] = React.useState(false);
 
+  // Authentication state management
   React.useEffect(() => {
+    const unsubscribe = authService.onAuthStateChanged((authUser) => {
+      if (authUser) {
+        setUser(authUser);
+        setShowAuth(false);
+
+        // Check if user has completed onboarding
+        const hasCompletedOnboarding = localStorage.getItem('neuroLift_hasCompletedOnboarding');
+        const hasSetGoal = localStorage.getItem('neuroLift_userGoal');
+
+        if (!hasCompletedOnboarding) {
+          setShowOnboarding(true);
+        } else if (!hasSetGoal) {
+          setShowGoalSetting(true);
+        }
+      } else {
+        setUser(null);
+        setShowAuth(true);
+        setShowProfile(false);
+        setShowOnboarding(false);
+        setShowGoalSetting(false);
+      }
+    });
+
+    return unsubscribe;
+  }, []);
+
+  const handleAuthSuccess = async (authUser: AuthUser) => {
+    setUser(authUser);
+
+    // Merge cloud data with local data
+    try {
+      await firestoreService.mergeCloudData();
+    } catch (error) {
+      console.error('Error merging cloud data:', error);
+    }
+
+    // Check if user has completed onboarding
     const hasCompletedOnboarding = localStorage.getItem('neuroLift_hasCompletedOnboarding');
     const hasSetGoal = localStorage.getItem('neuroLift_userGoal');
 
@@ -101,7 +146,12 @@ function App() {
     } else if (!hasSetGoal) {
       setShowGoalSetting(true);
     }
-  }, []);
+  };
+
+  const handleSignOut = () => {
+    setUser(null);
+    setShowAuth(true);
+  };
 
   const handleOnboardingComplete = () => {
     localStorage.setItem('neuroLift_hasCompletedOnboarding', 'true');
@@ -129,13 +179,22 @@ function App() {
               <OfflineIndicator />
               <div className="min-h-screen bg-[#0a0a0a] text-white transition-colors duration-300 selection:bg-teal-500/30 selection:text-teal-200 overflow-x-hidden flex flex-col">
 
-                {showOnboarding ? (
+                {showAuth ? (
+                  <Auth onAuthSuccess={handleAuthSuccess} />
+                ) : showProfile ? (
+                  user && <Profile user={user} onSignOut={handleSignOut} />
+                ) : showOnboarding ? (
                   <Onboarding onComplete={handleOnboardingComplete} />
                 ) : showGoalSetting ? (
                   <GoalSetting onComplete={handleGoalSettingComplete} />
                 ) : (
                   <>
-                    <Navbar currentView={currentView} setCurrentView={handleSetView} />
+                    <Navbar
+                      currentView={currentView}
+                      setCurrentView={handleSetView}
+                      user={user}
+                      onShowProfile={() => setShowProfile(true)}
+                    />
 
                     <main className="flex-1 pt-16 pb-[calc(8rem+env(safe-area-inset-bottom))] min-h-screen relative overflow-x-hidden">
                       <AnimatePresence mode="wait">
