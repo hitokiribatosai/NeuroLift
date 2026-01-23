@@ -220,7 +220,25 @@ export const translations = {
     quick_start_pull_desc: "Back, Biceps, Forearms",
     quick_start_leg_day: "Leg Day",
     quick_start_leg_desc: "Quads, Hamstrings, Calves",
-    quick_start_get_started: "Get Started"
+    quick_start_get_started: "Get Started",
+
+    // Tooltips
+    tooltip_muscle_selector_title: 'Select Muscle Groups',
+    tooltip_muscle_selector_desc: 'Tap any muscle to add exercises targeting that area',
+    tooltip_volume_chart_title: 'Track Your Progress',
+    tooltip_volume_chart_desc: 'Filter by muscle group to see specific gains',
+
+    // Goal Setting
+    goal_setting_title: 'What\'s Your Goal?',
+    goal_setting_subtitle: 'Choose your primary training focus',
+    goal_strength_title: 'Strength',
+    goal_strength_desc: 'Lift heavier weights with progressive overload',
+    goal_hypertrophy_title: 'Hypertrophy',
+    goal_hypertrophy_desc: 'Build muscle mass with volume training',
+    goal_endurance_title: 'Endurance',
+    goal_endurance_desc: 'Improve stamina and cardiovascular fitness',
+    goal_setting_continue: 'Continue',
+    goal_setting_skip: 'I\'ll decide later'
   },
   fr: {
     // Nav
@@ -434,7 +452,25 @@ export const translations = {
     quick_start_pull_desc: "Dos, Biceps, Avant-bras",
     quick_start_leg_day: "Jour Jambes",
     quick_start_leg_desc: "Quadriceps, Ischio-jambiers, Mollets",
-    quick_start_get_started: "Commencer"
+    quick_start_get_started: "Commencer",
+
+    // Tooltips
+    tooltip_muscle_selector_title: 'Sélectionner les Groupes Musculaires',
+    tooltip_muscle_selector_desc: 'Appuyez sur n\'importe quel muscle pour ajouter des exercices ciblant cette zone',
+    tooltip_volume_chart_title: 'Suivre Vos Progrès',
+    tooltip_volume_chart_desc: 'Filtrez par groupe musculaire pour voir les gains spécifiques',
+
+    // Goal Setting
+    goal_setting_title: 'Quel est Votre Objectif ?',
+    goal_setting_subtitle: 'Choisissez votre focus d\'entraînement principal',
+    goal_strength_title: 'Force',
+    goal_strength_desc: 'Soulever des poids plus lourds avec surcharge progressive',
+    goal_hypertrophy_title: 'Hypertrophie',
+    goal_hypertrophy_desc: 'Développer la masse musculaire avec entraînement en volume',
+    goal_endurance_title: 'Endurance',
+    goal_endurance_desc: 'Améliorer l\'endurance et la condition cardiovasculaire',
+    goal_setting_continue: 'Continuer',
+    goal_setting_skip: 'Je déciderai plus tard'
   },
   ar: {
     // Nav
@@ -651,7 +687,25 @@ export const translations = {
     quick_start_pull_desc: "الظهر، العضلة الثنائية، السواعد",
     quick_start_leg_day: "يوم الساقين",
     quick_start_leg_desc: "العضلة الرباعية، العضلة الخلفية للفخذ، السمانة",
-    quick_start_get_started: "ابدأ الآن"
+    quick_start_get_started: "ابدأ الآن",
+
+    // Tooltips
+    tooltip_muscle_selector_title: 'اختر مجموعات العضلات',
+    tooltip_muscle_selector_desc: 'اضغط على أي عضلة لإضافة تمارين تستهدف هذه المنطقة',
+    tooltip_volume_chart_title: 'تتبع تقدمك',
+    tooltip_volume_chart_desc: 'تصفية حسب مجموعة العضلات لرؤية المكاسب المحددة',
+
+    // Goal Setting
+    goal_setting_title: 'ما هو هدفك؟',
+    goal_setting_subtitle: 'اختر تركيز التدريب الرئيسي الخاص بك',
+    goal_strength_title: 'القوة',
+    goal_strength_desc: 'رفع أوزان أثقل مع الزيادة التدريجية',
+    goal_hypertrophy_title: 'التضخم العضلي',
+    goal_hypertrophy_desc: 'بناء كتلة العضلات مع التدريب بالحجم',
+    goal_endurance_title: 'القدرة على التحمل',
+    goal_endurance_desc: 'تحسين القدرة على التحمل واللياقة القلبية',
+    goal_setting_continue: 'متابعة',
+    goal_setting_skip: 'سأقرر لاحقاً'
   }
 };
 

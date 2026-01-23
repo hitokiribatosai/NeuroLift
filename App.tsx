@@ -13,8 +13,9 @@ import { FontSizeProvider } from './contexts/FontSizeContext';
 import { GymModeProvider } from './contexts/GymModeContext';
 import { AnimatePresence, motion } from 'framer-motion';
 import { OfflineIndicator } from './components/ui/OfflineIndicator';
-import { OnboardingWizard } from './components/onboarding/OnboardingWizard';
-import { migrateToIndexedDB } from './utils/storage';
+import Onboarding from './components/features/Onboarding';
+import { GoalSetting } from './components/features/GoalSetting';
+import { migrateToIndexedDB, safeStorage } from './utils/storage';
 import { insertDemoData } from './utils/demoData';
 
 function App() {
@@ -87,22 +88,36 @@ function App() {
     );
   };
 
-  /* Onboarding Logic */
+  /* Onboarding & Goal Setting Logic */
   const [showOnboarding, setShowOnboarding] = React.useState(false);
+  const [showGoalSetting, setShowGoalSetting] = React.useState(false);
 
   React.useEffect(() => {
-    const isCompleted = localStorage.getItem('neuroLift_onboarding_completed');
-    if (!isCompleted) {
+    const hasCompletedOnboarding = localStorage.getItem('neuroLift_hasCompletedOnboarding');
+    const hasSetGoal = localStorage.getItem('neuroLift_userGoal');
+
+    if (!hasCompletedOnboarding) {
       setShowOnboarding(true);
+    } else if (!hasSetGoal) {
+      setShowGoalSetting(true);
     }
   }, []);
 
   const handleOnboardingComplete = () => {
+    localStorage.setItem('neuroLift_hasCompletedOnboarding', 'true');
+
+    // Insert demo data if no workouts exist
+    const existingHistory = safeStorage.getParsed('neuroLift_history', []);
+    if (existingHistory.length === 0) {
+      insertDemoData();
+    }
+
     setShowOnboarding(false);
-    // Insert demo data for new users
-    insertDemoData();
-    // Redirect to home dashboard
-    setCurrentView('home');
+    setShowGoalSetting(true);
+  };
+
+  const handleGoalSettingComplete = (goal: string | null) => {
+    setShowGoalSetting(false);
   };
 
   return (
@@ -115,7 +130,9 @@ function App() {
               <div className="min-h-screen bg-[#0a0a0a] text-white transition-colors duration-300 selection:bg-teal-500/30 selection:text-teal-200 overflow-x-hidden flex flex-col">
 
                 {showOnboarding ? (
-                  <OnboardingWizard onComplete={handleOnboardingComplete} />
+                  <Onboarding onComplete={handleOnboardingComplete} />
+                ) : showGoalSetting ? (
+                  <GoalSetting onComplete={handleGoalSettingComplete} />
                 ) : (
                   <>
                     <Navbar currentView={currentView} setCurrentView={handleSetView} />

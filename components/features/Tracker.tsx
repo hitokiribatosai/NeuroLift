@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { SpotlightButton } from '../ui/SpotlightButton';
 import { Card } from '../ui/Card';
@@ -7,8 +7,10 @@ import { getExerciseDatabase, getLocalizedMuscleName, getMuscleForExercise, getE
 import { useClock } from '../../contexts/ClockContext';
 import { playNotificationSound } from '../../utils/audio';
 import { ConfirmModal } from '../ui/ConfirmModal';
+import { Tooltip } from '../ui/Tooltip';
 import { generateId } from '../../utils/id';
 import { safeStorage } from '../../utils/storage';
+import { useTooltip } from '../../hooks/useTooltip';
 import { App as CapApp } from '@capacitor/app';
 import { Modal } from '../ui/Modal';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -24,6 +26,10 @@ export const Tracker: React.FC = () => {
     const validPhases = ['setup', 'selection', 'active', 'summary'];
     return (saved && validPhases.includes(saved)) ? (saved as any) : 'setup';
   });
+
+  // Tooltip hooks
+  const muscleSelectorTooltip = useTooltip('tracker_muscle_selector');
+  const muscleSelectorRef = useRef<HTMLDivElement>(null);
   const [selectedMuscles, setSelectedMuscles] = useState<string[]>(() => {
     return safeStorage.getParsed<string[]>('neuroLift_tracker_muscles', []);
   });
@@ -517,27 +523,40 @@ export const Tracker: React.FC = () => {
 
   const MuscleChecklist = () => {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-4xl mx-auto px-4 mb-16">
-        {selectableMuscles.map((muscle) => (
-          <button
-            key={muscle}
-            onClick={() => toggleMuscle(muscle)}
-            className={`group relative flex flex-col p-6 rounded-3xl border transition-all duration-300 ${selectedMuscles.includes(muscle)
-              ? 'bg-teal-500 border-teal-500 shadow-[0_0_25px_rgba(20,184,166,0.2)]'
-              : 'bg-zinc-900/40 border-zinc-800 hover:border-zinc-700 shadow-sm hover:shadow-md'
-              }`}
-          >
-            <div className="flex items-center justify-end mb-2">
-              <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${selectedMuscles.includes(muscle) ? 'bg-white border-white' : 'border-zinc-700 group-hover:border-zinc-600'}`}>
-                {selectedMuscles.includes(muscle) && <svg className="w-3 h-3 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>}
+      <>
+        <div ref={muscleSelectorRef} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-4xl mx-auto px-4 mb-16">
+          {selectableMuscles.map((muscle) => (
+            <button
+              key={muscle}
+              onClick={() => toggleMuscle(muscle)}
+              className={`group relative flex flex-col p-6 rounded-3xl border transition-all duration-300 ${selectedMuscles.includes(muscle)
+                ? 'bg-teal-500 border-teal-500 shadow-[0_0_25px_rgba(20,184,166,0.2)]'
+                : 'bg-zinc-900/40 border-zinc-800 hover:border-zinc-700 shadow-sm hover:shadow-md'
+                }`}
+            >
+              <div className="flex items-center justify-end mb-2">
+                <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${selectedMuscles.includes(muscle) ? 'bg-white border-white' : 'border-zinc-700 group-hover:border-zinc-600'}`}>
+                  {selectedMuscles.includes(muscle) && <svg className="w-3 h-3 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>}
+                </div>
               </div>
-            </div>
-            <span className={`text-xl font-black text-left transition-colors ${selectedMuscles.includes(muscle) ? 'text-white' : 'text-white'}`}>
-              {getLocalizedMuscleName(muscle, language)}
-            </span>
-          </button>
-        ))}
-      </div>
+              <span className={`text-xl font-black text-left transition-colors ${selectedMuscles.includes(muscle) ? 'text-white' : 'text-white'}`}>
+                {getLocalizedMuscleName(muscle, language)}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        <Tooltip
+          id="tracker_muscle_selector"
+          isOpen={muscleSelectorTooltip.isOpen}
+          onDismiss={muscleSelectorTooltip.dismiss}
+          position="bottom"
+          targetRef={muscleSelectorRef}
+        >
+          <p className="text-sm font-bold mb-1">{t('tooltip_muscle_selector_title')}</p>
+          <p className="text-xs opacity-90">{t('tooltip_muscle_selector_desc')}</p>
+        </Tooltip>
+      </>
     );
   };
 

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '../contexts/LanguageContext';
 import { SpotlightButton } from './ui/SpotlightButton';
@@ -7,6 +7,8 @@ import { Modal } from './ui/Modal';
 import { safeStorage } from '../utils/storage';
 import { CompletedWorkout } from '../types';
 import { getMuscleForExercise, getLocalizedMuscleName, getSubMuscleForExercise } from '../utils/exerciseData';
+import { Tooltip } from './ui/Tooltip';
+import { useTooltip } from '../hooks/useTooltip';
 import { hasRealWorkouts } from '../utils/demoData';
 
 interface DashboardProps {
@@ -20,6 +22,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentView }) => {
     const [selectedMuscle, setSelectedMuscle] = useState('Total');
     const [activeIndex, setActiveIndex] = useState(0);
     const [hasRealWorkoutsState, setHasRealWorkoutsState] = useState(hasRealWorkouts());
+
+    // Tooltip hooks
+    const volumeChartTooltip = useTooltip('dashboard_volume_chart');
+    const chartRef = useRef<HTMLDivElement>(null);
 
     const muscleGroups = ['Total', 'Chest', 'Back', 'Shoulders', 'Legs', 'Biceps', 'Triceps', 'Forearms', 'Core', 'Cardio'];
 
@@ -217,23 +223,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentView }) => {
 
     const renderVolumeChartCard = () => {
         if (!chartData) return null;
-        return (
-            <Card className="p-8 bg-zinc-900/40 border-zinc-800 rounded-[3rem] shadow-sm h-full">
-                <div className="flex justify-between items-center mb-10">
-                    <div>
-                        <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.4em]">Volume Progress</h3>
-                        <div className="text-[9px] text-teal-500 font-bold uppercase tracking-widest mt-1 opacity-70">7 Sessions</div>
-                    </div>
-                    <select
-                        value={selectedMuscle}
-                        onChange={(e) => setSelectedMuscle(e.target.value)}
-                        className="bg-zinc-800/50 border border-zinc-800 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest text-teal-400 outline-none focus:border-teal-500 transition-all cursor-pointer"
-                    >
-                        {muscleGroups.map(m => (
-                            <option key={m} value={m}>{m === 'Total' ? 'Overall' : getLocalizedMuscleName(m, language)}</option>
-                        ))}
-                    </select>
-                </div>
+    return (
+      <Card className="p-8 bg-zinc-900/40 border-zinc-800 rounded-[3rem] shadow-sm h-full">
+        <div ref={chartRef} className="flex justify-between items-center mb-10">
+          <div>
+            <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.4em]">Volume Progress</h3>
+            <div className="text-[9px] text-teal-500 font-bold uppercase tracking-widest mt-1 opacity-70">7 Sessions</div>
+          </div>
+          <select
+            value={selectedMuscle}
+            onChange={(e) => setSelectedMuscle(e.target.value)}
+            className="bg-zinc-800/50 border border-zinc-800 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest text-teal-400 outline-none focus:border-teal-500 transition-all cursor-pointer"
+          >
+            {muscleGroups.map(m => (
+              <option key={m} value={m}>{m === 'Total' ? 'Overall' : getLocalizedMuscleName(m, language)}</option>
+            ))}
+          </select>
+        </div>
 
                 <div className="relative h-48 w-full group">
                     <svg viewBox="0 0 300 100" className="w-full h-full drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)]">
@@ -289,11 +295,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentView }) => {
                     <div className="flex justify-between mt-6 text-[9px] text-zinc-600 font-black uppercase tracking-widest px-2">
                         <span>{chartData.data[0].date}</span>
                         <span>{chartData.data[chartData.data.length - 1].date}</span>
-                    </div>
-                </div>
-            </Card>
-        );
-    };
+          </div>
+        </div>
+
+        <Tooltip
+          id="dashboard_volume_chart"
+          isOpen={volumeChartTooltip.isOpen}
+          onDismiss={volumeChartTooltip.dismiss}
+          position="top"
+          targetRef={chartRef}
+        >
+          <p className="text-sm font-bold mb-1">{t('tooltip_volume_chart_title')}</p>
+          <p className="text-xs opacity-90">{t('tooltip_volume_chart_desc')}</p>
+        </Tooltip>
+      </Card>
+    );
+  };
 
     const renderQuickStartCard = () => {
         if (!hasRealWorkoutsState) {
