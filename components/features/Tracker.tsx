@@ -20,7 +20,13 @@ import { hapticFeedback } from '../../utils/haptics';
 import { exerciseHistoryService } from '../../utils/exerciseHistory';
 
 export const Tracker: React.FC = () => {
-  const { t, language } = useLanguage();
+  const {
+    t,
+    language
+  } = useLanguage();
+
+
+
   const [phase, setPhase] = useState<'setup' | 'selection' | 'active' | 'summary'>(() => {
     const saved = safeStorage.getItem('neuroLift_tracker_phase');
     const validPhases = ['setup', 'selection', 'active', 'summary'];
@@ -52,9 +58,7 @@ export const Tracker: React.FC = () => {
   const [templateDeleteConfirm, setTemplateDeleteConfirm] = useState<{ id: string, name: string } | null>(null);
   const [exerciseToDelete, setExerciseToDelete] = useState<{ name: string, index: number } | null>(null);
 
-  // Independent rest timer (separate from global clock)
-  const [restTimerActive, setRestTimerActive] = useState(false);
-  const [restTimerRemaining, setRestTimerRemaining] = useState<number | null>(null);
+
 
   const confirmDeleteExercise = () => {
     if (exerciseToDelete) {
@@ -95,20 +99,30 @@ export const Tracker: React.FC = () => {
 
   const phaseOrder = ['setup', 'selection', 'active', 'summary'];
 
-  // Use Global Clock for Workouts
+  // Use Global Clock for Workouts (Decoupled from Utility Clock)
   const {
-    mode, setMode,
-    timerActive, setTimerActive,
-    duration, setDuration,
-    countdownRemaining,
-    countdownMinutes, setCountdownMinutes,
-    countdownSeconds, setCountdownSeconds,
-    laps, addLap,
-    resetClock,
-    startTimer,
-    restRemaining,
-    setRestRemaining
+    workoutDuration, setWorkoutDuration,
+    isWorkoutActive, setIsWorkoutActive,
+    resetWorkout,
+
+    // Utility clock access if needed (but NOT for workout logic)
+    // We remove duration/timerActive from here to prevent Accidental usage for workout
+
+    // Rest Timer
+    startRestTimer,
+    stopRestTimer,
+    restRemaining
   } = useClock();
+
+  // Alias for legacy code compatibility (will replace usages next)
+  const duration = workoutDuration;
+  const timerActive = isWorkoutActive;
+  const setTimerActive = setIsWorkoutActive;
+  const resetClock = resetWorkout;
+  const setDuration = setWorkoutDuration;
+
+  const restTimerRemaining = restRemaining;
+  const restTimerActive = restRemaining !== null;
 
   // Active Exercises as separate effect to avoid context lag if needed, or just keep in useClock
   // but for now let's use the one from Tracker to keep logic separate
@@ -315,7 +329,7 @@ export const Tracker: React.FC = () => {
     // Only reset/start timer if this is a fresh start (duration is 0)
     if (duration === 0 && !timerActive) {
       setTimerActive(true);
-      setMode('stopwatch');
+      // setMode('stopwatch'); // Removed: Workout timer is independent
       setDuration(0);
     } else if (!timerActive) {
       setTimerActive(true);
@@ -446,13 +460,7 @@ export const Tracker: React.FC = () => {
     setShowResetConfirm(true);
   };
 
-  const startTimerMode = () => {
-    const mins = parseInt(countdownMinutes) || 0;
-    const secs = parseInt(countdownSeconds) || 0;
-    if (mins > 0 || secs > 0) {
-      startTimer(mins, secs);
-    }
-  };
+
 
   const handleShareWorkout = async () => {
     try {
@@ -595,34 +603,9 @@ export const Tracker: React.FC = () => {
     }
   };
 
-  // Independent rest timer logic
-  useEffect(() => {
-    let interval: any;
-    if (restTimerActive && restTimerRemaining !== null && restTimerRemaining > 0) {
-      interval = setInterval(() => {
-        setRestTimerRemaining(prev => {
-          if (prev !== null && prev > 1) {
-            return prev - 1;
-          } else {
-            setRestTimerActive(false);
-            playNotificationSound();
-            return null;
-          }
-        });
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [restTimerActive, restTimerRemaining]);
+  // Global rest timer from logic
+  // Removed local logic - handled in ClockContext now
 
-  const startRestTimer = (seconds: number) => {
-    setRestTimerRemaining(seconds);
-    setRestTimerActive(true);
-  };
-
-  const stopRestTimer = () => {
-    setRestTimerActive(false);
-    setRestTimerRemaining(null);
-  };
 
 
   const MuscleChecklist = () => {
@@ -1166,12 +1149,12 @@ export const Tracker: React.FC = () => {
                   </AnimatePresence>
 
                   <span className="text-[10px] font-black text-zinc-300 uppercase tracking-[0.3em] mb-4">
-                    {mode === 'stopwatch' ? t('tracker_total_time') : t('tracker_time_remaining')}
+                    {t('tracker_total_time')}
                   </span>
 
                   <div className="flex items-center gap-6">
                     <div className="text-7xl md:text-8xl font-black text-teal-400 font-mono tracking-tighter drop-shadow-[0_0_30px_rgba(20,184,166,0.3)]">
-                      {mode === 'stopwatch' ? formatTime(duration) : formatTime(countdownRemaining || 0)}
+                      {formatTime(duration)}
                     </div>
                   </div>
                 </div>
@@ -1180,15 +1163,7 @@ export const Tracker: React.FC = () => {
                 <div className="flex items-center justify-center gap-4">
                   <button
                     onClick={() => {
-                      if (!timerActive) {
-                        // If starting and we're in timer mode but it's done/empty, switch back to stopwatch
-                        if (mode === 'timer' && (!countdownRemaining || countdownRemaining === 0)) {
-                          setMode('stopwatch');
-                        }
-                        setTimerActive(true);
-                      } else {
-                        setTimerActive(false);
-                      }
+                      setTimerActive(!timerActive);
                     }}
                     className={`w-16 h-16 rounded-2xl flex items-center justify-center text-white transition-all shadow-2xl ${timerActive ? 'bg-amber-500 shadow-amber-500/30' : 'bg-teal-500 shadow-teal-500/30'}`}
                   >
@@ -1531,26 +1506,26 @@ export const Tracker: React.FC = () => {
                     {template.exercises.length} {t('tracker_exercises')} • {t('tracker_created')} {new Date(template.createdAt).toLocaleDateString()}
                   </div>
                 </button>
-                 <div className="flex gap-1 opacity-0 group-hover:opacity-100">
-                   <button
-                     onClick={() => editTemplate(template)}
-                     className="p-2 text-zinc-700 hover:text-teal-500 transition-colors"
-                     title="Edit template"
-                   >
-                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                     </svg>
-                   </button>
-                   <button
-                     onClick={() => deleteTemplate(template.id)}
-                     className="p-2 text-zinc-700 hover:text-rose-500 transition-colors"
-                     title="Delete template"
-                   >
-                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                     </svg>
-                   </button>
-                 </div>
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100">
+                  <button
+                    onClick={() => editTemplate(template)}
+                    className="p-2 text-zinc-700 hover:text-teal-500 transition-colors"
+                    title="Edit template"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => deleteTemplate(template.id)}
+                    className="p-2 text-zinc-700 hover:text-rose-500 transition-colors"
+                    title="Delete template"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -1562,147 +1537,147 @@ export const Tracker: React.FC = () => {
             {t('modal_close')}
           </button>
         </div>
-       </Modal>
+      </Modal>
 
-       {/* Edit Template Modal */}
-       <Modal isOpen={showEditTemplateModal} onClose={() => setShowEditTemplateModal(false)}>
-         <div className="relative w-full max-w-4xl rounded-[3rem] border border-zinc-800 bg-zinc-950 p-8 shadow-3xl overflow-hidden max-h-[90vh] flex flex-col">
-           <div className="absolute top-0 left-0 w-full h-2 bg-teal-500"></div>
-           <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-8 flex items-center gap-3 flex-shrink-0">
-             <span className="w-2 h-6 bg-teal-500 rounded-full"></span>
-             {t('tracker_save_template')} - {editingTemplate?.name}
-           </h3>
+      {/* Edit Template Modal */}
+      <Modal isOpen={showEditTemplateModal} onClose={() => setShowEditTemplateModal(false)}>
+        <div className="relative w-full max-w-4xl rounded-[3rem] border border-zinc-800 bg-zinc-950 p-8 shadow-3xl overflow-hidden max-h-[90vh] flex flex-col">
+          <div className="absolute top-0 left-0 w-full h-2 bg-teal-500"></div>
+          <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-8 flex items-center gap-3 flex-shrink-0">
+            <span className="w-2 h-6 bg-teal-500 rounded-full"></span>
+            {t('tracker_save_template')} - {editingTemplate?.name}
+          </h3>
 
-           <div className="space-y-6 overflow-y-auto flex-1 pr-2 custom-scrollbar">
-             {/* Template Exercises */}
-             <div className="space-y-4">
-               <h4 className="text-sm font-black text-zinc-400 uppercase tracking-widest">Exercises</h4>
-               {editingTemplate?.exercises.map((exercise, index) => (
-                 <Card key={index} className="p-4 bg-zinc-900/50 border-zinc-800">
-                   <div className="flex items-center justify-between mb-3">
-                     <h5 className="text-sm font-bold text-white">{exercise.name}</h5>
-                     <button
-                       onClick={() => removeExerciseFromTemplate(index)}
-                       className="p-1 text-zinc-500 hover:text-rose-500 transition-colors"
-                     >
-                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                       </svg>
-                     </button>
-                   </div>
-                   <div className="grid grid-cols-3 gap-3">
-                     <div>
-                       <label className="block text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Sets</label>
-                       <input
-                         type="number"
-                         value={exercise.targetSets}
-                         onChange={(e) => updateTemplateExercise(index, 'targetSets', parseInt(e.target.value) || 1)}
-                         className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm"
-                         min="1"
-                         max="10"
-                       />
-                     </div>
-                     <div>
-                       <label className="block text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Reps</label>
-                       <input
-                         type="text"
-                         value={exercise.targetReps}
-                         onChange={(e) => updateTemplateExercise(index, 'targetReps', e.target.value)}
-                         className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm"
-                         placeholder="10-12"
-                       />
-                     </div>
-                     <div>
-                       <label className="block text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Notes</label>
-                       <input
-                         type="text"
-                         value={exercise.notes || ''}
-                         onChange={(e) => updateTemplateExercise(index, 'notes', e.target.value)}
-                         className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm"
-                         placeholder="Optional notes"
-                       />
-                     </div>
-                   </div>
-                 </Card>
-               ))}
-             </div>
+          <div className="space-y-6 overflow-y-auto flex-1 pr-2 custom-scrollbar">
+            {/* Template Exercises */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-black text-zinc-400 uppercase tracking-widest">Exercises</h4>
+              {editingTemplate?.exercises.map((exercise, index) => (
+                <Card key={index} className="p-4 bg-zinc-900/50 border-zinc-800">
+                  <div className="flex items-center justify-between mb-3">
+                    <h5 className="text-sm font-bold text-white">{exercise.name}</h5>
+                    <button
+                      onClick={() => removeExerciseFromTemplate(index)}
+                      className="p-1 text-zinc-500 hover:text-rose-500 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Sets</label>
+                      <input
+                        type="number"
+                        value={exercise.targetSets}
+                        onChange={(e) => updateTemplateExercise(index, 'targetSets', parseInt(e.target.value) || 1)}
+                        className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm"
+                        min="1"
+                        max="10"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Reps</label>
+                      <input
+                        type="text"
+                        value={exercise.targetReps}
+                        onChange={(e) => updateTemplateExercise(index, 'targetReps', e.target.value)}
+                        className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm"
+                        placeholder="10-12"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Notes</label>
+                      <input
+                        type="text"
+                        value={exercise.notes || ''}
+                        onChange={(e) => updateTemplateExercise(index, 'notes', e.target.value)}
+                        className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm"
+                        placeholder="Optional notes"
+                      />
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
 
-             {/* Add Exercise from Library */}
-             <div className="space-y-4">
-               <h4 className="text-sm font-black text-zinc-400 uppercase tracking-widest">Add Exercise from Library</h4>
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto custom-scrollbar">
-                 {Object.entries(exercisesByMuscle).map(([muscle, subCats]) =>
-                   Object.entries(subCats).map(([subCat, categories]) =>
-                     Object.entries(categories).map(([category, exercises]) =>
-                       exercises
-                         .filter(ex => !editingTemplate?.exercises.some(te => te.name === ex))
-                         .map(exercise => (
-                           <button
-                             key={exercise}
-                             onClick={() => addExerciseToTemplate(exercise)}
-                             className="p-3 bg-zinc-900/30 border border-zinc-800 rounded-lg text-left hover:border-teal-500/50 hover:bg-teal-500/10 transition-all"
-                           >
-                             <div className="text-sm font-bold text-white">{exercise}</div>
-                             <div className="text-xs text-zinc-500 uppercase tracking-widest">{muscle}</div>
-                           </button>
-                         ))
-                     )
-                   )
-                 ).flat(2)}
-               </div>
-             </div>
-           </div>
+            {/* Add Exercise from Library */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-black text-zinc-400 uppercase tracking-widest">Add Exercise from Library</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto custom-scrollbar">
+                {Object.entries(exercisesByMuscle).map(([muscle, subCats]) =>
+                  Object.entries(subCats).map(([subCat, categories]) =>
+                    Object.entries(categories).map(([category, exercises]) =>
+                      exercises
+                        .filter(ex => !editingTemplate?.exercises.some(te => te.name === ex))
+                        .map(exercise => (
+                          <button
+                            key={exercise}
+                            onClick={() => addExerciseToTemplate(exercise)}
+                            className="p-3 bg-zinc-900/30 border border-zinc-800 rounded-lg text-left hover:border-teal-500/50 hover:bg-teal-500/10 transition-all"
+                          >
+                            <div className="text-sm font-bold text-white">{exercise}</div>
+                            <div className="text-xs text-zinc-500 uppercase tracking-widest">{muscle}</div>
+                          </button>
+                        ))
+                    )
+                  )
+                ).flat(2)}
+              </div>
+            </div>
+          </div>
 
-           <div className="flex gap-3 mt-6 pt-6 border-t border-zinc-900 flex-shrink-0">
-             <button
-               onClick={() => setShowEditTemplateModal(false)}
-               className="flex-1 py-3 text-zinc-600 hover:text-white font-black uppercase tracking-widest transition-all"
-             >
-               {t('tracker_cancel')}
-             </button>
-             <button
-               onClick={saveEditedTemplate}
-               className="flex-1 py-3 bg-teal-500 hover:bg-teal-400 text-white font-black uppercase tracking-widest rounded-lg transition-all"
-             >
-               {t('tracker_save')}
-             </button>
-           </div>
-         </div>
-       </Modal>
+          <div className="flex gap-3 mt-6 pt-6 border-t border-zinc-900 flex-shrink-0">
+            <button
+              onClick={() => setShowEditTemplateModal(false)}
+              className="flex-1 py-3 text-zinc-600 hover:text-white font-black uppercase tracking-widest transition-all"
+            >
+              {t('tracker_cancel')}
+            </button>
+            <button
+              onClick={saveEditedTemplate}
+              className="flex-1 py-3 bg-teal-500 hover:bg-teal-400 text-white font-black uppercase tracking-widest rounded-lg transition-all"
+            >
+              {t('tracker_save')}
+            </button>
+          </div>
+        </div>
+      </Modal>
 
-       {/* Template Delete Confirmation Modal */}
-       <Modal isOpen={templateDeleteConfirm !== null} onClose={() => setTemplateDeleteConfirm(null)}>
-         <div className="p-8 bg-zinc-950 border border-zinc-900 rounded-[3rem] text-center space-y-6 relative overflow-hidden">
-           <div className="absolute top-0 left-0 w-full h-2 bg-rose-500"></div>
-           <div className="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto text-rose-500 mb-4">
-             <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-             </svg>
-           </div>
-           <h3 className="text-2xl font-black text-white uppercase italic tracking-tight">
-             {t('confirm_delete_workout')}
-           </h3>
-           <p className="text-zinc-400 font-bold text-sm leading-relaxed">
-             Are you sure you want to delete "{templateDeleteConfirm?.name}"? This action cannot be undone.
-           </p>
-           <div className="flex gap-3">
-             <button
-               onClick={() => setTemplateDeleteConfirm(null)}
-               className="flex-1 py-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-zinc-400 hover:text-white font-black uppercase tracking-widest transition-colors"
-             >
-               {t('confirm_cancel')}
-             </button>
-             <button
-               onClick={confirmDeleteTemplate}
-               className="flex-1 py-4 bg-rose-500 hover:bg-rose-600 text-white font-black uppercase tracking-widest rounded-2xl transition-colors"
-             >
-               {t('confirm_yes')}
-             </button>
-           </div>
-         </div>
-       </Modal>
+      {/* Template Delete Confirmation Modal */}
+      <Modal isOpen={templateDeleteConfirm !== null} onClose={() => setTemplateDeleteConfirm(null)}>
+        <div className="p-8 bg-zinc-950 border border-zinc-900 rounded-[3rem] text-center space-y-6 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-2 bg-rose-500"></div>
+          <div className="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto text-rose-500 mb-4">
+            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </div>
+          <h3 className="text-2xl font-black text-white uppercase italic tracking-tight">
+            {t('confirm_delete_workout')}
+          </h3>
+          <p className="text-zinc-400 font-bold text-sm leading-relaxed">
+            Are you sure you want to delete "{templateDeleteConfirm?.name}"? This action cannot be undone.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setTemplateDeleteConfirm(null)}
+              className="flex-1 py-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-zinc-400 hover:text-white font-black uppercase tracking-widest transition-colors"
+            >
+              {t('confirm_cancel')}
+            </button>
+            <button
+              onClick={confirmDeleteTemplate}
+              className="flex-1 py-4 bg-rose-500 hover:bg-rose-600 text-white font-black uppercase tracking-widest rounded-2xl transition-colors"
+            >
+              {t('confirm_yes')}
+            </button>
+          </div>
+        </div>
+      </Modal>
 
-       {/* ... other modals ... */}
+      {/* ... other modals ... */}
     </div>
   );
 };

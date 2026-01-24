@@ -145,7 +145,7 @@ function App() {
                       setCurrentView={handleSetView}
                     />
 
-                    <main className="flex-1 pt-16 pb-[calc(8rem+env(safe-area-inset-bottom))] min-h-screen relative overflow-x-hidden">
+                    <main className="flex-1 pt-[calc(5rem+env(safe-area-inset-top))] pb-[calc(8rem+env(safe-area-inset-bottom))] min-h-screen relative overflow-x-hidden">
                       <AnimatePresence mode="wait">
                         {renderView()}
                       </AnimatePresence>

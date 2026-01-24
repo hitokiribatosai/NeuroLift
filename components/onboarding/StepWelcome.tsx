@@ -7,7 +7,7 @@ interface StepWelcomeProps {
 }
 
 export const StepWelcome: React.FC<StepWelcomeProps> = ({ onNext }) => {
-    const { t } = useLanguage();
+    const { t, language, setLanguage } = useLanguage();
 
     return (
         <div className="flex flex-col items-center justify-center h-full text-center px-6 animate-in fade-in duration-700">
@@ -24,6 +24,39 @@ export const StepWelcome: React.FC<StepWelcomeProps> = ({ onNext }) => {
             <p className="text-xl text-zinc-400 max-w-md mb-12 leading-relaxed">
                 {t('onboarding_welcome_subtitle')}
             </p>
+
+            <div className="flex gap-3 mb-12">
+                <button
+                    onClick={() => {
+                        setLanguage('en');
+                        document.documentElement.dir = 'ltr';
+                        document.documentElement.lang = 'en';
+                    }}
+                    className={`px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wider transition-all border-2 ${language === 'en' ? 'bg-teal-500 border-teal-500 text-white shadow-lg shadow-teal-500/20' : 'border-zinc-800 text-zinc-500 hover:text-white hover:border-zinc-700'}`}
+                >
+                    English
+                </button>
+                <button
+                    onClick={() => {
+                        setLanguage('fr');
+                        document.documentElement.dir = 'ltr';
+                        document.documentElement.lang = 'fr';
+                    }}
+                    className={`px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wider transition-all border-2 ${language === 'fr' ? 'bg-teal-500 border-teal-500 text-white shadow-lg shadow-teal-500/20' : 'border-zinc-800 text-zinc-500 hover:text-white hover:border-zinc-700'}`}
+                >
+                    Français
+                </button>
+                <button
+                    onClick={() => {
+                        setLanguage('ar');
+                        document.documentElement.dir = 'rtl';
+                        document.documentElement.lang = 'ar';
+                    }}
+                    className={`px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wider transition-all border-2 ${language === 'ar' ? 'bg-teal-500 border-teal-500 text-white shadow-lg shadow-teal-500/20' : 'border-zinc-800 text-zinc-500 hover:text-white hover:border-zinc-700'}`}
+                >
+                    العربية
+                </button>
+            </div>
 
             <SpotlightButton onClick={onNext} className="w-full max-w-xs py-5 text-lg font-black uppercase tracking-[0.2em]">
                 {t('onboarding_get_started')}

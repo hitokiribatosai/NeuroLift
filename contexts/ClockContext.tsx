@@ -31,6 +31,8 @@ interface ClockContextType {
     addLap: () => void;
     resetClock: () => void;
     startTimer: (mins: number, secs: number) => void;
+    startRestTimer: (seconds: number) => void;
+    stopRestTimer: () => void;
     restRemaining: number | null;
     setRestRemaining: (seconds: number | null) => void;
 }
@@ -39,12 +41,25 @@ const ClockContext = createContext<ClockContextType | undefined>(undefined);
 
 export const ClockProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     // --- WORKOUT TIMER STATE (Tracker) ---
-    const [workoutDuration, setWorkoutDuration] = useState(() => {
-        const saved = safeStorage.getItem('neuroLift_workout_duration');
+    const [workoutStartTime, setWorkoutStartTime] = useState<number | null>(() => {
+        const saved = safeStorage.getItem('neuroLift_workout_start_time');
+        return saved ? parseInt(saved) : null;
+    });
+    const [pausedDuration, setPausedDuration] = useState(() => {
+        const saved = safeStorage.getItem('neuroLift_workout_paused_duration');
         return saved ? parseInt(saved) : 0;
     });
+    // We still expose a duration number for UI, but it's derived/updated via effect
+    const [workoutDuration, setWorkoutDuration] = useState(0);
+
     const [isWorkoutActive, setIsWorkoutActive] = useState(() => {
-        return safeStorage.getItem('neuroLift_workout_active') === 'true';
+        const active = safeStorage.getItem('neuroLift_workout_active') === 'true';
+        // If active on load, restore start time if missing (fallback)
+        if (active && !safeStorage.getItem('neuroLift_workout_start_time')) {
+            // If we lost the start time but think we are active, reset to avoid bugs
+            return false;
+        }
+        return active;
     });
 
     // --- UTILITY CLOCK STATE (Clock Tab) ---
@@ -82,7 +97,12 @@ export const ClockProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     // Persistence
     useEffect(() => {
-        safeStorage.setItem('neuroLift_workout_duration', workoutDuration.toString());
+        if (workoutStartTime) {
+            safeStorage.setItem('neuroLift_workout_start_time', workoutStartTime.toString());
+        } else {
+            safeStorage.removeItem('neuroLift_workout_start_time');
+        }
+        safeStorage.setItem('neuroLift_workout_paused_duration', pausedDuration.toString());
         safeStorage.setItem('neuroLift_workout_active', isWorkoutActive.toString());
 
         safeStorage.setItem('neuroLift_clock_mode', utilityMode);
@@ -93,16 +113,32 @@ export const ClockProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         safeStorage.setItem('neuroLift_clock_mins', countdownMinutes);
         safeStorage.setItem('neuroLift_clock_secs', countdownSeconds);
         safeStorage.setItem('neuroLift_clock_laps', JSON.stringify(laps));
-    }, [workoutDuration, isWorkoutActive, utilityMode, isUtilityActive, utilityDuration, utilityCountdown, countdownMinutes, countdownSeconds, laps]);
+    }, [workoutStartTime, pausedDuration, isWorkoutActive, utilityMode, isUtilityActive, utilityDuration, utilityCountdown, countdownMinutes, countdownSeconds, laps]);
+
+    // Visibility Change Handler (for background resume)
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible' && isWorkoutActive && workoutStartTime) {
+                // Update immediately on resume
+                const now = Date.now();
+                const totalElapsed = Math.floor((now - workoutStartTime) / 1000);
+                setWorkoutDuration(pausedDuration + totalElapsed);
+            }
+        };
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }, [isWorkoutActive, workoutStartTime, pausedDuration]);
 
     // Timer Logic
     useEffect(() => {
         let interval: any;
         if (isWorkoutActive || isUtilityActive || (restRemaining !== null && restRemaining > 0)) {
             interval = setInterval(() => {
-                // Workout Timer (Always counts up if active)
-                if (isWorkoutActive) {
-                    setWorkoutDuration(d => d + 1);
+                // Workout Timer (Timestamp based)
+                if (isWorkoutActive && workoutStartTime) {
+                    const now = Date.now();
+                    const totalElapsed = Math.floor((now - workoutStartTime) / 1000);
+                    setWorkoutDuration(pausedDuration + totalElapsed);
                 }
 
                 // Utility Clock
@@ -128,7 +164,7 @@ export const ClockProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             }, 1000);
         }
         return () => clearInterval(interval);
-    }, [isWorkoutActive, isUtilityActive, utilityMode, utilityCountdown, restRemaining]);
+    }, [isWorkoutActive, workoutStartTime, pausedDuration, isUtilityActive, utilityMode, utilityCountdown, restRemaining]);
 
     const addLap = () => {
         if (utilityMode === 'stopwatch') {
@@ -145,7 +181,11 @@ export const ClockProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     const resetWorkout = () => {
         setWorkoutDuration(0);
+        setPausedDuration(0);
+        setWorkoutStartTime(null);
         setIsWorkoutActive(false);
+        safeStorage.removeItem('neuroLift_workout_start_time');
+        safeStorage.removeItem('neuroLift_workout_paused_duration');
     };
 
     const startTimer = (mins: number, secs: number) => {
@@ -157,11 +197,40 @@ export const ClockProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         }
     };
 
+    const startRestTimer = (seconds: number) => {
+        const now = Date.now();
+        const endTime = now + (seconds * 1000);
+        setRestEndTime(endTime);
+        setRestRemaining(seconds);
+    };
+
+    const stopRestTimer = () => {
+        setRestEndTime(null);
+        setRestRemaining(null);
+        safeStorage.removeItem('neuroLift_rest_end_time');
+    };
+
+    const handleSetIsWorkoutActive = (active: boolean) => {
+        if (active) {
+            if (!workoutStartTime) {
+                setWorkoutStartTime(Date.now());
+            } else {
+                // Resuming? (If you had pause logic, you'd adjust start time here. 
+                // For now assuming simple start/stop means reset or continue)
+            }
+        }
+        // Current logic seems to be start = active=true. 
+        // If we STOP, do we reset? The original code had resetWorkout separately.
+        setIsWorkoutActive(active);
+    };
+
     return (
         <ClockContext.Provider value={{
             // Workout State
-            workoutDuration, setWorkoutDuration,
-            isWorkoutActive, setIsWorkoutActive,
+            workoutDuration,
+            setWorkoutDuration, // exposed but mostly managed internally
+            isWorkoutActive,
+            setIsWorkoutActive: handleSetIsWorkoutActive,
             resetWorkout,
 
             // Utility Clock State
@@ -176,8 +245,12 @@ export const ClockProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             laps, addLap,
             resetClock,
             startTimer,
+
+            // Rest Timer
             restRemaining,
-            setRestRemaining
+            setRestRemaining,
+            startRestTimer,
+            stopRestTimer
         }}>
             {children}
         </ClockContext.Provider>
