@@ -88,6 +88,12 @@ export const ClockProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [laps, setLaps] = useState<number[]>(() => {
         return safeStorage.getParsed<number[]>('neuroLift_clock_laps', []);
     });
+
+    // Rest Timer State (Missing previously)
+    const [restEndTime, setRestEndTime] = useState<number | null>(() => {
+        const saved = safeStorage.getItem('neuroLift_rest_end_time');
+        return saved ? parseInt(saved) : null;
+    });
     const [restRemaining, setRestRemaining] = useState<number | null>(null);
 
     // Initial Registration
@@ -113,30 +119,49 @@ export const ClockProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         safeStorage.setItem('neuroLift_clock_mins', countdownMinutes);
         safeStorage.setItem('neuroLift_clock_secs', countdownSeconds);
         safeStorage.setItem('neuroLift_clock_laps', JSON.stringify(laps));
-    }, [workoutStartTime, pausedDuration, isWorkoutActive, utilityMode, isUtilityActive, utilityDuration, utilityCountdown, countdownMinutes, countdownSeconds, laps]);
+
+        if (restEndTime) {
+            safeStorage.setItem('neuroLift_rest_end_time', restEndTime.toString());
+        } else {
+            safeStorage.removeItem('neuroLift_rest_end_time');
+        }
+    }, [workoutStartTime, pausedDuration, isWorkoutActive, utilityMode, isUtilityActive, utilityDuration, utilityCountdown, countdownMinutes, countdownSeconds, laps, restEndTime]);
 
     // Visibility Change Handler (for background resume)
     useEffect(() => {
         const handleVisibilityChange = () => {
-            if (document.visibilityState === 'visible' && isWorkoutActive && workoutStartTime) {
-                // Update immediately on resume
+            if (document.visibilityState === 'visible') {
                 const now = Date.now();
-                const totalElapsed = Math.floor((now - workoutStartTime) / 1000);
-                setWorkoutDuration(pausedDuration + totalElapsed);
+                // Workout update
+                if (isWorkoutActive && workoutStartTime) {
+                    const totalElapsed = Math.floor((now - workoutStartTime) / 1000);
+                    setWorkoutDuration(pausedDuration + totalElapsed);
+                }
+                // Rest timer update
+                if (restEndTime) {
+                    const remaining = Math.max(0, Math.ceil((restEndTime - now) / 1000));
+                    setRestRemaining(remaining > 0 ? remaining : null);
+                    if (remaining <= 0) setRestEndTime(null);
+                }
             }
         };
         document.addEventListener('visibilitychange', handleVisibilityChange);
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-    }, [isWorkoutActive, workoutStartTime, pausedDuration]);
+    }, [isWorkoutActive, workoutStartTime, pausedDuration, restEndTime]);
 
     // Timer Logic
     useEffect(() => {
         let interval: any;
-        if (isWorkoutActive || isUtilityActive || (restRemaining !== null && restRemaining > 0)) {
+        const anyTimerActive = (isWorkoutActive && workoutStartTime) ||
+            isUtilityActive ||
+            (restEndTime !== null);
+
+        if (anyTimerActive) {
             interval = setInterval(() => {
+                const now = Date.now();
+
                 // Workout Timer (Timestamp based)
                 if (isWorkoutActive && workoutStartTime) {
-                    const now = Date.now();
                     const totalElapsed = Math.floor((now - workoutStartTime) / 1000);
                     setWorkoutDuration(pausedDuration + totalElapsed);
                 }
@@ -155,16 +180,20 @@ export const ClockProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 }
 
                 // Rest Timer
-                if (restRemaining !== null && restRemaining > 0) {
-                    setRestRemaining(r => (r !== null ? r - 1 : null));
-                } else if (restRemaining === 0) {
-                    setRestRemaining(null);
-                    playNotificationSound();
+                if (restEndTime) {
+                    const remaining = Math.max(0, Math.ceil((restEndTime - now) / 1000));
+                    if (remaining > 0) {
+                        setRestRemaining(remaining);
+                    } else {
+                        setRestRemaining(null);
+                        setRestEndTime(null);
+                        playNotificationSound();
+                    }
                 }
             }, 1000);
         }
         return () => clearInterval(interval);
-    }, [isWorkoutActive, workoutStartTime, pausedDuration, isUtilityActive, utilityMode, utilityCountdown, restRemaining]);
+    }, [isWorkoutActive, workoutStartTime, pausedDuration, isUtilityActive, utilityMode, utilityCountdown, restEndTime]);
 
     const addLap = () => {
         if (utilityMode === 'stopwatch') {
