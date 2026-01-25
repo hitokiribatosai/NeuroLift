@@ -288,6 +288,8 @@ export const Tracker: React.FC = () => {
     const newIdx = phaseOrder.indexOf(newPhase);
     setDirection(newIdx < oldIdx ? -1 : 1);
     setPhase(newPhase);
+    // Scroll to top on phase change
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const formatTime = (secs: number) => {
