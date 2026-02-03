@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { JournalEntry, CustomMeasurement, CompletedWorkout, ActiveExercise, WorkoutSet } from '../../types';
+import { JournalEntry, CustomMeasurement, CompletedWorkout, ActiveExercise, WorkoutSet, WorkoutTemplate } from '../../types';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { Card } from '../ui/Card';
@@ -26,6 +26,9 @@ export const Journal: React.FC = () => {
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string, type: 'entry' | 'workout' } | null>(null);
   const [shareFeedback, setShareFeedback] = useState(false);
   const [clearDemoConfirm, setClearDemoConfirm] = useState(false);
+  const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
+  const [templateName, setTemplateName] = useState('');
+  const [workoutToTemplate, setWorkoutToTemplate] = useState<CompletedWorkout | null>(null);
 
   useEffect(() => {
     setEntries(safeStorage.getParsed<JournalEntry[]>('neuroLift_journal', []));
@@ -127,13 +130,18 @@ export const Journal: React.FC = () => {
     setDeleteConfirm(null);
   };
 
-  const handleUpdateWorkoutSet = (workoutId: string, exIdx: number, setIdx: number, field: keyof WorkoutSet, val: number) => {
+  const handleUpdateWorkoutSet = (workoutId: string, exIdx: number, setId: string, field: keyof WorkoutSet, val: number) => {
     const updatedHistory = history.map(w => {
       if (w.id === workoutId) {
-        if (!w.exercises[exIdx]?.sets[setIdx]) return w;
+        if (!w.exercises[exIdx]) return w;
         const newExs = [...w.exercises];
         const newSets = [...newExs[exIdx].sets];
-        (newSets[setIdx] as any)[field] = val;
+
+        // Find set by ID instead of using index
+        const setIndex = newSets.findIndex(s => s.id === setId);
+        if (setIndex === -1) return w;
+
+        (newSets[setIndex] as any)[field] = val;
         const updatedEx = { ...newExs[exIdx], sets: newSets };
         newExs[exIdx] = updatedEx;
 
@@ -196,6 +204,31 @@ export const Journal: React.FC = () => {
     }
   };
 
+  const handleSaveAsTemplate = () => {
+    if (!templateName.trim() || !workoutToTemplate) return;
+
+    const newTemplate: WorkoutTemplate = {
+      id: generateId(),
+      name: templateName,
+      exercises: workoutToTemplate.exercises.map(ex => ({
+        name: ex.name,
+        targetSets: ex.sets.filter(s => s.completed).length,
+        targetReps: ex.sets.filter(s => s.completed).map(s => s.reps).join('-'),
+        notes: ''
+      })),
+      createdAt: new Date().toISOString(),
+      lastUsed: new Date().toISOString()
+    };
+
+    const existingTemplates = safeStorage.getParsed<WorkoutTemplate[]>('neuroLift_templates', []);
+    const updatedTemplates = [newTemplate, ...existingTemplates];
+    safeStorage.setItem('neuroLift_templates', JSON.stringify(updatedTemplates));
+
+    setShowSaveTemplateModal(false);
+    setTemplateName('');
+    setWorkoutToTemplate(null);
+  };
+
   const handleShareEntry = async (entry: JournalEntry) => {
     try {
       const text = `My Progress on NeuroLift (${entry.date}):\nWeight: ${entry.weight}kg\n${entry.customMeasurements?.map(m => `${m.name}: ${m.value}${m.unit}`).join('\n')}`;
@@ -254,6 +287,19 @@ export const Journal: React.FC = () => {
                 </svg>
               </button>
               <button
+                onClick={() => {
+                  setWorkoutToTemplate(workout);
+                  setShowSaveTemplateModal(true);
+                }}
+                className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 text-zinc-400 hover:text-teal-500 transition-colors shadow-sm backdrop-blur-sm"
+                style={{ WebkitBackdropFilter: 'blur(8px)' }}
+                title="Save as template"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                </svg>
+              </button>
+              <button
                 onClick={() => handleDeleteWorkout(workout.id)}
                 className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 text-zinc-400 hover:text-rose-500 transition-colors shadow-sm backdrop-blur-sm"
                 style={{ WebkitBackdropFilter: 'blur(8px)' }}
@@ -270,17 +316,17 @@ export const Journal: React.FC = () => {
                 <h4 className="text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tighter mb-1 pr-20">
                   {workout.name || t('tracker_summary')}
                 </h4>
-                 <div className="flex gap-4 items-center">
-                   <span className="text-teal-600 dark:text-teal-400 font-black text-[10px] uppercase tracking-widest">{workout.date}</span>
-                   {workout.isDemo && (
-                     <span className="px-2 py-0.5 bg-zinc-700 text-zinc-300 text-[9px] font-black uppercase tracking-widest rounded">
-                       {t('demo_workout_label')}
-                     </span>
-                   )}
-                   <span className="text-zinc-200 dark:text-zinc-200 font-bold text-[10px] uppercase tracking-widest">
-                     {Math.floor(workout.durationSeconds / 60)}{t('unit_min_short')} {workout.durationSeconds % 60}{t('unit_sec_short')}
-                   </span>
-                 </div>
+                <div className="flex gap-4 items-center">
+                  <span className="text-teal-600 dark:text-teal-400 font-black text-[10px] uppercase tracking-widest">{workout.date}</span>
+                  {workout.isDemo && (
+                    <span className="px-2 py-0.5 bg-zinc-700 text-zinc-300 text-[9px] font-black uppercase tracking-widest rounded">
+                      {t('demo_workout_label')}
+                    </span>
+                  )}
+                  <span className="text-zinc-200 dark:text-zinc-200 font-bold text-[10px] uppercase tracking-widest">
+                    {Math.floor(workout.durationSeconds / 60)}{t('unit_min_short')} {workout.durationSeconds % 60}{t('unit_sec_short')}
+                  </span>
+                </div>
               </div>
               <div className="text-right">
                 <div className="text-[10px] text-zinc-300 uppercase tracking-widest mb-1 font-black">{t('journal_total_volume')}</div>
@@ -315,7 +361,7 @@ export const Journal: React.FC = () => {
                                     onChange={(e) => {
                                       const mins = parseInt(e.target.value) || 0;
                                       const currentSeconds = (set.durationSeconds || 0) % 60;
-                                      handleUpdateWorkoutSet(workout.id, exIdx, sIdx, 'durationSeconds', mins * 60 + currentSeconds);
+                                      handleUpdateWorkoutSet(workout.id, exIdx, set.id, 'durationSeconds', mins * 60 + currentSeconds);
                                     }}
                                   />
                                   <span>{t('unit_min_short')}</span>
@@ -326,7 +372,7 @@ export const Journal: React.FC = () => {
                                     onClick={(e) => e.stopPropagation()}
                                     className="w-10 bg-zinc-100 dark:bg-black rounded px-1 outline-none text-teal-500"
                                     value={set.distanceKm || 0}
-                                    onChange={(e) => handleUpdateWorkoutSet(workout.id, exIdx, sIdx, 'distanceKm', parseFloat(e.target.value) || 0)}
+                                    onChange={(e) => handleUpdateWorkoutSet(workout.id, exIdx, set.id, 'distanceKm', parseFloat(e.target.value) || 0)}
                                   />
                                   <span>{t('unit_km')}</span>
                                 </>
@@ -338,7 +384,7 @@ export const Journal: React.FC = () => {
                                     onClick={(e) => e.stopPropagation()}
                                     className="w-10 bg-zinc-100 dark:bg-black rounded px-1 outline-none text-teal-500"
                                     value={set.weight}
-                                    onChange={(e) => handleUpdateWorkoutSet(workout.id, exIdx, sIdx, 'weight', parseInt(e.target.value) || 0)}
+                                    onChange={(e) => handleUpdateWorkoutSet(workout.id, exIdx, set.id, 'weight', parseInt(e.target.value) || 0)}
                                   />
                                   <span>{t('unit_kg')} ×</span>
                                   <input
@@ -347,7 +393,7 @@ export const Journal: React.FC = () => {
                                     onClick={(e) => e.stopPropagation()}
                                     className="w-8 bg-zinc-100 dark:bg-black rounded px-1 outline-none text-teal-500"
                                     value={set.reps}
-                                    onChange={(e) => handleUpdateWorkoutSet(workout.id, exIdx, sIdx, 'reps', parseInt(e.target.value) || 0)}
+                                    onChange={(e) => handleUpdateWorkoutSet(workout.id, exIdx, set.id, 'reps', parseInt(e.target.value) || 0)}
                                   />
                                 </>
                               )}
@@ -607,6 +653,41 @@ export const Journal: React.FC = () => {
         onCancel={() => setClearDemoConfirm(false)}
         isDestructive={true}
       />
+
+      {/* Save Template Modal */}
+      {showSaveTemplateModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowSaveTemplateModal(false)}>
+          <div className="bg-zinc-950 border border-zinc-800 rounded-[3rem] p-8 max-w-md w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-6">
+              {t('tracker_save_template')}
+            </h3>
+            <input
+              type="text"
+              value={templateName}
+              onChange={(e) => setTemplateName(e.target.value)}
+              placeholder={t('tracker_template_name')}
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white placeholder-zinc-600 outline-none focus:border-teal-500 transition-colors mb-6"
+              autoFocus
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowSaveTemplateModal(false)}
+                className="flex-1 py-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-zinc-400 hover:text-white font-black uppercase tracking-widest transition-colors"
+              >
+                {t('tracker_cancel')}
+              </button>
+              <button
+                onClick={handleSaveAsTemplate}
+                disabled={!templateName.trim()}
+                className="flex-1 py-4 bg-teal-500 hover:bg-teal-600 disabled:bg-zinc-800 disabled:text-zinc-600 text-white font-black uppercase tracking-widest rounded-2xl transition-colors"
+              >
+                {t('save')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       <AnimatePresence>
         {shareFeedback && (
