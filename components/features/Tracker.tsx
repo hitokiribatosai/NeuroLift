@@ -13,7 +13,7 @@ import { safeStorage } from '../../utils/storage';
 import { useTooltip } from '../../hooks/useTooltip';
 import { App as CapApp } from '@capacitor/app';
 import { Modal } from '../ui/Modal';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { hapticFeedback } from '../../utils/haptics';
@@ -57,6 +57,9 @@ export const Tracker: React.FC = () => {
   const [editingTemplate, setEditingTemplate] = useState<WorkoutTemplate | null>(null);
   const [templateDeleteConfirm, setTemplateDeleteConfirm] = useState<{ id: string, name: string } | null>(null);
   const [exerciseToDelete, setExerciseToDelete] = useState<{ name: string, index: number } | null>(null);
+  const [showSaveCompletedModal, setShowSaveCompletedModal] = useState(false);
+  const [completedTemplateName, setCompletedTemplateName] = useState('');
+  const [showResetSessionConfirm, setShowResetSessionConfirm] = useState(false);
 
 
 
@@ -444,10 +447,11 @@ export const Tracker: React.FC = () => {
     resetClock();
   };
 
-  const reset = () => {
+  const resetSession = () => {
     setPhase('setup');
     setSelectedMuscles([]);
     setSelectedExercises([]);
+    setActiveExercises([]);
     setCompletedWorkout(null);
     stopRestTimer();
     setTimerActive(false);
@@ -457,6 +461,13 @@ export const Tracker: React.FC = () => {
     safeStorage.removeItem('neuroLift_tracker_selected_exercises');
     safeStorage.removeItem('neuroLift_tracker_active_exercises');
     resetClock();
+    setShowResetSessionConfirm(false);
+    hapticFeedback.medium();
+  };
+
+  // Keep old reset for summary screen
+  const reset = () => {
+    resetSession();
   };
 
   const resetCurrentTimer = () => {
@@ -568,6 +579,29 @@ export const Tracker: React.FC = () => {
       setShowEditTemplateModal(false);
       hapticFeedback.success();
     }
+  };
+
+  const saveCompletedAsTemplate = async () => {
+    if (!completedTemplateName.trim() || !completedWorkout) return;
+
+    const newTemplate: WorkoutTemplate = {
+      id: generateId(),
+      name: completedTemplateName,
+      exercises: completedWorkout.exercises.map(ex => ({
+        name: ex.name,
+        targetSets: ex.sets.length,
+        targetReps: ex.sets.length > 0 ? ex.sets[0].reps.toString() : '10',
+        notes: ''
+      })),
+      createdAt: new Date().toISOString()
+    };
+
+    await safeStorage.saveTemplate(newTemplate.id, newTemplate);
+    setTemplates(prev => [newTemplate, ...prev]);
+
+    setShowSaveCompletedModal(false);
+    setCompletedTemplateName('');
+    hapticFeedback.success();
   };
 
   const addExerciseToTemplate = (exerciseName: string) => {
@@ -707,6 +741,13 @@ export const Tracker: React.FC = () => {
                   <SpotlightButton onClick={() => handleSetPhase('selection')} className="px-20 py-5 text-lg font-black uppercase tracking-widest shadow-xl">
                     {t('tracker_select_exercises')} ({selectedMuscles.length})
                   </SpotlightButton>
+
+                  <button
+                    onClick={() => setShowResetSessionConfirm(true)}
+                    className="mt-4 text-xs text-zinc-500 hover:text-rose-500 font-bold uppercase tracking-widest transition-colors"
+                  >
+                    {t('tracker_reset_session')}
+                  </button>
                 </div>
               )}
             </div>
@@ -793,6 +834,16 @@ export const Tracker: React.FC = () => {
                       {t('tracker_save_template')}
                     </button>
                   )}
+
+                  <button
+                    onClick={() => setShowResetSessionConfirm(true)}
+                    className="text-xs text-zinc-400 hover:text-rose-500 uppercase tracking-widest font-black flex items-center gap-2 transition-colors px-3 py-1.5 rounded-xl border border-zinc-800 hover:border-rose-500/50"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    {t('tracker_reset_session')}
+                  </button>
                 </div>
 
               </div>
@@ -1197,159 +1248,181 @@ export const Tracker: React.FC = () => {
               </div>
 
               {/* 2. Exercise List */}
-              <div className="space-y-12 mb-12">
+              <Reorder.Group
+                axis="y"
+                values={activeExercises}
+                onReorder={(newOrder) => {
+                  setActiveExercises(newOrder);
+                  safeStorage.setItem('neuroLift_tracker_active_exercises', JSON.stringify(newOrder));
+                }}
+                className="space-y-12 mb-12"
+              >
                 {activeExercises.map((ex, exIdx) => (
-                  <Card key={exIdx} className="p-8 bg-zinc-900/40 border-zinc-800 rounded-[3rem] shadow-sm overflow-hidden">
-                    <h3 className="text-2xl font-black text-white mb-8 flex items-center gap-4 uppercase tracking-tight">
-                      <span className="w-2.5 h-8 bg-teal-500 rounded-full shadow-lg shadow-teal-500/20"></span>
-                      {getExerciseTranslation(ex.name, language)}
-                      <div className="ml-auto flex items-center gap-2">
-                        <button
-                          onClick={() => setTutorialExercise(ex.name)}
-                          className="p-2 text-zinc-600 hover:text-teal-400 transition-colors"
-                          title={t('modal_watch_video')}
-                        >
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <Reorder.Item key={ex.name} value={ex} className="cursor-move">
+                    <Card className="p-8 bg-zinc-900/40 border-zinc-800 rounded-[3rem] shadow-sm overflow-hidden">
+                      <h3 className="text-2xl font-black text-white mb-8 flex items-center gap-4 uppercase tracking-tight">
+                        {/* Drag Handle */}
+                        <button className="p-2 text-zinc-600 hover:text-zinc-400 transition-colors cursor-grab active:cursor-grabbing">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <circle cx="9" cy="5" r="1.5" />
+                            <circle cx="9" cy="12" r="1.5" />
+                            <circle cx="9" cy="19" r="1.5" />
+                            <circle cx="15" cy="5" r="1.5" />
+                            <circle cx="15" cy="12" r="1.5" />
+                            <circle cx="15" cy="19" r="1.5" />
                           </svg>
                         </button>
-                        <button
-                          onClick={() => setExerciseToDelete({ name: ex.name, index: exIdx })}
-                          className="p-2 text-zinc-600 hover:text-rose-500 transition-colors"
-                          title={t('tracker_delete_exercise')}
-                        >
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-                    </h3>
 
-                    {/* History & Quick Load */}
-                    {exerciseHistory.get(ex.name) && (
-                      <div className="mb-6 px-4">
-                        <div className="flex items-center justify-between bg-zinc-800/50 rounded-xl p-3 border border-zinc-700/50">
-                          <div>
-                            <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">{t('tracker_last_session')}</div>
-                            <div className="text-xs text-zinc-300 font-mono">
-                              {exerciseHistory.get(ex.name).lastSets.length} {t('tracker_sets_count')} × {exerciseHistory.get(ex.name).lastSets[0]?.reps} {t('tracker_reps_count')} @ {exerciseHistory.get(ex.name).lastSets[0]?.weight}kg
-                            </div>
-                          </div>
-
-                          {/* Only show Quick Load if current sets are empty/default */}
-                          {ex.sets.every(s => s.weight === 0 && s.reps === 0) && (
-                            <button
-                              onClick={() => handleQuickLoad(exIdx, ex.name)}
-                              className="px-3 py-1.5 bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 text-[10px] font-black uppercase tracking-widest rounded-lg border border-teal-500/30 transition-all flex items-center gap-2"
-                            >
-                              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                              {t('tracker_quick_load')}
-                            </button>
-                          )}
+                        <span className="w-2.5 h-8 bg-teal-500 rounded-full shadow-lg shadow-teal-500/20"></span>
+                        {getExerciseTranslation(ex.name, language)}
+                        <div className="ml-auto flex items-center gap-2">
+                          <button
+                            onClick={() => setTutorialExercise(ex.name)}
+                            className="p-2 text-zinc-600 hover:text-teal-400 transition-colors"
+                            title={t('modal_watch_video')}
+                          >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => setExerciseToDelete({ name: ex.name, index: exIdx })}
+                            className="p-2 text-zinc-600 hover:text-rose-500 transition-colors"
+                            title={t('tracker_delete_exercise')}
+                          >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
                         </div>
-                      </div>
-                    )}
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-12 gap-1 md:gap-3 text-[10px] text-zinc-100 mb-2 px-4 font-black uppercase tracking-[0.3em]">
-                        <div className="col-span-2 text-center">{t('tracker_header_set')}</div>
-                        <div className="col-span-2 text-center">{t('tracker_header_kg')}</div>
-                        <div className="col-span-1 text-center"></div>
-                        <div className="col-span-2 text-center">{t('tracker_header_reps')}</div>
-                        <div className="col-span-3 text-center">{t('tracker_header_check')}</div>
-                        <div className="col-span-2 text-center"></div>
-                      </div>
+                      </h3>
 
-                      <div className="space-y-3">
-                        {ex.sets.map((set, setIdx) => (
-                          <div key={set.id} className={`grid grid-cols-12 gap-0.5 md:gap-3 items-center rounded-2xl p-1.5 md:p-3 bg-black/20 border border-zinc-800/50 transition-all ${set.completed ? 'opacity-50' : 'opacity-100'}`}>
-                            <div className="col-span-2 flex justify-center">
-                              <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] font-black text-zinc-200">
-                                {setIdx + 1}
+                      {/* History & Quick Load */}
+                      {exerciseHistory.get(ex.name) && (
+                        <div className="mb-6 px-4">
+                          <div className="flex items-center justify-between bg-zinc-800/50 rounded-xl p-3 border border-zinc-700/50">
+                            <div>
+                              <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">{t('tracker_last_session')}</div>
+                              <div className="text-xs text-zinc-300 font-mono">
+                                {exerciseHistory.get(ex.name).lastSets.length} {t('tracker_sets_count')} × {exerciseHistory.get(ex.name).lastSets[0]?.reps} {t('tracker_reps_count')} @ {exerciseHistory.get(ex.name).lastSets[0]?.weight}kg
                               </div>
                             </div>
 
-                            <div className="col-span-2 relative group/kg">
-                              <input
-                                type="tel"
-                                pattern="[0-9]*"
-                                inputMode="numeric"
-                                value={set.weight || ''}
-                                onChange={(e) => updateSet(exIdx, setIdx, 'weight', e.target.value)}
-                                placeholder="0"
-                                className="w-full bg-transparent text-center text-lg font-bold text-white placeholder-zinc-700 outline-none border-b border-transparent focus:border-teal-500 transition-all"
-                              />
-                            </div>
-
-                            <div className="col-span-1 flex justify-center">
+                            {/* Only show Quick Load if current sets are empty/default */}
+                            {ex.sets.every(s => s.weight === 0 && s.reps === 0) && (
                               <button
-                                onClick={() => setActiveSetInfo({ exIdx, setIdx })}
-                                className="p-1.5 rounded-full bg-zinc-800/50 text-zinc-500 hover:text-teal-400 hover:bg-zinc-800 transition-all"
-                                title={t('tracker_plate_calc_title')}
+                                onClick={() => handleQuickLoad(exIdx, ex.name)}
+                                className="px-3 py-1.5 bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 text-[10px] font-black uppercase tracking-widest rounded-lg border border-teal-500/30 transition-all flex items-center gap-2"
                               >
-                                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-                                  <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" />
-                                  <circle cx="12" cy="12" r="3" />
-                                </svg>
+                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                {t('tracker_quick_load')}
                               </button>
-                            </div>
-
-                            <div className="col-span-2">
-                              <input
-                                type="tel"
-                                pattern="[0-9]*"
-                                inputMode="numeric"
-                                value={set.reps || ''}
-                                onChange={(e) => updateSet(exIdx, setIdx, 'reps', e.target.value)}
-                                placeholder="0"
-                                className="w-full bg-transparent text-center text-lg font-bold text-white placeholder-zinc-700 outline-none border-b border-transparent focus:border-teal-500 transition-all"
-                              />
-                            </div>
-
-                            <div className="col-span-3 flex justify-center">
-                              <button
-                                onClick={() => toggleSetComplete(exIdx, setIdx)}
-                                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${set.completed
-                                  ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/20'
-                                  : 'bg-zinc-800 text-zinc-600 hover:bg-zinc-700'
-                                  }`}
-                              >
-                                {set.completed ? (
-                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                ) : (
-                                  <span className="w-2.5 h-2.5 rounded-full border-2 border-zinc-600"></span>
-                                )}
-                              </button>
-                            </div>
-
-                            <div className="col-span-2 flex justify-center">
-                              <button
-                                onClick={() => removeSet(exIdx, setIdx)}
-                                className="w-8 h-8 rounded-lg bg-zinc-900/50 flex items-center justify-center text-zinc-500 hover:text-rose-500 transition-colors"
-                              >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                              </button>
-                            </div>
+                            )}
                           </div>
-                        ))}
+                        </div>
+                      )}
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-12 gap-1 md:gap-3 text-[10px] text-zinc-100 mb-2 px-4 font-black uppercase tracking-[0.3em]">
+                          <div className="col-span-2 text-center">{t('tracker_header_set')}</div>
+                          <div className="col-span-2 text-center">{t('tracker_header_kg')}</div>
+                          <div className="col-span-1 text-center"></div>
+                          <div className="col-span-2 text-center">{t('tracker_header_reps')}</div>
+                          <div className="col-span-3 text-center">{t('tracker_header_check')}</div>
+                          <div className="col-span-2 text-center"></div>
+                        </div>
+
+                        <div className="space-y-3">
+                          {ex.sets.map((set, setIdx) => (
+                            <div key={set.id} className={`grid grid-cols-12 gap-0.5 md:gap-3 items-center rounded-2xl p-1.5 md:p-3 bg-black/20 border border-zinc-800/50 transition-all ${set.completed ? 'opacity-50' : 'opacity-100'}`}>
+                              <div className="col-span-2 flex justify-center">
+                                <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] font-black text-zinc-200">
+                                  {setIdx + 1}
+                                </div>
+                              </div>
+
+                              <div className="col-span-2 relative group/kg">
+                                <input
+                                  type="tel"
+                                  pattern="[0-9]*"
+                                  inputMode="numeric"
+                                  value={set.weight || ''}
+                                  onChange={(e) => updateSet(exIdx, setIdx, 'weight', e.target.value)}
+                                  placeholder="0"
+                                  className="w-full bg-transparent text-center text-lg font-bold text-white placeholder-zinc-700 outline-none border-b border-transparent focus:border-teal-500 transition-all"
+                                />
+                              </div>
+
+                              <div className="col-span-1 flex justify-center">
+                                <button
+                                  onClick={() => setActiveSetInfo({ exIdx, setIdx })}
+                                  className="p-1.5 rounded-full bg-zinc-800/50 text-zinc-500 hover:text-teal-400 hover:bg-zinc-800 transition-all"
+                                  title={t('tracker_plate_calc_title')}
+                                >
+                                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                                    <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" />
+                                    <circle cx="12" cy="12" r="3" />
+                                  </svg>
+                                </button>
+                              </div>
+
+                              <div className="col-span-2">
+                                <input
+                                  type="tel"
+                                  pattern="[0-9]*"
+                                  inputMode="numeric"
+                                  value={set.reps || ''}
+                                  onChange={(e) => updateSet(exIdx, setIdx, 'reps', e.target.value)}
+                                  placeholder="0"
+                                  className="w-full bg-transparent text-center text-lg font-bold text-white placeholder-zinc-700 outline-none border-b border-transparent focus:border-teal-500 transition-all"
+                                />
+                              </div>
+
+                              <div className="col-span-3 flex justify-center">
+                                <button
+                                  onClick={() => toggleSetComplete(exIdx, setIdx)}
+                                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${set.completed
+                                    ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/20'
+                                    : 'bg-zinc-800 text-zinc-600 hover:bg-zinc-700'
+                                    }`}
+                                >
+                                  {set.completed ? (
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                  ) : (
+                                    <span className="w-2.5 h-2.5 rounded-full border-2 border-zinc-600"></span>
+                                  )}
+                                </button>
+                              </div>
+
+                              <div className="col-span-2 flex justify-center">
+                                <button
+                                  onClick={() => removeSet(exIdx, setIdx)}
+                                  className="w-8 h-8 rounded-lg bg-zinc-900/50 flex items-center justify-center text-zinc-500 hover:text-rose-500 transition-colors"
+                                >
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        <button
+                          onClick={() => addSet(exIdx)}
+                          className="w-full py-4 text-xs font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white hover:bg-zinc-800/50 rounded-2xl border border-zinc-800 border-dashed hover:border-zinc-600 transition-all mt-4 flex items-center justify-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                          {t('tracker_add_set')}
+                        </button>
                       </div>
 
-                      <button
-                        onClick={() => addSet(exIdx)}
-                        className="w-full py-4 text-xs font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white hover:bg-zinc-800/50 rounded-2xl border border-zinc-800 border-dashed hover:border-zinc-600 transition-all mt-4 flex items-center justify-center gap-2"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                        {t('tracker_add_set')}
-                      </button>
-                    </div>
-
-                  </Card>
+                    </Card>
+                  </Reorder.Item>
                 ))}
-              </div>
+              </Reorder.Group>
 
               {/* Bottom Actions: Add Exercise & Finish */}
-              <div className="flex flex-col items-center gap-6 pb-8">
+              < div className="flex flex-col items-center gap-6 pb-8" >
                 <button
                   onClick={() => setPhase('selection')}
                   className="px-6 py-2 bg-zinc-800/50 hover:bg-zinc-800 text-zinc-400 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-full border border-zinc-700/50 hover:border-zinc-600 transition-all flex items-center justify-center gap-2"
@@ -1395,12 +1468,25 @@ export const Tracker: React.FC = () => {
                     <div className="text-3xl font-black text-white text-mono">{completedWorkout.totalVolume.toLocaleString()} <span className="text-sm text-zinc-500">{t('unit_kg')}</span></div>
                   </div>
                 </div>
-                <SpotlightButton
-                  onClick={reset}
-                  className="px-12 py-5 text-lg font-black uppercase tracking-widest shadow-xl mx-auto"
-                >
-                  {t('tracker_start_new')}
-                </SpotlightButton>
+
+                <div className="flex flex-col gap-4 items-center">
+                  <button
+                    onClick={() => setShowSaveCompletedModal(true)}
+                    className="px-8 py-3 bg-zinc-900/50 hover:bg-zinc-800 border border-zinc-800 hover:border-teal-500/50 text-zinc-400 hover:text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                    </svg>
+                    {t('tracker_save_template')}
+                  </button>
+
+                  <SpotlightButton
+                    onClick={reset}
+                    className="px-12 py-5 text-lg font-black uppercase tracking-widest shadow-xl mx-auto"
+                  >
+                    {t('tracker_start_new')}
+                  </SpotlightButton>
+                </div>
               </div>
             )
           }
@@ -1480,6 +1566,43 @@ export const Tracker: React.FC = () => {
             </SpotlightButton>
             <button
               onClick={() => setShowSaveTemplateModal(false)}
+              className="w-full py-2 text-[10px] text-zinc-600 hover:text-rose-500 font-black uppercase tracking-widest transition-all"
+            >
+              {t('tracker_cancel')}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Save Completed Workout as Template Modal */}
+      <Modal isOpen={showSaveCompletedModal} onClose={() => setShowSaveCompletedModal(false)}>
+        <div className="relative w-full rounded-[3rem] border border-zinc-800 bg-zinc-950 p-8 shadow-3xl overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-2 bg-teal-500"></div>
+          <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-8 flex items-center gap-3">
+            <span className="w-2 h-6 bg-teal-500 rounded-full"></span>
+            {t('tracker_save_template')}
+          </h3>
+          <div className="space-y-6">
+            <div>
+              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-2 px-1">{t('tracker_template_name')}</label>
+              <input
+                type="text"
+                value={completedTemplateName}
+                onChange={(e) => setCompletedTemplateName(e.target.value)}
+                placeholder="e.g., Push Day A"
+                autoFocus
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-teal-500 transition-all"
+              />
+            </div>
+            <SpotlightButton
+              onClick={saveCompletedAsTemplate}
+              disabled={!completedTemplateName.trim()}
+              className="w-full py-4 text-xs font-black uppercase tracking-widest disabled:opacity-50"
+            >
+              {t('tracker_save')}
+            </SpotlightButton>
+            <button
+              onClick={() => setShowSaveCompletedModal(false)}
               className="w-full py-2 text-[10px] text-zinc-600 hover:text-rose-500 font-black uppercase tracking-widest transition-all"
             >
               {t('tracker_cancel')}
@@ -1680,8 +1803,40 @@ export const Tracker: React.FC = () => {
         </div>
       </Modal>
 
+      {/* Reset Session Confirmation Modal */}
+      <Modal isOpen={showResetSessionConfirm} onClose={() => setShowResetSessionConfirm(false)}>
+        <div className="p-8 bg-zinc-950 border border-zinc-900 rounded-[3rem] text-center space-y-6 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-2 bg-rose-500"></div>
+          <div className="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto text-rose-500 mb-4">
+            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </div>
+          <h3 className="text-2xl font-black text-white uppercase italic tracking-tight">
+            {t('tracker_reset_session_title')}
+          </h3>
+          <p className="text-zinc-400 font-bold text-sm leading-relaxed">
+            {t('tracker_reset_session_desc')}
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowResetSessionConfirm(false)}
+              className="flex-1 py-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-zinc-400 hover:text-white font-black uppercase tracking-widest transition-colors"
+            >
+              {t('confirm_cancel')}
+            </button>
+            <button
+              onClick={resetSession}
+              className="flex-1 py-4 bg-rose-500 hover:bg-rose-600 text-white font-black uppercase tracking-widest rounded-2xl transition-colors"
+            >
+              {t('confirm_yes')}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
       {/* ... other modals ... */}
-    </div>
+    </div >
   );
 };
 
