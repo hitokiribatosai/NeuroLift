@@ -6,6 +6,7 @@ import { ProgramPlanner } from './components/features/ProgramPlanner';
 import { Nutrition } from './components/features/Nutrition';
 import { Journal } from './components/features/Journal';
 import { Clock } from './components/features/Clock';
+import { Privacy } from './components/features/Privacy';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { ClockProvider } from './contexts/ClockContext';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -37,7 +38,7 @@ function App() {
   React.useEffect(() => {
     const handlePopState = () => {
       const hash = window.location.hash.replace('#', '').split('?')[0].split('/')[0];
-      const validViews = ['home', 'tracker', 'planner', 'nutrition', 'journal', 'clock'];
+      const validViews = ['home', 'tracker', 'planner', 'nutrition', 'journal', 'clock', 'privacy'];
       const newView = validViews.includes(hash) ? hash : 'home';
 
       const oldIndex = viewOrder.indexOf(currentView);
@@ -70,6 +71,7 @@ function App() {
         case 'nutrition': return <Nutrition />;
         case 'journal': return <Journal />;
         case 'clock': return <Clock />;
+        case 'privacy': return <Privacy />;
         default: return <Home setCurrentView={handleSetView} />;
       }
     })();

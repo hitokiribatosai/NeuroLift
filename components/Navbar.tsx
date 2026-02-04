@@ -226,9 +226,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
               </button>
 
               <a
-                href="https://neurolift.netlify.app/privacy"
-                target="_blank"
-                rel="noreferrer"
+                href="#privacy"
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-zinc-900 hover:border-teal-500/30 text-zinc-400 hover:text-white transition-all text-xs font-bold mt-2"
               >
                 <div className="p-1.5 bg-zinc-800 rounded-lg text-zinc-500">
