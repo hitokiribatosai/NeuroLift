@@ -1250,17 +1250,9 @@ export const Tracker: React.FC = () => {
               </div>
 
               {/* 2. Exercise List */}
-              <Reorder.Group
-                axis="y"
-                values={activeExercises}
-                onReorder={(newOrder) => {
-                  setActiveExercises(newOrder);
-                  safeStorage.setItem('neuroLift_tracker_active_exercises', JSON.stringify(newOrder));
-                }}
-                className="space-y-12 mb-12"
-              >
+              <div className="space-y-12 mb-12">
                 {activeExercises.map((ex, exIdx) => (
-                  <Reorder.Item key={ex.name} value={ex} className="cursor-move">
+                  <div key={ex.name}>
                     <Card className="p-8 bg-zinc-900/40 border-zinc-800 rounded-[3rem] shadow-sm overflow-hidden">
                       <h3 className="text-2xl font-black text-white mb-8 flex items-center gap-4 uppercase tracking-tight">
 
@@ -1408,9 +1400,9 @@ export const Tracker: React.FC = () => {
                       </div>
 
                     </Card>
-                  </Reorder.Item>
+                  </div>
                 ))}
-              </Reorder.Group>
+              </div>
 
               {/* Bottom Actions: Add Exercise & Finish */}
               < div className="flex flex-col items-center gap-6 pb-8" >
