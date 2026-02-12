@@ -10,8 +10,10 @@
   --safe-area-left: env(safe-area-inset-left, 0px);
   --safe-area-right: env(safe-area-inset-right, 0px);
 
-  color-scheme: dark;
-  /* Force browser to respect dark mode */
+  color-scheme: only dark;
+  /* Standard property to force dark mode */
+  forced-color-adjust: none;
+  /* Stops system from overriding colors */
 }
 
 html {
@@ -32,6 +34,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  forced-color-adjust: none;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
 }
 
 .grid-bg {
@@ -245,4 +250,59 @@ button {
   .android-safe-bottom {
     padding-bottom: max(env(safe-area-inset-bottom), 0px);
   }
+}
+
+/* Fix for Realme/Xiaomi/Poco Dark Mode Inversion */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+div,
+a,
+li,
+ul,
+ol,
+input,
+select,
+textarea,
+button {
+  forced-color-adjust: none;
+}
+
+/* Explicit text color overrides to beat system dark mode */
+.text-white {
+  color: #ffffff !important;
+}
+
+.text-gray-100 {
+  color: #f3f4f6 !important;
+}
+
+.text-gray-200 {
+  color: #e5e7eb !important;
+}
+
+.text-gray-300 {
+  color: #d1d5db !important;
+}
+
+.text-gray-400 {
+  color: #9ca3af !important;
+}
+
+/* Ensure background stays dark */
+.bg-black {
+  background-color: #000000 !important;
+}
+
+.bg-zinc-900 {
+  background-color: #18181b !important;
+}
+
+.bg-zinc-950 {
+  background-color: #09090b !important;
 }
