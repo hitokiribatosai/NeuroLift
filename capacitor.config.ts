@@ -55,14 +55,16 @@ const config: CapacitorConfig = {
     limitsNavigationsToAppBoundDomains: false
   },
 
-  // Android-specific configuration (keeping existing)
+  // Android-specific configuration
   android: {
     // Allow mixed content for development
-    allowMixedContent: false,
+    allowMixedContent: true,
     // Capture back button
     captureInput: true,
-    // WebView settings
-    webContentsDebuggingEnabled: false
+    // WebView settings - Enable debugging for better compatibility
+    webContentsDebuggingEnabled: true,
+    // Improve compatibility with different Android manufacturers
+    backgroundColor: '#0a0a0a'
   }
 };
 

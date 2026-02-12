@@ -176,3 +176,73 @@ input:-webkit-autofill:active {
     perspective: 1000;
   }
 }
+
+/* Android-Specific Optimizations */
+
+/* Fix rendering issues on Android devices with custom skins (ColorOS, MIUI, etc.) */
+@supports (-webkit-appearance: none) {
+  * {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+/* Improve touch responsiveness on Android */
+* {
+  touch-action: manipulation;
+}
+
+/* Fix Android WebView rendering issues */
+body {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* Prevent Android WebView from adding extra spacing */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Fix Android keyboard resize issues */
+#root {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
+
+/* Improve Android scrolling performance */
+.scrollable {
+  -webkit-overflow-scrolling: touch;
+  overflow-scrolling: touch;
+}
+
+/* Fix Android text rendering */
+body,
+input,
+textarea,
+select,
+button {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Prevent Android from highlighting elements on tap */
+* {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-touch-callout: none;
+}
+
+/* Fix Android safe area for devices with notches/cutouts */
+@supports (padding: max(0px)) {
+  .android-safe-top {
+    padding-top: max(env(safe-area-inset-top), 0px);
+  }
+
+  .android-safe-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 0px);
+  }
+}
