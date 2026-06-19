@@ -8,6 +8,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        print("🚀 NeuroLift Native iOS App Started Successfully! (Xcode Coding applied)")
+        
+        if let window = self.window, let rootVC = window.rootViewController as? CAPBridgeViewController, let bridge = rootVC.bridge {
+            bridge.webView?.backgroundColor = UIColor(red: 0.04, green: 0.04, blue: 0.04, alpha: 1)
+            bridge.webView?.scrollView.backgroundColor = UIColor(red: 0.04, green: 0.04, blue: 0.04, alpha: 1)
+            bridge.webView?.isOpaque = false
+        }
+        
         return true
     }
 
