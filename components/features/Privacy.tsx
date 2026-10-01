@@ -18,7 +18,7 @@ export const Privacy = () => {
                         {t('privacy_policy')}
                     </h1>
                     <p className="text-zinc-400 text-sm font-bold uppercase tracking-widest">
-                        {t('privacy_last_updated')}: {new Date().toLocaleDateString(language === 'ar' ? 'ar-SA' : language === 'fr' ? 'fr-FR' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                        {t('privacy_last_updated')}: 2026-10-01
                     </p>
                 </div>
 

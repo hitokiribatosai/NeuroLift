@@ -3,7 +3,7 @@ import { SpotlightButton } from './ui/SpotlightButton';
 import { HERO_FEATURES } from '../constants/bentoGrid';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { EMG_SOURCES } from '../utils/emgData';
+import { TRAINING_SOURCES } from '../utils/trainingEvidence';
 
 interface HomeProps {
   setCurrentView: (view: string) => void;
@@ -52,12 +52,12 @@ export const Home: React.FC<HomeProps> = ({ setCurrentView }) => {
 
       {/* Bento Grid Features */}
       <section className="px-6 pb-24">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 auto-rows-[180px] gap-4">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 auto-rows-[minmax(220px,auto)] gap-4">
           {HERO_FEATURES.map((feature) => (
             <button
               key={feature.id}
               onClick={() => feature.link !== '#' && setCurrentView(feature.link)}
-              className={`relative group p-6 rounded-3xl border text-left transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between overflow-hidden ${isLight
+              className={`relative group p-6 rounded-3xl border text-start transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between overflow-hidden ${feature.id === 'tracker' ? 'md:col-span-2' : ''} ${isLight
                 ? 'bg-white border-zinc-200 shadow-sm hover:shadow-md'
                 : feature.className
                 }`}
@@ -93,7 +93,7 @@ export const Home: React.FC<HomeProps> = ({ setCurrentView }) => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {EMG_SOURCES.map((source) => (
+            {TRAINING_SOURCES.map((source) => (
               <a
                 key={source.name}
                 href={source.url}

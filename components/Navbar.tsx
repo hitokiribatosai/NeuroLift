@@ -25,7 +25,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
 
   const handleExport = async () => {
     setIsExporting(true);
-    await DataManager.exportData();
+    if (!await DataManager.exportData()) alert('Export failed or was cancelled. Your data is still saved locally.');
     setIsExporting(false);
   };
 
@@ -83,6 +83,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
   }, [isSettingsOpen]);
 
   const navItems = [
+    { id: 'account', label: language === 'ar' ? 'الحساب' : language === 'fr' ? 'Compte' : 'Account', icon: <span aria-hidden="true">@</span> },
     {
       id: 'home',
       label: t('nav_home'),
@@ -319,7 +320,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
           </motion.div>
 
           {/* Desktop Navigation Items - Hidden on Mobile */}
-          <div className="hidden md:flex items-center gap-8 text-sm font-bold text-zinc-400 mx-8">
+          <div className="hidden md:flex items-center gap-4 lg:gap-8 text-sm font-bold text-zinc-400 mx-8">
             {navItems.map((item) => (
               <motion.button
                 key={item.id}
@@ -343,6 +344,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
           {/* Settings Section */}
           <div className="relative settings-container">
             <motion.button
+              aria-label={t('profile_settings')}
+              aria-expanded={isSettingsOpen}
               onClick={(e) => { e.stopPropagation(); setIsSettingsOpen(!isSettingsOpen); }}
               whileTap={{ scale: 0.9 }}
               className={`flex items-center justify-center w-10 h-10 rounded-xl border transition-all shadow-sm ${isSettingsOpen ? 'bg-zinc-800 border-zinc-700 text-teal-400' : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700'}`}
@@ -378,7 +381,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
               key={item.id}
               onClick={() => setCurrentView(item.id)}
               whileTap={{ scale: 0.9, y: 4 }}
-              className="relative flex flex-col items-center justify-center gap-1.5 py-2 px-1 rounded-2xl transition-all duration-300 min-w-[64px]"
+              className="relative flex flex-col items-center justify-center gap-1.5 py-2 px-1 rounded-2xl transition-all duration-300 min-w-0 flex-1"
               style={{
                 color: currentView === item.id
                   ? 'rgb(var(--accent-400))'

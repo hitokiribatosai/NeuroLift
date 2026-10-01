@@ -18,7 +18,6 @@ interface DashboardProps {
 export const Dashboard: React.FC<DashboardProps> = ({ setCurrentView }) => {
     const { t, language } = useLanguage();
     const [showStreakInfo, setShowStreakInfo] = useState(false);
-    const [showScientificInfo, setShowScientificInfo] = useState(false);
     const [selectedMuscle, setSelectedMuscle] = useState('Total');
     const [activeIndex, setActiveIndex] = useState(0);
     const [hasRealWorkoutsState, setHasRealWorkoutsState] = useState(hasRealWorkouts());
@@ -39,7 +38,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentView }) => {
     const streak = useMemo(() => {
         if (history.length === 0) return 0;
 
-        let count = 0;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
@@ -60,7 +58,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentView }) => {
         // If gap since last workout is more than 3 days, streak resets
         if (diffDays > 3) return 0;
 
-        count = 1;
+        let count = 1;
         for (let i = 0; i < sortedDates.length - 1; i++) {
             const current = sortedDates[i];
             const next = sortedDates[i + 1];
@@ -95,39 +93,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentView }) => {
         return { data, volumes, maxVolume };
     }, [history, selectedMuscle]);
 
-    /* 
-     * Scientific Score Logic (0-100):
-     * 1. Consistency (30%): Based on the current streak. 4+ day streak = 30 points.
-     * 2. Frequency (30%): Workouts in the last week. 5 sessions = 30 points.
-     * 3. Progression (40%): Comparing last volume to previous average. 
-     *    Progression is key to "Scientific Training" (Overload Principle).
-     */
-    const scientificScore = useMemo(() => {
-        if (history.length === 0) return 0;
-
-        // 1. Consistency Score (max 30)
-        const consistencyScore = Math.min(streak * 7.5, 30);
-
-        // 2. Frequency Score (max 30)
-        const aWeekAgo = new Date();
-        aWeekAgo.setDate(aWeekAgo.getDate() - 7);
-        const recentWorkouts = history.filter(w => new Date(w.date) >= aWeekAgo).length;
-        const frequencyScore = Math.min(recentWorkouts * 6, 30);
-
-        // 3. Progression Score (max 40)
-        let progressionScore = 20; // Base/Neutral
-        if (history.length >= 2) {
-            const lastVolume = history[0].totalVolume;
-            const prevWorkouts = history.slice(1, 4);
-            const avgPrevVolume = prevWorkouts.reduce((acc, w) => acc + w.totalVolume, 0) / prevWorkouts.length;
-
-            if (lastVolume > avgPrevVolume) progressionScore = 40;
-            else if (lastVolume >= avgPrevVolume * 0.9) progressionScore = 25;
-            else progressionScore = 15;
-        }
-
-        return Math.round(consistencyScore + frequencyScore + progressionScore);
-    }, [history, streak]);
+    const recentWorkouts = history.filter(w => !w.isDemo && Date.now() - new Date(w.date).getTime() >= 0 && Date.now() - new Date(w.date).getTime() < 7 * 86400000);
 
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
         const scrollLeft = e.currentTarget.scrollLeft;
@@ -193,31 +159,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentView }) => {
     };
 
     const renderInsightsCard = () => (
-        <Card className="p-8 bg-zinc-900/40 border-zinc-800 rounded-[3rem] shadow-sm overflow-hidden relative h-full">
-            <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-8">Insights</h3>
-            <div className="space-y-6">
-                <div className="flex justify-between items-center group">
-                    <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-bold text-zinc-400 group-hover:text-white transition-colors uppercase tracking-widest">Scientific Score</span>
-                        <button
-                            onClick={() => setShowScientificInfo(true)}
-                            className="p-1 rounded-full bg-zinc-800/50 text-zinc-500 hover:text-teal-400 transition-colors"
-                        >
-                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </button>
-                    </div>
-                    <span className="text-lg font-black font-mono text-teal-400">{scientificScore}%</span>
-                </div>
-                <div className="h-px bg-zinc-800"></div>
-                <div className="flex justify-between items-center group">
-                    <span className="text-[11px] font-bold text-zinc-400 group-hover:text-white transition-colors uppercase tracking-widest">Consistency</span>
-                    <span className="text-lg font-black font-mono text-white">{streak > 5 ? 'Elite' : 'Targeting'}</span>
-                </div>
-            </div>
-            {/* Aesthetic Glow */}
-            <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-teal-500/5 blur-3xl rounded-full"></div>
+        <Card className="p-8 bg-zinc-900/40 border-zinc-800 rounded-3xl">
+            <h3 className="text-lg font-bold mb-4">{t('training_week')}</h3>
+            <p>{t('training_sessions')}: {recentWorkouts.length}</p>
+            <p>{t('training_sets')}: {recentWorkouts.reduce((sum, w) => sum + w.exercises.reduce((n, e) => n + e.sets.filter(s => s.completed).length, 0), 0)}</p>
+            <p className="mt-4 text-sm text-zinc-400">{t('training_metrics_note')}</p>
         </Card>
     );
 
@@ -504,38 +450,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentView }) => {
                         </p>
                         <button
                             onClick={() => setShowStreakInfo(false)}
-                            className="w-full py-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-zinc-800 transition-colors"
-                        >
-                            {t('modal_close')}
-                        </button>
-                    </div>
-                </Modal>
-
-                <Modal isOpen={showScientificInfo} onClose={() => setShowScientificInfo(false)}>
-                    <div className="p-10 bg-zinc-950 border border-zinc-900 rounded-[3rem] space-y-8 relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-2 bg-teal-500"></div>
-                        <div className="text-center">
-                            <h3 className="text-2xl font-black text-white uppercase italic tracking-tight mb-2">{t('sci_score_title')}</h3>
-                            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">Scientific Training Protocol</p>
-                        </div>
-
-                        <div className="space-y-6">
-                            <div className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl">
-                                <h4 className="text-xs font-black text-teal-400 uppercase tracking-widest mb-2">Consistency</h4>
-                                <p className="text-[10px] text-zinc-400 font-bold uppercase leading-relaxed">{t('sci_score_consistency')}</p>
-                            </div>
-                            <div className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl">
-                                <h4 className="text-xs font-black text-teal-400 uppercase tracking-widest mb-2">Frequency</h4>
-                                <p className="text-[10px] text-zinc-400 font-bold uppercase leading-relaxed">{t('sci_score_frequency')}</p>
-                            </div>
-                            <div className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl">
-                                <h4 className="text-xs font-black text-teal-400 uppercase tracking-widest mb-2">Progression</h4>
-                                <p className="text-[10px] text-zinc-400 font-bold uppercase leading-relaxed">{t('sci_score_progression')}</p>
-                            </div>
-                        </div>
-
-                        <button
-                            onClick={() => setShowScientificInfo(false)}
                             className="w-full py-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-zinc-800 transition-colors"
                         >
                             {t('modal_close')}

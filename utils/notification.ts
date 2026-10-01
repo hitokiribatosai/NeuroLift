@@ -2,6 +2,7 @@ import { LocalNotifications } from '@capacitor/local-notifications';
 import { Capacitor } from '@capacitor/core';
 
 export const requestNotificationPermissions = async () => {
+    if (!Capacitor.isNativePlatform()) return false;
     try {
         const status = await LocalNotifications.checkPermissions();
         if (status.display !== 'granted') {
@@ -32,10 +33,9 @@ export const scheduleRestNotification = async (seconds: number) => {
                     body: 'Time to get back to work! 💪',
                     id: 1,
                     schedule: { at: triggerDate },
-                    sound: 'res/raw/notification_sound.wav', // We might need to configure this, or rely on default
                     actionTypeId: '',
                     extra: null,
-                    smallIcon: 'ic_stat_icon_config_sample' // Default resource name often used
+                    smallIcon: 'ic_stat_neurolift' // Default resource name often used
                 }
             ]
         });
@@ -54,7 +54,7 @@ export const cancelRestNotification = async () => {
 
 export const registerWorkoutActionTypes = async () => {
     try {
-        if (Capacitor.isNativePlatform()) {
+        if (Capacitor.getPlatform() === 'android') {
             await LocalNotifications.createChannel({
                 id: 'workout_timer',
                 name: 'Workout Tracker',
@@ -96,7 +96,7 @@ export const updateWorkoutNotification = async (timeText: string, isPaused: bool
                     onlyAlertOnce: true,
                     actionTypeId: 'WORKOUT_ACTIONS',
                     channelId: 'workout_timer',
-                    smallIcon: 'ic_stat_icon_config_sample'
+                    smallIcon: 'ic_stat_neurolift'
                 } as any
             ]
         });

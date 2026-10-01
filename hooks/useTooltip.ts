@@ -1,3 +1,4 @@
+import { safeStorage } from '../utils/storage';
 import { useState, useEffect } from 'react';
 
 export const useTooltip = (tooltipId: string) => {
@@ -6,7 +7,7 @@ export const useTooltip = (tooltipId: string) => {
 
   useEffect(() => {
     // Check if tooltip has been dismissed
-    const dismissed = localStorage.getItem(storageKey);
+    const dismissed = safeStorage.getItem(storageKey);
     if (!dismissed) {
       // Show tooltip after 1 second delay
       const timer = setTimeout(() => setIsOpen(true), 1000);
@@ -16,11 +17,11 @@ export const useTooltip = (tooltipId: string) => {
 
   const dismiss = () => {
     setIsOpen(false);
-    localStorage.setItem(storageKey, 'true');
+    safeStorage.setItem(storageKey, 'true');
   };
 
   const reset = () => {
-    localStorage.removeItem(storageKey);
+    safeStorage.removeItem(storageKey);
     setIsOpen(true);
   };
 

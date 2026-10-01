@@ -1,5 +1,5 @@
 {
   "name": "NeuroLift",
-  "description": "A Vercel-styled, AI-powered fitness platform for scientific hypertrophy and strength training.",
+  "description": "Track workouts, build routines, and follow your training progress on web and mobile.",
   "requestFramePermissions": []
 }

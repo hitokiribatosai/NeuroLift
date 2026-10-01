@@ -1,6 +1,9 @@
+import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 import { safeStorage } from './storage';
+import { SYNC_KEYS, readWorkspace, writeWorkspace } from './workspace';
+import { validateBackup } from './validateBackup';
 
 const BACKUP_VERSION = 1;
 const EXPORT_FILENAME = 'neurolift_backup';
@@ -19,14 +22,7 @@ export const DataManager = {
     exportData: async (): Promise<boolean> => {
         try {
             // 1. Collect all data keys
-            const keysToExport = [
-                'neuroLift_journal',
-                'neuroLift_history',
-                'neuroLift_templates',
-                // Add any other relevant keys here
-                'neuroLift_tracker_muscles',
-                'neuroLift_tracker_selected_exercises'
-            ];
+            const keysToExport = [...SYNC_KEYS];
 
             const exportData: Record<string, any> = {};
 
@@ -53,12 +49,13 @@ export const DataManager = {
             const fileName = `${EXPORT_FILENAME}_${new Date().toISOString().split('T')[0]}.json`;
 
             // 3. Write file
-            try {
-                // Try writing to Documents directory first (better for Android export)
+            if (Capacitor.isNativePlatform()) {
+                // Only the dedicated export cache is exposed to the native share sheet.
                 const result = await Filesystem.writeFile({
-                    path: fileName,
+                    path: `exports/${fileName}`,
                     data: jsonString,
-                    directory: Directory.Documents,
+                    directory: Directory.Cache,
+                    recursive: true,
                     encoding: Encoding.UTF8
                 });
 
@@ -69,9 +66,7 @@ export const DataManager = {
                     url: result.uri,
                     dialogTitle: 'Export Backup'
                 });
-            } catch (fsError) {
-                // Fallback for Web/PWA: Download as file
-                console.warn('Filesystem write failed (likely web), fallback to download:', fsError);
+            } else {
                 const blob = new Blob([jsonString], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -102,31 +97,16 @@ export const DataManager = {
                 return { success: false, message: 'Invalid file format. Please upload a valid JSON backup.' };
             }
 
-            // Basic validation
-            if (!backup.version || !backup.data) {
-                return { success: false, message: 'Invalid backup structure. Missing version or data.' };
-            }
-
-            // Restore data
-            const entries = Object.entries(backup.data);
-            if (entries.length === 0) {
-                return { success: false, message: 'Backup file contains no data.' };
-            }
-
-            // Clear current relevant data before restoring to avoid conflicts? 
-            // Or just overwrite. Overwriting is safer for "Restore" functionality.
-            entries.forEach(([key, value]) => {
-                if (typeof value === 'object') {
-                    safeStorage.setItem(key, JSON.stringify(value));
-                } else {
-                    safeStorage.setItem(key, String(value));
-                }
-            });
-
+            const data = validateBackup(backup);
+            const state = readWorkspace();
+            const next = { ...state.data };
+            for (const [key, value] of Object.entries(data)) next[key] = value;
+            writeWorkspace({ ...state, data: next, dirty: true });
+            const entries = Object.entries(data);
             return { success: true, message: `Successfully restored ${entries.length} data categories.` };
         } catch (error) {
             console.error('Import failed:', error);
-            return { success: false, message: 'An unknown error occurred during import.' };
+            return { success: false, message: error instanceof Error ? error.message : 'Import failed.' };
         }
     }
 };

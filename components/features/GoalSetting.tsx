@@ -1,3 +1,4 @@
+import { safeStorage } from '../../utils/storage';
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -40,7 +41,7 @@ export const GoalSetting: React.FC<GoalSettingProps> = ({ onComplete }) => {
 
   const handleComplete = () => {
     if (selectedGoal) {
-      localStorage.setItem('neuroLift_userGoal', selectedGoal);
+      safeStorage.setItem('neuroLift_userGoal', selectedGoal);
     }
     onComplete(selectedGoal);
   };

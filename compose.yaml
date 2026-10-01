@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: neurolift
+      POSTGRES_USER: neurolift
+      POSTGRES_PASSWORD: local-development-only
+    volumes:
+      - neurolift-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neurolift"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  mailpit:
+    image: axllent/mailpit:v1.29.0
+    ports:
+      - "127.0.0.1:8025:8025"
+      - "127.0.0.1:1025:1025"
+  api:
+    build: ./backend
+    command: sh -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      DJANGO_DEBUG: "true"
+      DJANGO_SECRET_KEY: local-development-only
+      DATABASE_URL: postgresql://neurolift:local-development-only@db:5432/neurolift
+      EMAIL_HOST: mailpit
+      EMAIL_PORT: "1025"
+      EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,10.0.2.2
+    depends_on:
+      db:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+volumes:
+  neurolift-db:

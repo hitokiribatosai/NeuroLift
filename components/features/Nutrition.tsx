@@ -42,7 +42,7 @@ export const Nutrition: React.FC = () => {
 
   const addCalories = () => {
     const amount = parseInt(caloriesInput);
-    if (!isNaN(amount)) {
+    if (Number.isFinite(amount) && amount > 0) {
       const newVal = dailyCalories + amount;
       setDailyCalories(newVal);
       safeStorage.setItem('neuroLift_daily_cal', newVal.toString());

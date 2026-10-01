@@ -131,6 +131,7 @@ export const Journal: React.FC = () => {
   };
 
   const handleUpdateWorkoutSet = (workoutId: string, exIdx: number, setId: string, field: keyof WorkoutSet, val: number) => {
+    val = Number.isFinite(val) ? Math.max(0, field === 'reps' ? Math.floor(val) : val) : 0;
     const updatedHistory = history.map(w => {
       if (w.id === workoutId) {
         if (!w.exercises[exIdx]) return w;
@@ -384,7 +385,7 @@ export const Journal: React.FC = () => {
                                     onClick={(e) => e.stopPropagation()}
                                     className="w-10 bg-zinc-100 dark:bg-black rounded px-1 outline-none text-teal-500"
                                     value={set.weight}
-                                    onChange={(e) => handleUpdateWorkoutSet(workout.id, exIdx, set.id, 'weight', parseInt(e.target.value) || 0)}
+                                    onChange={(e) => handleUpdateWorkoutSet(workout.id, exIdx, set.id, 'weight', parseFloat(e.target.value) || 0)}
                                   />
                                   <span>{t('unit_kg')} ×</span>
                                   <input
@@ -792,7 +793,7 @@ const VolumeChart = ({ history, t, selectedMuscle, onMuscleChange, language }: {
   );
 };
 
-const InputField = ({ label, field, formData, handleChange }: { label: string, field: keyof JournalEntry, formData: Partial<JournalEntry>, handleChange: (field: keyof JournalEntry, value: string) => void }) => (
+const InputField = ({ label, field, formData, handleChange }: { label: string, field: Exclude<keyof JournalEntry, 'id' | 'date' | 'notes' | 'isDemo' | 'customMeasurements'>, formData: Partial<JournalEntry>, handleChange: (field: keyof JournalEntry, value: string) => void }) => (
   <div>
     <label className="text-xs text-zinc-200 block mb-1">{label}</label>
     <input

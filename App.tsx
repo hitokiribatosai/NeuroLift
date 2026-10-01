@@ -16,23 +16,20 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { OfflineIndicator } from './components/ui/OfflineIndicator';
 import Onboarding from './components/features/Onboarding';
 import { GoalSetting } from './components/features/GoalSetting';
-import { migrateToIndexedDB, safeStorage } from './utils/storage';
-import { insertDemoData } from './utils/demoData';
+import { safeStorage } from './utils/storage';
+import { Account } from './components/features/Account';
+import { startSync } from './utils/sync';
+import { SyncIndicator } from './components/ui/SyncIndicator';
+import { PwaStatus } from './components/ui/PwaStatus';
 
 function AppInner() {
   const { theme } = useTheme();
   const isLight = theme === 'light';
 
-  React.useEffect(() => {
-    const migrated = localStorage.getItem('db-migration-complete');
-    if (!migrated) {
-      migrateToIndexedDB();
-    }
-  }, []);
 
   const [currentView, setCurrentView] = React.useState(() => {
     const hash = window.location.hash.replace('#', '').split('?')[0].split('/')[0];
-    return ['home', 'tracker', 'planner', 'nutrition', 'journal', 'clock'].includes(hash) ? hash : 'home';
+    return ['home', 'tracker', 'planner', 'nutrition', 'journal', 'clock', 'account', 'privacy'].includes(hash) ? hash : 'home';
   });
 
   const [direction, setDirection] = useState(0);
@@ -41,7 +38,7 @@ function AppInner() {
   React.useEffect(() => {
     const handlePopState = () => {
       const hash = window.location.hash.replace('#', '').split('?')[0].split('/')[0];
-      const validViews = ['home', 'tracker', 'planner', 'nutrition', 'journal', 'clock', 'privacy'];
+      const validViews = ['home', 'tracker', 'planner', 'nutrition', 'journal', 'clock', 'account', 'privacy'];
       const newView = validViews.includes(hash) ? hash : 'home';
 
       const oldIndex = viewOrder.indexOf(currentView);
@@ -74,6 +71,7 @@ function AppInner() {
         case 'nutrition': return <Nutrition />;
         case 'journal': return <Journal />;
         case 'clock': return <Clock />;
+        case 'account': return <Account />;
         case 'privacy': return <Privacy />;
         default: return <Home setCurrentView={handleSetView} />;
       }
@@ -99,8 +97,8 @@ function AppInner() {
 
   // Check onboarding and goal setting
   React.useEffect(() => {
-    const hasCompletedOnboarding = localStorage.getItem('neuroLift_hasCompletedOnboarding');
-    const hasSetGoal = localStorage.getItem('neuroLift_userGoal');
+    const hasCompletedOnboarding = safeStorage.getItem('neuroLift_hasCompletedOnboarding');
+    const hasSetGoal = safeStorage.getItem('neuroLift_userGoal');
 
     if (!hasCompletedOnboarding) {
       setShowOnboarding(true);
@@ -110,13 +108,7 @@ function AppInner() {
   }, []);
 
   const handleOnboardingComplete = () => {
-    localStorage.setItem('neuroLift_hasCompletedOnboarding', 'true');
-
-    // Insert demo data if no workouts exist
-    const existingHistory = safeStorage.getParsed('neuroLift_history', []);
-    if (existingHistory.length === 0) {
-      insertDemoData();
-    }
+    safeStorage.setItem('neuroLift_hasCompletedOnboarding', 'true');
 
     setShowOnboarding(false);
     setShowGoalSetting(true);
@@ -134,9 +126,9 @@ function AppInner() {
         color: isLight ? '#18181b' : '#ffffff',
       }}
     >
-      {showOnboarding ? (
+      {showOnboarding && !['account', 'privacy'].includes(currentView) ? (
         <Onboarding onComplete={handleOnboardingComplete} />
-      ) : showGoalSetting ? (
+      ) : showGoalSetting && !['account', 'privacy'].includes(currentView) ? (
         <GoalSetting onComplete={handleGoalSettingComplete} />
       ) : (
         <>
@@ -156,7 +148,7 @@ function AppInner() {
   );
 }
 
-function App() {
+function WorkspaceApp() {
   return (
     <ThemeProvider>
       <LanguageProvider>
@@ -164,6 +156,8 @@ function App() {
           <ClockProvider>
             <GymModeProvider>
               <OfflineIndicator />
+              <SyncIndicator />
+              <PwaStatus />
               <AppInner />
             </GymModeProvider>
           </ClockProvider>
@@ -173,5 +167,22 @@ function App() {
   );
 }
 
+function App() {
+  const [version, setVersion] = useState(0);
+  React.useEffect(() => {
+    const refresh = () => setVersion(v => v + 1);
+    const storageError = () => window.alert('Unable to save locally. Export a backup and free device storage.');
+    window.addEventListener('workspace-scope', refresh);
+    window.addEventListener('workspace-refreshed', refresh);
+    window.addEventListener('storage-error', storageError);
+    const stop = startSync();
+    return () => {
+      stop();
+      window.removeEventListener('workspace-scope', refresh);
+      window.removeEventListener('workspace-refreshed', refresh);
+      window.removeEventListener('storage-error', storageError);
+    };
+  }, []);
+  return <WorkspaceApp key={version} />;
+}
 export default App;
-

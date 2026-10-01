@@ -5,7 +5,6 @@ import { SpotlightButton } from '../ui/SpotlightButton';
 import { Card } from '../ui/Card';
 import { CompletedWorkout, ActiveExercise, WorkoutSet, WorkoutTemplate } from '../../types';
 import { getExerciseDatabase, getLocalizedMuscleName, getMuscleForExercise, getExerciseTranslation } from '../../utils/exerciseData';
-import { isEmgVerified, getEmgData } from '../../utils/emgData';
 import { useClock } from '../../contexts/ClockContext';
 import { playNotificationSound } from '../../utils/audio';
 import { ConfirmModal } from '../ui/ConfirmModal';
@@ -20,6 +19,7 @@ import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { hapticFeedback } from '../../utils/haptics';
 import { exerciseHistoryService } from '../../utils/exerciseHistory';
+import { ExerciseDemo } from '../ui/ExerciseDemo';
 
 export const Tracker: React.FC = () => {
   const {
@@ -389,7 +389,8 @@ export const Tracker: React.FC = () => {
   const updateSet = (exIdx: number, setIdx: number, field: keyof WorkoutSet, val: string) => {
     if (!activeExercises[exIdx]?.sets[setIdx]) return;
     const newExs = [...activeExercises];
-    const value = parseFloat(val) || 0;
+    const parsed = parseFloat(val);
+    const value = Number.isFinite(parsed) ? Math.max(0, field === 'reps' ? Math.floor(parsed) : parsed) : 0;
     (newExs[exIdx].sets[setIdx] as any)[field] = value;
     setActiveExercises(newExs);
   };
@@ -403,7 +404,7 @@ export const Tracker: React.FC = () => {
 
     if (isNowCompleted) {
       hapticFeedback.light();
-      startRestTimer(90);
+      startRestTimer(Number(safeStorage.getItem('neuroLift_rest_seconds') || 120));
     } else {
       stopRestTimer();
     }
@@ -424,24 +425,14 @@ export const Tracker: React.FC = () => {
 
     const record: CompletedWorkout = {
       id: generateId(),
-      date: new Date().toLocaleDateString(),
+      date: new Date().toISOString(),
       name: sessionName,
       durationSeconds: duration,
       exercises: activeExercises,
       totalVolume: volume
     };
 
-    // Save to IndexedDB
-    safeStorage.saveWorkout(record.id, record);
-
-    // Update Exercise History
-    exerciseHistoryService.updateHistory(record);
-
-    // Legacy backup (for now)
-    const history = safeStorage.getParsed<CompletedWorkout[]>('neuroLift_history', []);
-    safeStorage.setItem('neuroLift_history', JSON.stringify([record, ...history]));
-
-
+    await safeStorage.saveWorkout(record.id, record);
 
     setCompletedWorkout(record);
     handleSetPhase('summary');
@@ -520,7 +511,6 @@ export const Tracker: React.FC = () => {
     await safeStorage.saveTemplate(newTemplate.id, newTemplate);
     setTemplates(prev => [newTemplate, ...prev]);
 
-    // Sync to Firestore if user is authenticated
 
 
     setShowSaveTemplateModal(false);
@@ -716,6 +706,14 @@ export const Tracker: React.FC = () => {
               <div className="mb-12">
                 <h2 className="text-4xl md:text-5xl font-black text-white mb-2 uppercase tracking-tight">{t('tracker_select_muscle')}</h2>
                 <div className="h-1.5 w-24 bg-teal-500 mx-auto rounded-full mb-8"></div>
+                <label className="inline-flex items-center gap-3 text-sm mb-6">
+                  {language === 'ar' ? 'الراحة بين المجموعات' : language === 'fr' ? 'Repos entre les séries' : 'Rest between sets'}
+                  <select className="rounded-lg bg-zinc-900 border border-zinc-700 p-2 text-white"
+                    defaultValue={safeStorage.getItem('neuroLift_rest_seconds') || '120'}
+                    onChange={e => safeStorage.setItem('neuroLift_rest_seconds', e.target.value)}>
+                    {[60, 90, 120, 180, 300].map(seconds => <option key={seconds} value={seconds}>{seconds} s</option>)}
+                  </select>
+                </label>
 
                 {selectedMuscles.length > 0 && (
                   <div className="flex flex-wrap justify-center gap-2 mb-4 animate-in fade-in zoom-in duration-300">
@@ -883,7 +881,7 @@ export const Tracker: React.FC = () => {
                   /* Search Results View */
                   <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     {(() => {
-                      const categoryMeta: Record<string, { icon: string; key: string }> = {
+                      const categoryMeta: Record<string, { icon: string; key: Parameters<typeof t>[0] }> = {
                         dumbbells: { icon: '🏋️', key: 'cat_dumbbells' },
                         barbells: { icon: '🔩', key: 'cat_barbells' },
                         cables: { icon: '🔗', key: 'cat_cables' },
@@ -949,7 +947,7 @@ export const Tracker: React.FC = () => {
                                 <div className="flex-1">
                                   <span className="block text-sm font-black tracking-wide uppercase pr-10 rtl:pr-0 rtl:pl-10">{getExerciseTranslation(name, language)}</span>
                                   <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
-                                    {getLocalizedMuscleName(muscle, language)} · {categoryMeta[category]?.icon} {t(categoryMeta[category]?.key || '')}
+                                    {getLocalizedMuscleName(muscle, language)} · {categoryMeta[category]?.icon} {categoryMeta[category] ? t(categoryMeta[category].key) : ''}
                                   </span>
                                 </div>
                               </label>
@@ -985,7 +983,7 @@ export const Tracker: React.FC = () => {
 
                       {/* Render functional sub-groups */}
                       {Object.keys(exercisesByMuscle[majorMuscle] || {}).map(subGroup => {
-                        const categoryMeta: Record<string, { icon: string; key: string }> = {
+                        const categoryMeta: Record<string, { icon: string; key: Parameters<typeof t>[0] }> = {
                           dumbbells: { icon: '🏋️', key: 'cat_dumbbells' },
                           barbells: { icon: '🔩', key: 'cat_barbells' },
                           cables: { icon: '🔗', key: 'cat_cables' },
@@ -994,7 +992,7 @@ export const Tracker: React.FC = () => {
                         };
                         const categories = (['dumbbells', 'barbells', 'cables', 'bodyweight', 'machines'] as const);
 
-                        const renderExerciseCard = (ex: string, showEmgBadge: boolean) => (
+                        const renderExerciseCard = (ex: string) => (
                           <div key={ex} className="relative group">
                             <label
                               style={{
@@ -1019,25 +1017,6 @@ export const Tracker: React.FC = () => {
                               </div>
                               <div className="flex-1 min-w-0 pr-10 rtl:pr-0 rtl:pl-10">
                                 <span className="block text-sm font-black tracking-wide uppercase">{getExerciseTranslation(ex, language)}</span>
-                                {showEmgBadge && (() => {
-                                  const emg = getEmgData(ex);
-                                  return emg ? (
-                                    <a
-                                      href={emg.url}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                      }}
-                                      className="inline-flex items-center gap-1 mt-1 text-[9px] font-black uppercase tracking-widest text-teal-400 hover:text-teal-300 hover:underline transition-all"
-                                      title={t('btn_learn') || "Read the study"}
-                                    >
-                                      <span>🧬</span> {emg.activation} · {emg.source}
-                                      <svg className="w-2.5 h-2.5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                                    </a>
-                                  ) : null;
-                                })()}
                               </div>
                             </label>
 
@@ -1080,7 +1059,7 @@ export const Tracker: React.FC = () => {
                                       <span className="text-zinc-600 font-medium">{exercises.length}</span>
                                     </h5>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                      {exercises.map(ex => renderExerciseCard(ex, isEmgVerified(ex)))}
+                                      {exercises.map(ex => renderExerciseCard(ex))}
                                     </div>
                                   </div>
                                 );
@@ -1142,6 +1121,7 @@ export const Tracker: React.FC = () => {
                     </div>
 
                     <div className="flex flex-col gap-4">
+                      <ExerciseDemo name={tutorialExercise} />
                       <a
                         href={`https://www.youtube.com/results?search_query=${encodeURIComponent(tutorialExercise + ' exercise tutorial short')}`}
                         target="_blank"
@@ -1968,5 +1948,3 @@ export const Tracker: React.FC = () => {
     </div >
   );
 };
-
-

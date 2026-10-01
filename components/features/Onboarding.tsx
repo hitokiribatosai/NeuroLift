@@ -1,3 +1,4 @@
+import { safeStorage } from '../../utils/storage';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { SpotlightButton } from '../ui/SpotlightButton';
@@ -15,7 +16,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   const [[page, direction], setPage] = useState([0, 0]);
 
   const handleComplete = () => {
-    localStorage.setItem('neuroLift_hasCompletedOnboarding', 'true');
+    safeStorage.setItem('neuroLift_hasCompletedOnboarding', 'true');
     onComplete();
   };
 
@@ -207,7 +208,7 @@ const LibraryScreen: React.FC = () => (
 
 const OfflineScreen: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
   const handleComplete = () => {
-    localStorage.setItem('neuroLift_hasCompletedOnboarding', 'true');
+    safeStorage.setItem('neuroLift_hasCompletedOnboarding', 'true');
     onComplete();
   };
 

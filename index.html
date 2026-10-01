@@ -9,43 +9,15 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>NeuroLift - Science Based Fitness</title>
+  <title>NeuroLift — Workout Tracker</title>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <link rel="apple-touch-icon" href="/logo.png" />
   <link rel="icon" type="image/png" href="/favicon.png" />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
-    rel="stylesheet">
+
   <link rel="stylesheet" href="/index.css">
 
-  <!-- Synchronous theme init: runs BEFORE React renders to prevent flash -->
-  <script>
-    (function () {
-      try {
-        var theme = null;
-        // Try localStorage first
-        try { theme = localStorage.getItem('neuroLift_theme'); } catch (e) { }
-        // Try IndexedDB-backed safeStorage key (same key used by the app)
-        if (!theme) {
-          try { theme = sessionStorage.getItem('neuroLift_theme'); } catch (e) { }
-        }
-        var isLight = theme === 'light';
-        var html = document.documentElement;
-        if (isLight) {
-          html.classList.remove('dark');
-          html.classList.add('light');
-          html.style.backgroundColor = '#ffffff';
-          html.style.colorScheme = 'light';
-          // Pre-set body bg synchronously via a style tag
-          var s = document.createElement('style');
-          s.textContent = 'html,body,#root{background-color:#ffffff!important;color:#18181b!important}';
-          document.head.appendChild(s);
-        } else {
-          html.classList.add('dark');
-          html.style.backgroundColor = '#0a0a0a';
-          html.style.colorScheme = 'dark';
-        }
-      } catch (e) { }
-    })();
-  </script>
+  <script src="/theme-init.js"></script>
 </head>
 
 <body>

@@ -3,7 +3,9 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { Card } from '../ui/Card';
 import { SpotlightButton } from '../ui/SpotlightButton';
 import { getExerciseDatabase, getLocalizedMuscleName, getExerciseTranslation } from '../../utils/exerciseData';
-import { isEmgVerified, getEmgData } from '../../utils/emgData';
+import { TrainingGuidance } from '../ui/TrainingGuidance';
+import { ExerciseDemo } from '../ui/ExerciseDemo';
+import { ExerciseEvidenceHighlights } from '../ui/ExerciseEvidenceHighlights';
 import { Modal } from '../ui/Modal';
 
 export const ProgramPlanner: React.FC = () => {
@@ -127,6 +129,8 @@ export const ProgramPlanner: React.FC = () => {
                   {getLocalizedMuscleName(selectedMuscle, language)}
                 </h3>
 
+                <ExerciseEvidenceHighlights group={selectedMuscle} onViewDemo={setSelectedExercise} />
+
                 {/* Subcategory Navigation */}
                 <div className="flex flex-wrap gap-2">
                   {Object.keys(exerciseDB[selectedMuscle]).map(subKey => (
@@ -153,9 +157,7 @@ export const ProgramPlanner: React.FC = () => {
                     exs.forEach(ex => { if (!allExercises.includes(ex)) allExercises.push(ex); });
                   });
 
-                  const emgExercises = allExercises.filter(ex => isEmgVerified(ex));
-
-                  const renderCard = (ex: string, i: number, showBadge: boolean) => (
+                  const renderCard = (ex: string, i: number) => (
                     <Card
                       key={`${ex}-${i}`}
                       onClick={() => setSelectedExercise(ex)}
@@ -167,22 +169,6 @@ export const ProgramPlanner: React.FC = () => {
                         </div>
                         <div className="flex-1 min-w-0 pr-10 rtl:pr-0 rtl:pl-10">
                           <span className="block text-zinc-900 dark:text-zinc-200 font-black text-xs uppercase tracking-tight">{getExerciseTranslation(ex, language)}</span>
-                          {showBadge && (() => {
-                            const emg = getEmgData(ex);
-                            return emg ? (
-                              <a
-                                href={emg.url}
-                                target="_blank"
-                                rel="noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                className="inline-flex items-center gap-1 mt-1 text-[9px] font-black uppercase tracking-widest text-teal-600 dark:text-teal-400 hover:text-teal-500 hover:underline transition-all"
-                                title={t('btn_learn') || "Read the study"}
-                              >
-                                <span>🧬</span> {emg.activation} · {emg.source}
-                                <svg className="w-2.5 h-2.5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                              </a>
-                            ) : null;
-                          })()}
                         </div>
                       </div>
 
@@ -203,18 +189,6 @@ export const ProgramPlanner: React.FC = () => {
 
                   return (
                     <>
-                      {/* EMG Tested Section */}
-                      {emgExercises.length > 0 && (
-                        <div>
-                          <h4 className="text-[10px] font-black uppercase tracking-[0.4em] mb-6 flex items-center gap-4 ml-1 text-teal-600 dark:text-teal-400">
-                            {t('emg_tested_title')}
-                            <div className="h-px flex-1 bg-teal-500/20"></div>
-                          </h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {emgExercises.map((ex, i) => renderCard(ex, i, true))}
-                          </div>
-                        </div>
-                      )}
 
                       {/* Full Library */}
                       {allExercises.length > 0 && (
@@ -224,7 +198,7 @@ export const ProgramPlanner: React.FC = () => {
                             <div className="h-px flex-1 bg-zinc-100 dark:bg-zinc-900"></div>
                           </h4>
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {allExercises.map((ex, i) => renderCard(ex, i, isEmgVerified(ex)))}
+                            {allExercises.map((ex, i) => renderCard(ex, i))}
                           </div>
                         </div>
                       )}
@@ -246,11 +220,11 @@ export const ProgramPlanner: React.FC = () => {
         </div>
       </div>
 
+      <TrainingGuidance />
       {/* Video/Image Modal */}
       <Modal isOpen={!!selectedExercise} onClose={() => setSelectedExercise(null)}>
         {selectedExercise && (() => {
           const tutorialUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(selectedExercise + ' exercise tutorial short')}`;
-          const emg = getEmgData(selectedExercise);
           return (
             <div className="relative w-full max-w-2xl mx-auto rounded-[3rem] border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-10 shadow-3xl overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-2 bg-teal-500"></div>
@@ -267,22 +241,8 @@ export const ProgramPlanner: React.FC = () => {
                 <h3 className="text-3xl font-black text-zinc-900 dark:text-white uppercase tracking-tighter leading-tight">{getExerciseTranslation(selectedExercise, language)}</h3>
               </div>
 
-              {emg && (
-                <div className="mb-8 ml-7">
-                  <a
-                    href={emg.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-teal-600 dark:text-teal-400 bg-teal-500/10 hover:bg-teal-500/20 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-                    title={t('btn_learn') || "Read the study"}
-                  >
-                    🧬 {t('emg_verified')} · {emg.activation} · {emg.source}
-                    <svg className="w-3 h-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                  </a>
-                </div>
-              )}
-
               <div className="flex flex-col gap-4">
+                <ExerciseDemo name={selectedExercise} />
                 <a
                   href={tutorialUrl}
                   target="_blank"
