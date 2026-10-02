@@ -21,10 +21,13 @@ import { Account } from './components/features/Account';
 import { startSync } from './utils/sync';
 import { SyncIndicator } from './components/ui/SyncIndicator';
 import { PwaStatus } from './components/ui/PwaStatus';
+import { Capacitor } from '@capacitor/core';
+import { WebFrame, WebHome, WebWelcome, WebGoals } from './components/web/WebExperience';
 
 function AppInner() {
   const { theme } = useTheme();
   const isLight = theme === 'light';
+  const isWebsite = !Capacitor.isNativePlatform();
 
 
   const [currentView, setCurrentView] = React.useState(() => {
@@ -52,12 +55,13 @@ function AppInner() {
   }, [currentView, viewOrder]);
 
   const handleSetView = (view: string) => {
-    if (view !== currentView) {
+    const route = view.split('?')[0];
+    if (route !== currentView) {
       const oldIndex = viewOrder.indexOf(currentView);
-      const newIndex = viewOrder.indexOf(view);
+      const newIndex = viewOrder.indexOf(route);
       setDirection(newIndex < oldIndex ? -1 : 1);
       window.history.pushState(null, '', `/#${view}`);
-      setCurrentView(view);
+      setCurrentView(route);
       window.scrollTo(0, 0);
     }
   };
@@ -65,9 +69,9 @@ function AppInner() {
   const renderView = () => {
     const viewContent = (() => {
       switch (currentView) {
-        case 'home': return <Home setCurrentView={handleSetView} />;
+        case 'home': return isWebsite ? <WebHome setCurrentView={handleSetView} /> : <Home setCurrentView={handleSetView} />;
         case 'tracker': return <Tracker />;
-        case 'planner': return <ProgramPlanner />;
+        case 'planner': return <ProgramPlanner initialMuscle={isWebsite ? new URLSearchParams(window.location.hash.split('?')[1]).get('muscle') || undefined : undefined} />;
         case 'nutrition': return <Nutrition />;
         case 'journal': return <Journal />;
         case 'clock': return <Clock />;
@@ -117,6 +121,12 @@ function AppInner() {
   const handleGoalSettingComplete = (goal: string | null) => {
     setShowGoalSetting(false);
   };
+
+  if (isWebsite) {
+    if (showOnboarding && !['account', 'privacy'].includes(currentView)) return <WebWelcome onComplete={handleOnboardingComplete} />;
+    if (showGoalSetting && !['account', 'privacy'].includes(currentView)) return <WebGoals onComplete={handleGoalSettingComplete} />;
+    return <WebFrame currentView={currentView} setCurrentView={handleSetView}><AnimatePresence mode="wait">{renderView()}</AnimatePresence></WebFrame>;
+  }
 
   return (
     <div

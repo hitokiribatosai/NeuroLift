@@ -9,8 +9,9 @@ import { Language } from '../types';
 interface NavbarProps {
   currentView: string;
   setCurrentView: (view: string) => void;
+  settingsOnly?: boolean;
 }
-export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) => {
+export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, settingsOnly = false }) => {
   const [scrolled, setScrolled] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { language, setLanguage, t, dir } = useLanguage();
@@ -283,6 +284,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
 
               <a
                 href="#privacy"
+                onClick={settingsOnly ? (event) => { event.preventDefault(); setCurrentView('privacy'); setIsSettingsOpen(false); } : undefined}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-zinc-900 hover:border-teal-500/30 text-zinc-400 hover:text-white transition-all text-xs font-bold mt-2"
               >
                 <div className="p-1.5 bg-zinc-800 rounded-lg text-zinc-500">
@@ -301,26 +303,26 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
     <>
       {/* Top Navbar: Always visible, houses Logo and Settings Gear */}
       <nav
-        className={`fixed top-0 z-[60] w-full transition-all duration-500 ${scrolled ? 'bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-zinc-800/50 shadow-xl' : 'bg-gradient-to-b from-[#0a0a0a]/80 to-transparent'}`}
+        className={settingsOnly ? 'web-settings-nav' : `fixed top-0 z-[60] w-full transition-all duration-500 ${scrolled ? 'bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-zinc-800/50 shadow-xl' : 'bg-gradient-to-b from-[#0a0a0a]/80 to-transparent'}`}
         dir={dir}
         style={{
           paddingTop: 'env(safe-area-inset-top)',
           ...(scrolled ? { WebkitBackdropFilter: 'blur(12px)' } : {})
         }}
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
+        <div className={settingsOnly ? '' : 'mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6'}>
           {/* Logo */}
-          <motion.div
+          {!settingsOnly && <motion.div
             className="flex shrink-0 items-center gap-2 cursor-pointer"
             onClick={() => setCurrentView('home')}
             whileTap={{ scale: 0.95 }}
           >
             <img src="/logo.png" alt="NeuroLift" className="h-12 w-auto rounded-xl shadow-lg" />
             <span className="text-white font-black tracking-tighter text-lg">NeuroLift</span>
-          </motion.div>
+          </motion.div>}
 
           {/* Desktop Navigation Items - Hidden on Mobile */}
-          <div className="hidden md:flex items-center gap-4 lg:gap-8 text-sm font-bold text-zinc-400 mx-8">
+          {!settingsOnly && <div className="hidden md:flex items-center gap-4 lg:gap-8 text-sm font-bold text-zinc-400 mx-8">
             {navItems.map((item) => (
               <motion.button
                 key={item.id}
@@ -338,7 +340,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
                 )}
               </motion.button>
             ))}
-          </div>
+          </div>}
 
 
           {/* Settings Section */}
@@ -368,7 +370,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
       </nav>
 
       {/* Bottom Tab Bar: Visible only on smaller screens */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[60] pointer-events-none">
+      {!settingsOnly && <div className="md:hidden fixed bottom-0 left-0 right-0 z-[60] pointer-events-none">
         <div
           className="w-full backdrop-blur-xl border-t shadow-2xl flex items-center justify-around p-2 pb-[calc(env(safe-area-inset-bottom)+8px)] pointer-events-auto relative overflow-hidden"
           style={{
@@ -407,7 +409,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView }) =
             </motion.button>
           ))}
         </div>
-      </div>
+      </div>}
 
       {/* Import Confirmation Modal */}
       {showImportConfirm && (

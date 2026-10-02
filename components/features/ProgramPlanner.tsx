@@ -28,9 +28,9 @@ function LibraryCard({ name, detail, onOpen }: { name: string; detail?: string; 
   </button>;
 }
 
-export const ProgramPlanner: React.FC = () => {
+export const ProgramPlanner: React.FC<{ initialMuscle?: string }> = ({ initialMuscle }) => {
   const { t, language } = useLanguage();
-  const [selectedMuscle, setSelectedMuscle] = useState<string | null>('Chest');
+  const [selectedMuscle, setSelectedMuscle] = useState<string | null>(initialMuscle && Object.hasOwn(getExerciseDatabase(language), initialMuscle) ? initialMuscle : 'Chest');
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>('Upper Chest');
   const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
