@@ -1,4 +1,4 @@
-# Website redesign review
+# Official website design
 
 ## Saved baseline
 
@@ -6,7 +6,7 @@
 - Baseline commit: `ba1ba3a`
 - Review branch: `design/website-overhaul`
 
-The tag is an annotated checkpoint of the previous design. The review branch does not replace `main`. Review the Vercel branch preview before merging; production stays on the old design while its production branch remains `main`.
+The user approved this design as the official desktop and mobile website interface. The approved redesign and its six refinements are promoted to `main`; the review branch remains available for comparison. The tag preserves the previous design for rollback. This approval does not extend the redesign to native Android or iOS apps.
 
 ## Scope
 
@@ -33,7 +33,7 @@ The browser suite covers responsive sections, onboarding, native runtime isolati
 
 ## Restore options
 
-Before merging, simply continue using `main` or close the review PR: production never adopted the redesign.
+The previous website is preserved by the baseline tag above. Restore through a reviewed revert and deployment, not by deleting history.
 
 To inspect the checkpoint without altering any existing work:
 
@@ -42,4 +42,4 @@ git fetch origin --tags
 git worktree add ../NeuroLift-design-baseline design-before-web-overhaul-2026-10-02
 ```
 
-After a future merge, revert the redesign commit(s) through a new branch and PR, then redeploy. Do not reset or force-push `main`, and do not overwrite unrelated later work. This is a code/design checkpoint, not a backup of users' workout data; export that separately from settings.
+To roll back, revert the refinement commit `978a934` and then the redesign commit `a878b5c` through a new branch and PR, resolving any later overlapping changes carefully, then redeploy. Do not reset or force-push `main`, and do not overwrite unrelated later work. This is a code/design checkpoint, not a backup of users' workout data; export that separately from settings.
