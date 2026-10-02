@@ -80,7 +80,7 @@ test('library opens a browsable research view with linked studies', async ({ pag
     },
   })));
   await page.goto('/#planner');
-  await page.getByRole('button', { name: 'Evidence-backed only' }).click();
+  await page.getByRole('button', { name: 'Research-supported', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Research-backed options with demonstrations' }).first()).toBeVisible();
   await expect(page.getByRole('link', { name: /Low-load bench press and push-up/ })).toBeVisible();
   await page.getByRole('button', { name: 'All exercises' }).click();

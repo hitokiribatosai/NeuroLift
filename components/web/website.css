@@ -1,4 +1,66 @@
 /* Browser-only design system. Every rule is scoped; Capacitor keeps its existing UI. */
+.website-redesign .web-confirm-panel { padding: 30px !important; }
+.website-redesign .web-confirm-panel h2 { font-size: 1.6rem; font-weight: 700; }
+.website-redesign .web-confirm-panel p { margin: 20px 0; line-height: 1.7; }
+.website-redesign .web-confirm-panel > div { display: flex; flex-wrap: wrap; justify-content: end; gap: 12px; }
+.website-redesign .web-status-region { padding: 10px 40px 0; }
+.website-redesign .web-save-status { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: .72rem; color: var(--web-muted); align-items: center; }
+.website-redesign .web-save-status button { text-decoration: underline; }
+.website-redesign .web-status-region > .fixed { position: static; margin: 10px 0; max-width: none; }
+body .website-redesign.web-modal-theme { min-height: 0; }
+body .website-redesign.web-modal-theme .web-surface { padding: 0; min-height: 0; }
+body .website-redesign.web-modal-theme [class] { -webkit-text-fill-color: currentColor !important; }
+.website-redesign .web-surface button:focus-visible, .website-redesign .web-surface a:focus-visible, .website-redesign summary:focus-visible { outline: 3px solid var(--web-green) !important; outline-offset: 3px; }
+@media (max-width: 800px) { .website-redesign .web-status-region { padding-inline: 20px; } }
+.website-redesign .web-library-context { display: flex; justify-content: space-between; gap: 12px; margin: 0 0 20px; font-size: .85rem; font-weight: 650; }
+.website-redesign .web-library-context button { text-decoration: underline; }
+.website-redesign .web-research-note { padding: 16px; margin-bottom: 22px; border: 1px solid var(--web-line); border-radius: 10px; background: var(--web-paper); font-size: .85rem; line-height: 1.8; }
+.website-redesign .web-research-note summary { cursor: pointer; font-weight: 650; min-height: 44px; }
+.website-redesign .web-research-note li { margin: 8px 20px; list-style: disc; }
+.website-redesign .web-library-toolbar { position: sticky; top: 0; z-index: 30; background: var(--web-paper) !important; box-shadow: 0 4px 12px #0001; }
+.website-redesign[data-view="planner"] .web-surface nav.sticky { top: 110px; }
+.website-redesign .web-library-badges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; font-size: .66rem; font-weight: 500; }
+.website-redesign .web-library-badges > span { padding: 5px 7px; border: 1px solid var(--web-line); border-radius: 5px; background: var(--web-soft); }
+.website-redesign .web-library-badges > span + span { border-color: var(--web-green); }
+.website-redesign .web-journal-tabs { display: flex; gap: 8px; margin-bottom: 28px; border-bottom: 1px solid var(--web-line); padding-bottom: 12px; }
+.website-redesign .web-journal-tabs button { padding: 12px 20px; border-radius: 8px; border: 1px solid var(--web-line); }
+.website-redesign .web-journal-tabs [aria-pressed="true"] { background: var(--web-accent); color: #17242a; }
+.website-redesign .web-journal-measurements { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(0, 1.5fr); gap: 24px; }
+.website-redesign .web-journal-measurements > div { grid-column: auto; }
+@media (max-width: 1000px) { .website-redesign .web-journal-measurements { grid-template-columns: 1fr; } }
+.website-redesign .web-session { max-width: 1200px; margin: auto; }
+.website-redesign .web-session-header, .website-redesign .web-session-clock, .website-redesign .web-rest-bar, .website-redesign .web-previous { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.website-redesign .web-session-header h1 { margin: 8px 0; }
+.website-redesign .web-session-header p { color: var(--web-muted); font-size: .85rem; }
+.website-redesign .web-session-clock strong { font: 650 1.8rem ui-monospace, monospace; }
+.website-redesign .web-session progress { display: block; width: 100%; height: 6px; margin: 24px 0; accent-color: var(--web-green); }
+.website-redesign .web-session-layout { display: grid; grid-template-columns: 240px minmax(0,1fr); gap: 24px; }
+.website-redesign .web-session-exercises { display: flex; flex-direction: column; align-self: start; gap: 8px; }
+.website-redesign .web-session-exercises > button { display: flex; align-items: center; gap: 12px; text-align: start; padding: 12px; border: 1px solid var(--web-line); border-radius: 8px; }
+.website-redesign .web-session-exercises [aria-current] { background: var(--web-accent); color: #17242a; }
+.website-redesign .web-session-exercises small { display: block; margin-top: 5px; }
+.website-redesign .web-session-exercises strong { font-size: .82rem; }
+.website-redesign .web-rest-bar { padding: 12px 16px; border: 1px solid var(--web-line); border-radius: 10px; margin-bottom: 16px; background: var(--web-soft); font-size: .85rem; }
+.website-redesign .web-rest-bar strong { font: 750 1.5rem ui-monospace, monospace; margin-inline-end: 8px; }
+.website-redesign .web-rest-bar button { padding-inline: 12px; text-decoration: underline; }
+.website-redesign .web-previous { background: var(--web-soft); padding: 16px; border-radius: 8px; margin-bottom: 22px; font-size: .8rem; }
+.website-redesign .web-previous p { margin-top: 8px; line-height: 1.8; }
+.website-redesign .web-set-labels, .website-redesign .web-set-row { display: grid; grid-template-columns: 36px minmax(50px,1fr) minmax(50px,1fr) 64px 44px; gap: 12px; align-items: center; text-align: center; }
+.website-redesign .web-set-labels { font-size: .7rem; margin-bottom: 10px; }
+.website-redesign .web-set-row { padding-block: 10px; border-top: 1px solid var(--web-line); }
+.website-redesign .web-set-row input { width: 100%; min-height: 48px; text-align: center; }
+.website-redesign .web-set-row button[aria-pressed] { font-size: 1.6rem; border: 1px solid var(--web-line); border-radius: 8px; }
+.website-redesign .web-set-row[data-completed="true"] { background: var(--web-soft); }
+.website-redesign .web-set-row button[aria-pressed="true"] { background: var(--web-accent); color: #17242a; }
+.website-redesign .web-set-menu { position: relative; }
+.website-redesign .web-set-menu summary { cursor: pointer; padding-block: 12px; list-style: none; min-height: 44px; }
+.website-redesign .web-set-menu > div { position: absolute; inset-inline-end: 0; top: 100%; z-index: 5; background: var(--web-paper); border: 1px solid var(--web-line); border-radius: 8px; width: 190px; padding: 8px; box-shadow: 0 8px 24px #0002; }
+.website-redesign .web-set-menu button { display: block; width: 100%; text-align: start; font-size: .8rem; }
+.website-redesign .web-remove-exercise { margin-top: 18px; color: var(--web-muted); font-size: .75rem; text-decoration: underline; }
+.website-redesign .web-session-actions { position: sticky; bottom: 12px; z-index: 20; background: var(--web-paper); border: 1px solid var(--web-line); border-radius: 10px; padding: 12px; margin-top: 24px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.website-redesign .web-session-actions p { font-size: .8rem; margin-bottom: 10px; }
+@media (max-width: 900px) { .website-redesign .web-session-layout { grid-template-columns: 1fr; } .website-redesign .web-session-exercises { flex-direction: row; overflow-x: auto; } .website-redesign .web-session-exercises > button { flex: 0 0 180px; } }
+@media (max-width: 560px) { .website-redesign .web-set-editor { padding: 14px; } .website-redesign .web-set-labels, .website-redesign .web-set-row { grid-template-columns: 24px minmax(42px,1fr) minmax(42px,1fr) 44px 32px; gap: 6px; } .website-redesign .web-set-menu { min-width: 0; } }
 .website-redesign {
   --web-bg: #f5f5ee; --web-paper: #fff; --web-ink: #17242a; --web-muted: #59666b;
   --web-line: #dce1d9; --web-soft: #eef1e9; --web-accent: #d7f76b; --web-green: #34591c;
@@ -45,6 +107,7 @@ html.dark .website-redesign { --web-bg:#111a20; --web-paper:#1a262d; --web-ink:#
 .website-redesign .web-footer span:first-child { font-weight: 850; }
 .website-redesign .web-skip { position: fixed; top: -100px; inset-inline-start: 250px; z-index: 300; background: var(--web-accent); color: #17242a; padding: 15px; border-radius: 8px; }
 .website-redesign .web-skip:focus { top: 10px; }
+.website-redesign .web-skip:not(:focus) { clip-path: inset(50%); width: 1px; height: 1px; overflow: hidden; padding: 0; white-space: nowrap; }
 .website-redesign .web-dashboard { max-width: 1400px; margin: auto; }
 .website-redesign .web-hero { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(220px, .75fr); gap: 28px; padding-block: 18px 36px; }
 .website-redesign .web-hero-copy { padding-block: 16px 0; }
@@ -155,7 +218,7 @@ html.dark[data-accent="yellow"] .website-redesign { --web-green: #f5df7e; }
 @media (max-width: 800px) {
   .website-redesign .web-sidebar { position: static; width: 100%; padding: 16px 20px 0; border: 0; border-bottom: 1px solid var(--web-line); }
   .website-redesign .web-sidebar > .web-eyebrow, .website-redesign .web-sidebar-note, .website-redesign .web-privacy { display: none; }
-  .website-redesign .web-navigation { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 15px; gap: 5px; padding-bottom: 12px; }
+  .website-redesign .web-navigation { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); margin-top: 15px; gap: 5px; padding-bottom: 12px; }
   .website-redesign .web-navigation button { flex-direction: column; justify-content: center; padding: 10px 3px; font-size: .65rem; gap: 6px; text-align: center; }
   .website-redesign .web-nav-arrow { display: none; }
   .website-redesign .web-workspace { margin-inline-start: 0; }
@@ -189,3 +252,8 @@ html.dark[data-accent="yellow"] .website-redesign { --web-green: #f5df7e; }
   .website-redesign .web-surface .text-8xl { font-size: 3.5rem; }
 }
 @media (prefers-reduced-motion: reduce) { .website-redesign *, .website-redesign *::before, .website-redesign *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+.website-redesign .web-navigation .web-more-nav { display: none; }
+@media (max-width: 800px) {
+  .website-redesign .web-navigation .web-more-nav { display: flex; grid-column: 5; grid-row: 1; }
+  .website-redesign .web-navigation:not(.is-expanded) .web-secondary-nav { display: none; }
+}

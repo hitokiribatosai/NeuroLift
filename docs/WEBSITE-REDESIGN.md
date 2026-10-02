@@ -16,6 +16,17 @@ The browser receives a new responsive workspace, dashboard, onboarding and goal 
 
 ## Local review
 
+### Refinement pass
+
+1. Browser workout logging has a focused exercise editor, completed-set progress, previous performance, accessible weight/reps inputs, inline rest controls, and a finish confirmation. Native logging remains unchanged.
+2. The browser journal starts with workouts and progress, with a separate measurements section; switching sections preserves the mounted form.
+3. Small-screen navigation uses four primary destinations plus More for secondary tools.
+4. The library has sticky search/filter controls, a selected-area summary, and separate demonstration/research labels. Missing images are explicitly identified.
+5. Browser research wording uses Research-supported, explains direct versus related-movement training studies, and retains study links. This pass does not add studies or change their classifications.
+6. Browser save/sync/offline feedback is inline. Website dialogs use focus trapping, Escape dismissal, and the new theme. Tests cover a saved session through reload and completion, measurement entry, mobile navigation, keyboard dismissal, and enlarged Arabic layout.
+
+Local saves and server synchronization are distinct. The active session stays on the device; completed workout/account data follows the existing synchronization rules. This is not a comprehensive accessibility certification or physical-device validation.
+
 Run `npm ci`, `npm run check`, then `npm run dev`. The browser interface is selected automatically. Exercise every route, change language and theme in settings, and check a saved workout in addition to the empty state. Run `npm run test:browser` after building (install Playwright Chromium if needed).
 
 The browser suite covers responsive sections, onboarding, native runtime isolation, authentication, muscle selection, evidence links, RTL, and offline loading. Native runtime simulation is not a replacement for physical-device testing before a store release.

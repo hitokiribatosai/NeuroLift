@@ -165,9 +165,7 @@ function WorkspaceApp() {
         <FontSizeProvider>
           <ClockProvider>
             <GymModeProvider>
-              <OfflineIndicator />
-              <SyncIndicator />
-              <PwaStatus />
+              {Capacitor.isNativePlatform() && <><OfflineIndicator /><SyncIndicator /><PwaStatus /></>}
               <AppInner />
             </GymModeProvider>
           </ClockProvider>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { getExerciseDatabase, getLocalizedMuscleName, getExerciseTranslation, getEnglishExerciseName } from '../../utils/exerciseData';
 import { TrainingGuidance } from '../ui/TrainingGuidance';
@@ -7,6 +8,7 @@ import { ExerciseEvidenceHighlights } from '../ui/ExerciseEvidenceHighlights';
 import { EXERCISE_EVIDENCE } from '../../utils/exerciseEvidence';
 import { Modal } from '../ui/Modal';
 import media from '../../utils/exerciseMedia.json';
+import { WebResearchNote } from '../web/WebResearchNote';
 
 type MediaEntry = { source: string; images: string[] };
 const demos = media as Record<string, MediaEntry>;
@@ -15,6 +17,9 @@ const categories = ['machines', 'dumbbells', 'barbells', 'cables', 'bodyweight']
 function LibraryCard({ name, detail, onOpen }: { name: string; detail?: string; onOpen: () => void }) {
   const { language, t } = useLanguage();
   const demo = demos[getEnglishExerciseName(name)];
+  const isWebsite = !Capacitor.isNativePlatform();
+  const evidence = EXERCISE_EVIDENCE.find(entry => entry.name === getEnglishExerciseName(name));
+  const c = (en: string, fr: string, ar: string) => language === 'fr' ? fr : language === 'ar' ? ar : en;
   return <button type="button" onClick={onOpen}
     className="group flex min-h-28 w-full items-center gap-4 rounded-2xl border border-zinc-200 bg-white p-3 text-start transition hover:-translate-y-0.5 hover:border-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 dark:border-zinc-800 dark:bg-zinc-900/70">
     <span className={`flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700 ${demo?.source === 'workout-guide' ? 'bg-zinc-900' : 'bg-white'}`}>
@@ -22,6 +27,7 @@ function LibraryCard({ name, detail, onOpen }: { name: string; detail?: string; 
         : <svg className="h-8 w-8 text-zinc-400" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16v12H4zM8 10h.01M4 16l5-4 3 3 2-2 6 4" /></svg>}
     </span>
     <span className="min-w-0 flex-1"><span className="block text-sm font-bold leading-snug text-zinc-950 dark:text-white">{getExerciseTranslation(name, language)}</span>
+      {isWebsite && <span className="web-library-badges"><span>{demo ? c('Demo available', 'Démo disponible', 'عرض متاح') : c('Images not yet available', 'Images non disponibles', 'الصور غير متاحة بعد')}</span>{evidence && <span>{t(evidence.level === 'direct' ? 'research_direct_badge' : 'research_related_badge')}</span>}</span>}
       {detail && <span className="mt-1 block text-xs text-zinc-600 dark:text-zinc-400">{detail}</span>}
       <span className="mt-2 block text-xs font-bold text-teal-700 dark:text-teal-300">{demo ? t('research_view_demo') : t('library_view_details')} <span aria-hidden="true">→</span></span>
     </span>
@@ -30,6 +36,7 @@ function LibraryCard({ name, detail, onOpen }: { name: string; detail?: string; 
 
 export const ProgramPlanner: React.FC<{ initialMuscle?: string }> = ({ initialMuscle }) => {
   const { t, language } = useLanguage();
+  const isWebsite = !Capacitor.isNativePlatform();
   const [selectedMuscle, setSelectedMuscle] = useState<string | null>(initialMuscle && Object.hasOwn(getExerciseDatabase(language), initialMuscle) ? initialMuscle : 'Chest');
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>('Upper Chest');
   const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
@@ -63,7 +70,7 @@ export const ProgramPlanner: React.FC<{ initialMuscle?: string }> = ({ initialMu
       <p className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-bold text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">{Object.keys(demos).length} {t('library_demonstrations')}</p>
     </div>
 
-    <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-3 sm:flex-row sm:items-center dark:border-zinc-800 dark:bg-zinc-900/50">
+    <div className={`${isWebsite ? 'web-library-toolbar ' : ''}mb-6 flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-3 sm:flex-row sm:items-center dark:border-zinc-800 dark:bg-zinc-900/50`}>
       <div className="relative min-w-0 flex-1">
         <svg className="absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
         <input type="search" aria-label={t('planner_search_placeholder')} placeholder={t('planner_search_placeholder')}
@@ -74,10 +81,12 @@ export const ProgramPlanner: React.FC<{ initialMuscle?: string }> = ({ initialMu
         <button type="button" aria-pressed={!researchOnly} onClick={() => { setResearchOnly(false); if (!selectedMuscle && !query) { setSelectedMuscle('Chest'); setSelectedSubCategory('Upper Chest'); } }}
           className={`min-h-11 rounded-xl border px-3 text-xs font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 ${!researchOnly ? 'border-teal-600 bg-teal-600 text-white dark:border-teal-400 dark:bg-teal-400 dark:text-zinc-950' : 'border-zinc-300 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-200'}`}>{t('picker_all_filter')}</button>
         <button type="button" aria-pressed={researchOnly} onClick={() => { setResearchOnly(true); if (!query) setSelectedMuscle(null); }}
-          className={`min-h-11 rounded-xl border px-3 text-xs font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 ${researchOnly ? 'border-teal-600 bg-teal-600 text-white dark:border-teal-400 dark:bg-teal-400 dark:text-zinc-950' : 'border-zinc-300 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-200'}`}>{t('picker_research_filter')}</button>
+          className={`min-h-11 rounded-xl border px-3 text-xs font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 ${researchOnly ? 'border-teal-600 bg-teal-600 text-white dark:border-teal-400 dark:bg-teal-400 dark:text-zinc-950' : 'border-zinc-300 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-200'}`}>{isWebsite ? (language === 'fr' ? 'Avec études' : language === 'ar' ? 'مدعومة بالأبحاث' : 'Research-supported') : t('picker_research_filter')}</button>
       </div>
     </div>
 
+    {isWebsite && <p className="web-library-context" role="status">{query ? `${uniqueResults.length} ${t('library_results')}` : selectedMuscle && currentSubgroup ? `${getLocalizedMuscleName(selectedMuscle, language)} / ${getLocalizedMuscleName(currentSubgroup, language)}` : t('research_picks_title')}{query && <button onClick={() => setSearchQuery('')}>{language === 'fr' ? 'Effacer la recherche' : language === 'ar' ? 'مسح البحث' : 'Clear search'}</button>}</p>}
+    {isWebsite && researchOnly && <WebResearchNote />}
     <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
       <nav className="flex gap-2 overflow-x-auto pb-2 lg:sticky lg:top-24 lg:h-fit lg:flex-col lg:overflow-visible" aria-label={t('picker_muscle_group')}>
         {muscleList.map(muscle => <button type="button" key={muscle} aria-pressed={selectedMuscle === muscle && !query}

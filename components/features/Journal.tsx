@@ -14,6 +14,8 @@ import { clearDemoData, hasDemoData } from '../../utils/demoData';
 
 export const Journal: React.FC = () => {
   const { t, language } = useLanguage();
+  const isWebsite = !Capacitor.isNativePlatform();
+  const [journalView, setJournalView] = useState<'workouts' | 'measurements'>('workouts');
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [formData, setFormData] = useState<Partial<JournalEntry>>({});
   const [customFields, setCustomFields] = useState<CustomMeasurement[]>([]);
@@ -437,16 +439,20 @@ export const Journal: React.FC = () => {
     <div className="mx-auto max-w-6xl px-6 pt-4 pb-32">
       <h2 className="text-4xl font-black text-zinc-900 dark:text-white mb-8 uppercase tracking-tight">{t('journal_title')}</h2>
 
-      <VolumeChart
+      {isWebsite && <div className="web-journal-tabs" role="group" aria-label={t('journal_title')}>
+        <button aria-pressed={journalView === 'workouts'} onClick={() => setJournalView('workouts')}>{t('nav_workout')}</button>
+        <button aria-pressed={journalView === 'measurements'} onClick={() => setJournalView('measurements')}>{t('journal_body_metrics')}</button>
+      </div>}
+      {(!isWebsite || journalView === 'workouts') && <VolumeChart
         history={history}
         t={t}
         selectedMuscle={selectedMuscleChart}
         onMuscleChange={setSelectedMuscleChart}
         language={language}
-      />
+      />}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        <div className="lg:col-span-1 space-y-8">
+      <div className={isWebsite ? `web-journal-layout web-journal-${journalView}` : 'grid grid-cols-1 lg:grid-cols-3 gap-12'}>
+        <div hidden={isWebsite && journalView !== 'measurements'} className="lg:col-span-1 space-y-8">
           <Card className={`p-8 space-y-6 rounded-[2.5rem] shadow-sm transition-all duration-300 ${editingId ? 'bg-teal-500/5 border-teal-500 shadow-teal-500/10' : 'bg-white dark:bg-zinc-900/80 border-zinc-200 dark:border-zinc-800'}`}>
             <div className="flex items-center justify-between">
               <div>
@@ -555,9 +561,9 @@ export const Journal: React.FC = () => {
         </div>
 
         <div className="lg:col-span-2 space-y-12">
-          <WorkoutHistory />
+          {(!isWebsite || journalView === 'workouts') && <WorkoutHistory />}
 
-          <div className="pt-8 border-t border-zinc-100 dark:border-zinc-800">
+          <div hidden={isWebsite && journalView !== 'measurements'} className="pt-8 border-t border-zinc-100 dark:border-zinc-800">
             <h3 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight mb-8 flex items-center gap-3">
               <span className="w-2 h-6 bg-teal-500 rounded-full"></span>
               {t('journal_body_metrics')}
@@ -604,6 +610,7 @@ export const Journal: React.FC = () => {
                       <span className="text-teal-600 dark:text-teal-400 font-black text-xs uppercase tracking-widest">{entry.date}</span>
                       {entry.weight && <span className="text-zinc-900 dark:text-white font-black text-xl font-mono tracking-tighter">{entry.weight} <span className="text-[10px] text-zinc-200 dark:text-zinc-300">KG</span></span>}
                     </div>
+                    {isWebsite && <button className="web-secondary" onClick={event => { event.stopPropagation(); handleSelectEntry(entry); }}>{t('journal_edit_entry')}</button>}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-xs text-zinc-300 dark:text-zinc-200">
                       {entry.chest && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">{t('journal_chest')}</span> <span className="text-zinc-900 dark:text-zinc-200 font-bold">{entry.chest} cm</span></div>}
                       {entry.waist && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">{t('journal_waist')}</span> <span className="text-zinc-900 dark:text-zinc-200 font-bold">{entry.waist} cm</span></div>}
@@ -797,6 +804,7 @@ const InputField = ({ label, field, formData, handleChange }: { label: string, f
   <div>
     <label className="text-xs text-zinc-200 block mb-1">{label}</label>
     <input
+      aria-label={label}
       type="number"
       inputMode="decimal"
       value={formData[field] || ''}

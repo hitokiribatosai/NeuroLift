@@ -14,6 +14,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, settingsOnly = false }) => {
   const [scrolled, setScrolled] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const settingsButton = React.useRef<HTMLButtonElement>(null);
   const { language, setLanguage, t, dir } = useLanguage();
   const { fontSize, setFontSize } = useFontSize();
   const { theme, setTheme, accent, setAccent } = useTheme();
@@ -344,8 +345,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
 
 
           {/* Settings Section */}
-          <div className="relative settings-container">
+          <div className="relative settings-container" onKeyDown={event => { if (settingsOnly && event.key === 'Escape') { setIsSettingsOpen(false); settingsButton.current?.focus(); } }}>
             <motion.button
+              ref={settingsButton}
               aria-label={t('profile_settings')}
               aria-expanded={isSettingsOpen}
               onClick={(e) => { e.stopPropagation(); setIsSettingsOpen(!isSettingsOpen); }}

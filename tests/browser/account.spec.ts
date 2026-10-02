@@ -40,6 +40,7 @@ for (const width of [360, 820]) {
   await page.goto('/#account');
   await expect(page.getByRole('heading',{name:'Account & sync'})).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  if (width < 801) await page.getByRole('button', { name: 'More', exact: true }).click();
   const accountButton = page.getByRole('button',{name:'Account',exact:true}).filter({visible:true});
   await expect(accountButton).toBeVisible();
   const box = await accountButton.boundingBox();

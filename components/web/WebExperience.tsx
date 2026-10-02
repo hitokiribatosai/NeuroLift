@@ -5,6 +5,7 @@ import { safeStorage } from '../../utils/storage';
 import { CompletedWorkout } from '../../types';
 import { TRAINING_SOURCES } from '../../utils/trainingEvidence';
 import './website.css';
+import { WebStatus } from './WebStatus';
 
 type Navigation = { currentView: string; setCurrentView: (view: string) => void };
 const paths: Record<string, string> = {
@@ -24,6 +25,7 @@ function useCopy() {
   return (en: string, fr: string, ar: string) => language === 'fr' ? fr : language === 'ar' ? ar : en;
 }
 export function WebFrame({ currentView, setCurrentView, children }: Navigation & { children: React.ReactNode }) {
+  const [moreOpen, setMoreOpen] = React.useState(false);
   const { t, dir } = useLanguage();
   const c = useCopy();
   const items = [
@@ -37,14 +39,16 @@ export function WebFrame({ currentView, setCurrentView, children }: Navigation &
     <aside className="web-sidebar">
       <button className="web-brand" onClick={() => setCurrentView('home')} aria-label="NeuroLift home"><span className="web-monogram" aria-hidden="true">N<span>↗</span></span>NeuroLift</button>
       <p className="web-eyebrow">{c('Your training space', 'Votre espace sportif', 'مساحتك للتدريب')}</p>
-      <nav aria-label={c('Main navigation', 'Navigation principale', 'التنقل الرئيسي')} className="web-navigation">
-        {items.map(([id, label]) => <button key={id} aria-current={currentView === id ? 'page' : undefined} onClick={() => setCurrentView(id)}><Icon name={id} /><span>{label}</span><span className="web-nav-arrow" aria-hidden="true">↗</span></button>)}
+      <nav aria-label={c('Main navigation', 'Navigation principale', 'التنقل الرئيسي')} className={`web-navigation ${moreOpen ? 'is-expanded' : ''}`}>
+        {items.map(([id, label], index) => <button className={index > 3 ? 'web-secondary-nav' : undefined} key={id} aria-current={currentView === id ? 'page' : undefined} onClick={() => { setCurrentView(id); setMoreOpen(false); }}><Icon name={id} /><span>{label}</span><span className="web-nav-arrow" aria-hidden="true">↗</span></button>)}
+        <button className="web-more-nav" aria-expanded={moreOpen} onClick={() => setMoreOpen(!moreOpen)}><span aria-hidden="true">•••</span><span>{c('More', 'Plus', 'المزيد')}</span></button>
       </nav>
       <div className="web-sidebar-note"><span className="web-status-dot" /><strong>{c('Your pace. Your progress.', 'Votre rythme. Vos progrès.', 'وتيرتك. تقدمك.')}</strong><p>{c('One session at a time.', 'Une séance à la fois.', 'حصة واحدة في كل مرة.')}</p></div>
       <button className="web-privacy" onClick={() => setCurrentView('privacy')}>{t('privacy_policy')} ↗</button>
     </aside>
     <div className="web-workspace">
       <header className="web-topbar"><div><span className="web-eyebrow">NEUROLIFT / {c('WORKSPACE', 'ESPACE', 'مساحة العمل')}</span><p>{title}</p></div><div className="web-topbar-actions"><span className="web-date">{new Date().toLocaleDateString(dir === 'rtl' ? 'ar' : document.documentElement.lang || 'en', { month: 'short', day: 'numeric', weekday: 'short' })}</span><Navbar settingsOnly currentView={currentView} setCurrentView={setCurrentView} /></div></header>
+      <WebStatus openAccount={() => setCurrentView('account')} />
       <main id="web-content" tabIndex={-1} className="web-surface">{children}</main>
       <footer className="web-footer"><span>NEUROLIFT</span><span>{c('Built for the long run.', 'Pensé pour durer.', 'مصمم للاستمرار.')}</span></footer>
     </div>
@@ -72,7 +76,7 @@ export function WebHome({ setCurrentView }: Pick<Navigation, 'setCurrentView'>) 
       <section className="web-panel"><div className="web-section-heading"><div><p className="web-eyebrow">{c('YOUR JOURNAL', 'VOTRE JOURNAL', 'سجلّك')}</p><h2>{c('The work you put in.', 'Le travail accompli.', 'الجهد الذي بذلته.')}</h2></div><Icon name="journal" /></div>{recent.length ? <div className="web-recent">{recent.map(workout => <button key={workout.id} onClick={() => setCurrentView('journal')}><span><strong>{workout.name || t('nav_workout')}</strong><small>{new Date(workout.date).toLocaleDateString(language)} · {Math.round(workout.durationSeconds / 60)} min</small></span><span aria-hidden="true">↗</span></button>)}</div> : <div className="web-empty"><span aria-hidden="true">↗</span><h3>{c('Your story starts here.', 'Votre histoire commence ici.', 'قصتك تبدأ هنا.')}</h3><p>{c('Complete a workout to see your sessions here. No rush. Just progress.', 'Terminez une séance pour la retrouver ici. Chaque effort compte.', 'أكمل تمريناً لتظهر حصصك هنا. كل خطوة مهمة.')}</p></div>}<button className="web-text-button" onClick={() => setCurrentView('journal')}>{t('nav_journal')} <span aria-hidden="true">→</span></button></section>
     </div>
     <section className="web-tools">{[['clock', c('Make every minute count.', 'Chaque minute compte.', 'استفد من كل دقيقة.'), c('Timer & stopwatch', 'Minuteur et chronomètre', 'المؤقت وساعة الإيقاف')], ['nutrition', c('Fuel the effort.', 'Nourrissez vos efforts.', 'غذِّ مجهودك.'), c('Daily calorie log', 'Journal calorique', 'سجل السعرات اليومية')]].map(([view, title, caption]) => <button key={view} onClick={() => setCurrentView(view)}><Icon name={view} /><span><strong>{title}</strong><small>{caption}</small></span><span aria-hidden="true">↗</span></button>)}</section>
-    <section className="web-sources"><div><p className="web-eyebrow">{c('INFORMED BY RESEARCH', 'ÉCLAIRÉ PAR LA RECHERCHE', 'مسترشد بالأبحاث')}</p><h2>{t('home_sources_title')}</h2><p>{t('home_sources_subtitle')}</p></div><div>{TRAINING_SOURCES.map(source => <a key={source.url} href={source.url} target="_blank" rel="noreferrer">{source.name}<span aria-hidden="true">↗</span></a>)}</div></section>
+    <section className="web-sources"><div><p className="web-eyebrow">{c('INFORMED BY RESEARCH', 'ÉCLAIRÉ PAR LA RECHERCHE', 'مسترشد بالأبحاث')}</p><h2>{c('Research-supported training', 'Entraînement éclairé par la recherche', 'تدريب مسترشد بالأبحاث')}</h2><p>{t('home_sources_subtitle')}</p></div><div>{TRAINING_SOURCES.map(source => <a key={source.url} href={source.url} target="_blank" rel="noreferrer">{source.name}<span aria-hidden="true">↗</span></a>)}</div></section>
   </div>;
 }
 

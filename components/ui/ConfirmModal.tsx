@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SpotlightButton } from './SpotlightButton';
+import { Modal } from './Modal';
+import { Capacitor } from '@capacitor/core';
 
 interface ConfirmModalProps {
     isOpen: boolean;
@@ -28,6 +30,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
     useEffect(() => {
         setMounted(true);
+        if (!Capacitor.isNativePlatform()) return;
         if (isOpen) {
             document.body.style.overflow = 'hidden';
         }
@@ -37,6 +40,9 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
     }, [isOpen]);
 
     if (!mounted) return null;
+    if (!Capacitor.isNativePlatform()) return <Modal isOpen={isOpen} onClose={onCancel} label={title}>
+        <div className="web-confirm-panel"><h2>{title}</h2><p>{message}</p><div><button className="web-secondary" onClick={onCancel}>{cancelLabel}</button><button className="web-primary" onClick={onConfirm}>{confirmLabel}</button></div></div>
+    </Modal>;
 
     return createPortal(
         <AnimatePresence>
