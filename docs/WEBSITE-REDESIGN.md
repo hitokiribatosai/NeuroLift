@@ -6,19 +6,21 @@
 - Baseline commit: `ba1ba3a`
 - Review branch: `design/website-overhaul`
 
-The user approved this design as the official desktop and mobile website interface. The approved redesign and its six refinements are promoted to `main`; the review branch remains available for comparison. The tag preserves the previous design for rollback. This approval does not extend the redesign to native Android or iOS apps.
+The user approved this design for desktop/mobile web and subsequently for Android. The local `main` contains the approved redesign and its six refinements; publication requires a successful GitHub push. The tag preserves the previous design for rollback. iOS retains the previous interface.
 
 ## Scope
 
 The browser receives a new responsive workspace, dashboard, onboarding and goal selection, plus a scoped visual system covering exercise browsing, training, journal, clock, nutrition, account, privacy, and settings. Existing data and authentication logic are reused. Demonstrations and research links are retained.
 
-`Capacitor.isNativePlatform()` keeps Android and iOS on their previous screens. No native project or Capacitor configuration was changed or synced. Browser theme preference uses `neuroLift_web_theme`; native keeps `neuroLift_theme`. Both settings remain local to the current workspace, outside the synchronized data allowlist.
+`usesModernInterface()` selects the shared design for web and Android, while iOS keeps its previous screens. This helper controls presentation only: native sharing, storage, notifications and networking still use Capacitor platform detection. Browser theme uses `neuroLift_web_theme`; Android uses `neuroLift_android_theme` and migrates the existing native preference; iOS keeps `neuroLift_theme`. These preferences remain local to the current workspace, outside synchronized data.
+
+Prepare Android assets using `npm run android:debug`, then build in Android Studio with Java 21 and the required Android SDK. The debug configuration uses the emulator backend at `http://10.0.2.2:8000/api` unless overridden. This is not a production backend. Release builds still require a public HTTPS API and signing configuration. No iOS sync is needed for this Android-only adoption.
 
 ## Local review
 
 ### Refinement pass
 
-1. Browser workout logging has a focused exercise editor, completed-set progress, previous performance, accessible weight/reps inputs, inline rest controls, and a finish confirmation. Native logging remains unchanged.
+1. Web and Android workout logging has a focused exercise editor, completed-set progress, previous performance, accessible weight/reps inputs, inline rest controls, and a finish confirmation. iOS logging remains unchanged.
 2. The browser journal starts with workouts and progress, with a separate measurements section; switching sections preserves the mounted form.
 3. Small-screen navigation uses four primary destinations plus More for secondary tools.
 4. The library has sticky search/filter controls, a selected-area summary, and separate demonstration/research labels. Missing images are explicitly identified.

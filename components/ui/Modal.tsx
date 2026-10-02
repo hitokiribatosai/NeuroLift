@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Capacitor } from '@capacitor/core';
+import { usesModernInterface } from '../../utils/interfacePlatform';
 
 interface ModalProps {
  children: React.ReactNode;
@@ -35,8 +35,8 @@ export const Modal: React.FC<ModalProps> = ({ children, isOpen, onClose, label =
   <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-zinc-950/40 dark:bg-black/80 backdrop-blur-md"
    style={{WebkitBackdropFilter:'blur(12px)'}} onClick={e => {if (e.target === e.currentTarget) onClose();}}>
    <div ref={panel} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1}
-    className={`w-full max-w-2xl max-h-[90dvh] overflow-y-auto rounded-3xl focus:outline-none ${!Capacitor.isNativePlatform() ? 'website-redesign web-modal-theme' : ''}`}>
-    {Capacitor.isNativePlatform() ? children : <div className="web-surface">{children}</div>}
+    className={`w-full max-w-2xl max-h-[90dvh] overflow-y-auto rounded-3xl focus:outline-none ${usesModernInterface() ? 'website-redesign web-modal-theme' : ''}`}>
+    {!usesModernInterface() ? children : <div className="web-surface">{children}</div>}
    </div>
   </div>, document.body);
 };

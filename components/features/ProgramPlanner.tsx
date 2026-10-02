@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Capacitor } from '@capacitor/core';
+import { usesModernInterface } from '../../utils/interfacePlatform';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { getExerciseDatabase, getLocalizedMuscleName, getExerciseTranslation, getEnglishExerciseName } from '../../utils/exerciseData';
 import { TrainingGuidance } from '../ui/TrainingGuidance';
@@ -17,7 +17,7 @@ const categories = ['machines', 'dumbbells', 'barbells', 'cables', 'bodyweight']
 function LibraryCard({ name, detail, onOpen }: { name: string; detail?: string; onOpen: () => void }) {
   const { language, t } = useLanguage();
   const demo = demos[getEnglishExerciseName(name)];
-  const isWebsite = !Capacitor.isNativePlatform();
+  const isWebsite = usesModernInterface();
   const evidence = EXERCISE_EVIDENCE.find(entry => entry.name === getEnglishExerciseName(name));
   const c = (en: string, fr: string, ar: string) => language === 'fr' ? fr : language === 'ar' ? ar : en;
   return <button type="button" onClick={onOpen}
@@ -36,7 +36,7 @@ function LibraryCard({ name, detail, onOpen }: { name: string; detail?: string; 
 
 export const ProgramPlanner: React.FC<{ initialMuscle?: string }> = ({ initialMuscle }) => {
   const { t, language } = useLanguage();
-  const isWebsite = !Capacitor.isNativePlatform();
+  const isWebsite = usesModernInterface();
   const [selectedMuscle, setSelectedMuscle] = useState<string | null>(initialMuscle && Object.hasOwn(getExerciseDatabase(language), initialMuscle) ? initialMuscle : 'Chest');
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>('Upper Chest');
   const [selectedExercise, setSelectedExercise] = useState<string | null>(null);

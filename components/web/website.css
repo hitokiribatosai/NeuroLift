@@ -1,4 +1,6 @@
-/* Browser-only design system. Every rule is scoped; Capacitor keeps its existing UI. */
+/* Shared browser/Android presentation; iOS retains the legacy interface. */
+.website-redesign:not(.web-modal-theme) { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.website-redesign .web-session-actions { margin-bottom: env(safe-area-inset-bottom, 0px); }
 .website-redesign .web-confirm-panel { padding: 30px !important; }
 .website-redesign .web-confirm-panel h2 { font-size: 1.6rem; font-weight: 700; }
 .website-redesign .web-confirm-panel p { margin: 20px 0; line-height: 1.7; }

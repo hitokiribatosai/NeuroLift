@@ -1,3 +1,4 @@
+import { usesModernInterface } from '../../utils/interfacePlatform';
 import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -1239,7 +1240,7 @@ export const Tracker: React.FC = () => {
             </Modal>
           )}
 
-          {phase === 'active' && !Capacitor.isNativePlatform() && <WebSession
+          {phase === 'active' && usesModernInterface() && <WebSession
             exercises={activeExercises} history={exerciseHistory} duration={formatTime(duration)} running={timerActive}
             rest={restTimerRemaining} pause={() => setTimerActive(!timerActive)} skipRest={stopRestTimer} addRest={() => addRestTime(30)}
             update={updateSet} complete={toggleSetComplete} add={addSet} remove={removeSet} demo={setTutorialExercise}
@@ -1247,7 +1248,7 @@ export const Tracker: React.FC = () => {
             quickLoad={handleQuickLoad} plates={(exIdx, setIdx) => setActiveSetInfo({ exIdx, setIdx })}
             edit={() => setPhase('selection')} reorder={() => { setTempReorderList([...activeExercises]); setShowReorderModal(true); }}
             finish={finishWorkout} reset={() => setShowResetConfirm(true)} />}
-          {phase === 'active' && Capacitor.isNativePlatform() && (
+          {phase === 'active' && !usesModernInterface() && (
             <div className="mx-auto max-w-4xl px-4 md:px-6 py-6">
               <div className="text-center mb-12">
                 <div className="inline-flex flex-col items-center relative">

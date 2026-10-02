@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { safeStorage } from '../utils/storage';
 import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
 
 export type Theme = 'dark' | 'light';
 export type AccentColor = 'default' | 'pink' | 'red' | 'yellow';
@@ -22,10 +23,11 @@ const ThemeContext = createContext<ThemeContextType>({
 export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const themeKey = Capacitor.isNativePlatform() ? 'neuroLift_theme' : 'neuroLift_web_theme';
+    const platform = Capacitor.getPlatform();
+    const themeKey = platform === 'ios' ? 'neuroLift_theme' : platform === 'android' ? 'neuroLift_android_theme' : 'neuroLift_web_theme';
     const [theme, setThemeState] = useState<Theme>(() => {
-        const saved = safeStorage.getItem(themeKey) as Theme;
-        return saved === 'dark' || saved === 'light' ? saved : Capacitor.isNativePlatform() ? 'dark' : 'light';
+        const saved = (safeStorage.getItem(themeKey) || (platform === 'android' ? safeStorage.getItem('neuroLift_theme') : null)) as Theme;
+        return saved === 'dark' || saved === 'light' ? saved : platform === 'ios' ? 'dark' : 'light';
     });
 
     const [accent, setAccentState] = useState<AccentColor>(() => {
@@ -57,7 +59,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
 
         safeStorage.setItem(themeKey, theme);
-    }, [theme, themeKey]);
+        if (platform === 'android' && Capacitor.isPluginAvailable('StatusBar')) {
+            void StatusBar.setStyle({ style: theme === 'light' ? Style.Light : Style.Dark }).catch(() => { /* WebView remains usable if the OS rejects a status-bar update. */ });
+        }
+    }, [theme, themeKey, platform]);
 
     useEffect(() => {
         document.documentElement.setAttribute('data-accent', accent);

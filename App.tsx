@@ -21,13 +21,13 @@ import { Account } from './components/features/Account';
 import { startSync } from './utils/sync';
 import { SyncIndicator } from './components/ui/SyncIndicator';
 import { PwaStatus } from './components/ui/PwaStatus';
-import { Capacitor } from '@capacitor/core';
+import { usesModernInterface } from './utils/interfacePlatform';
 import { WebFrame, WebHome, WebWelcome, WebGoals } from './components/web/WebExperience';
 
 function AppInner() {
   const { theme } = useTheme();
   const isLight = theme === 'light';
-  const isWebsite = !Capacitor.isNativePlatform();
+  const isWebsite = usesModernInterface();
 
 
   const [currentView, setCurrentView] = React.useState(() => {
@@ -165,7 +165,7 @@ function WorkspaceApp() {
         <FontSizeProvider>
           <ClockProvider>
             <GymModeProvider>
-              {Capacitor.isNativePlatform() && <><OfflineIndicator /><SyncIndicator /><PwaStatus /></>}
+              {!usesModernInterface() && <><OfflineIndicator /><SyncIndicator /><PwaStatus /></>}
               <AppInner />
             </GymModeProvider>
           </ClockProvider>

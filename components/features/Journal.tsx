@@ -1,3 +1,4 @@
+import { usesModernInterface } from '../../utils/interfacePlatform';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -14,7 +15,7 @@ import { clearDemoData, hasDemoData } from '../../utils/demoData';
 
 export const Journal: React.FC = () => {
   const { t, language } = useLanguage();
-  const isWebsite = !Capacitor.isNativePlatform();
+  const isWebsite = usesModernInterface();
   const [journalView, setJournalView] = useState<'workouts' | 'measurements'>('workouts');
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [formData, setFormData] = useState<Partial<JournalEntry>>({});

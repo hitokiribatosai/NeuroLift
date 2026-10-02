@@ -43,14 +43,20 @@ test('website theme stays independent of the native preference', async ({ page }
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('neuroLift_workspace_guest')!).data.neuroLift_theme)).toBe('light');
 });
 
-for (const platform of ['android', 'ios']) test(`${platform} runtime retains the previous screen and native theme`, async ({ page }) => {
+for (const platform of ['android', 'ios']) test(`${platform} runtime selects its approved design and preserves theme`, async ({ page }) => {
   await page.addInitScript(({ seed, platform }) => {
     Object.assign(window, platform === 'android' ? { androidBridge: {} } : { webkit: { messageHandlers: { bridge: {} } } });
     localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({ version: 0, dirty: false, data: { ...seed, neuroLift_theme: 'dark', neuroLift_web_theme: 'light' } }));
   }, { seed: data, platform });
   await page.goto('/#home');
-  await expect(page.locator('.website-redesign')).toHaveCount(0);
-  await expect(page.getByRole('heading', { name: 'Train with purpose.' })).toBeVisible();
+  if (platform === 'ios') {
+    await expect(page.locator('.website-redesign')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Train with purpose.' })).toBeVisible();
+  } else {
+    await expect(page.locator('.web-dashboard')).toBeVisible();
+    await page.getByRole('button', { name: 'Browse exercises', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Research-supported', exact: true })).toBeVisible();
+  }
   await expect(page.locator('html')).toHaveClass(/dark/);
 });
 
@@ -61,4 +67,23 @@ test('dashboard shortcuts open the corresponding muscle group', async ({ page })
   await expect(page).toHaveURL(/#planner\?muscle=Back$/);
   await expect(page.getByRole('heading', { name: 'Back', exact: true })).toBeVisible();
   await expect(page.getByText('Pull-ups', { exact: true }).first()).toBeVisible();
+});
+
+test('Android uses the focused session editor and measurement sections', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(seed => {
+    Object.assign(window, { androidBridge: {} });
+    localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({ version: 0, dirty: false, data: {
+      ...seed, neuroLift_tracker_phase: 'active', neuroLift_tracker_selected_exercises: '["Pull-ups"]',
+      neuroLift_tracker_active_exercises: JSON.stringify([{ name: 'Pull-ups', sets: [{ id: 'one', weight: 0, reps: 8, completed: false }] }]),
+    } }));
+  }, data);
+  await page.goto('/#tracker');
+  await expect(page.locator('.web-session')).toBeVisible();
+  await expect(page.getByLabel('REPS — SET 1', { exact: true })).toHaveValue('8');
+  await expect(page.locator('html')).toHaveClass(/light/);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.locator('.web-navigation').getByRole('button', { name: 'Journal', exact: true }).click();
+  await page.getByRole('button', { name: 'Body Metrics', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Add entry', exact: true })).toBeVisible();
 });
