@@ -10,7 +10,7 @@ const labels = {
 export function ExerciseDemo({ name }: { name: string }) {
  const { language } = useLanguage();
  const [playing, setPlaying] = useState(false), [frame, setFrame] = useState(0), [failed, setFailed] = useState(false);
- const entry = (media as Record<string, { sourceId: string; sourceName: string; images: string[]; revision: string }>)[getEnglishExerciseName(name)];
+ const entry = (media as Record<string, { source: 'free-exercise-db' | 'workout-guide'; sourceId: string; sourceName: string; images: string[]; revision: string }>)[getEnglishExerciseName(name)];
  const text = labels[language];
  useEffect(() => { setPlaying(false); setFrame(0); setFailed(false); }, [name]);
  useEffect(() => {
@@ -20,10 +20,16 @@ export function ExerciseDemo({ name }: { name: string }) {
  }, [playing]);
  if (!entry || failed) return <p className="my-4 text-sm text-zinc-500" role="status">{text[0]}</p>;
  return <figure className="my-5 space-y-3">
-  <div className="flex gap-2 bg-white rounded-xl overflow-hidden">
+  <div className={`flex gap-2 rounded-xl overflow-hidden ${entry.source === 'workout-guide' ? 'bg-zinc-900' : 'bg-white'}`}>
    {entry.images.map((src, i) => <img key={src} src={src} alt={getExerciseTranslation(name, language) + ' — ' + (i + 1) + '/2'} onError={() => setFailed(true)} style={{ display: playing && i !== frame ? 'none' : 'block', width: playing ? '100%' : '50%' }} className="object-contain max-h-72" />)}
   </div>
   <button type="button" className="px-4 py-2 border rounded-lg" onClick={() => setPlaying(p => !p)}>{playing ? text[2] : text[1]}</button>
-  <figcaption className="text-xs text-zinc-500">{text[3]} {entry.sourceName !== getEnglishExerciseName(name) && <span>{text[5]}: {entry.sourceName}. </span>}<a className="underline" href={'https://github.com/yuhonas/free-exercise-db/blob/' + entry.revision + '/exercises/' + entry.sourceId + '.json'} target="_blank" rel="noreferrer">{text[4]}: free-exercise-db (Unlicense)</a></figcaption>
+  <figcaption className="text-xs text-zinc-500">{text[3]} {entry.sourceName !== getEnglishExerciseName(name) && <span>{text[5]}: {entry.sourceName}. </span>}
+   {entry.source === 'workout-guide' ? <>
+     <a className="underline" href={'https://github.com/bryllim/workout-guide/blob/' + entry.revision + '/packages/workout-guide/assets/' + entry.sourceId + '/frame-1.svg'} target="_blank" rel="noreferrer">{text[4]}: Workout Guide</a>
+     {' · '}<a className="underline" href={'https://github.com/bryllim/workout-guide/blob/' + entry.revision + '/ATTRIBUTION.md'} target="_blank" rel="noreferrer">Bryl Lim; Everkinetic where credited (CC BY-SA 4.0)</a>
+    </>
+    : <a className="underline" href={'https://github.com/yuhonas/free-exercise-db/blob/' + entry.revision + '/exercises/' + entry.sourceId + '.json'} target="_blank" rel="noreferrer">{text[4]}: free-exercise-db (Unlicense)</a>}
+  </figcaption>
  </figure>;
 }

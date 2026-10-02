@@ -1,5 +1,6 @@
 {
   "Incline Dumbbell Press": {
+    "source": "free-exercise-db",
     "sourceName": "Incline Dumbbell Press",
     "sourceId": "Incline_Dumbbell_Press",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -13,6 +14,7 @@
     ]
   },
   "Dumbbell Incline Fly": {
+    "source": "free-exercise-db",
     "sourceName": "Incline Dumbbell Flyes",
     "sourceId": "Incline_Dumbbell_Flyes",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -26,6 +28,7 @@
     ]
   },
   "Incline Hammer Strength Press": {
+    "source": "free-exercise-db",
     "sourceName": "Leverage Incline Chest Press",
     "sourceId": "Leverage_Incline_Chest_Press",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -39,6 +42,7 @@
     ]
   },
   "Incline Barbell Bench Press": {
+    "source": "free-exercise-db",
     "sourceName": "Barbell Incline Bench Press - Medium Grip",
     "sourceId": "Barbell_Incline_Bench_Press_-_Medium_Grip",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -52,6 +56,7 @@
     ]
   },
   "Cable Incline Fly": {
+    "source": "free-exercise-db",
     "sourceName": "Incline Cable Flye",
     "sourceId": "Incline_Cable_Flye",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -65,6 +70,7 @@
     ]
   },
   "Incline Cable Press": {
+    "source": "free-exercise-db",
     "sourceName": "Incline Cable Chest Press",
     "sourceId": "Incline_Cable_Chest_Press",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -78,6 +84,7 @@
     ]
   },
   "Single Arm Low Cable Fly": {
+    "source": "free-exercise-db",
     "sourceName": "Single-Arm Cable Crossover",
     "sourceId": "Single-Arm_Cable_Crossover",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -91,6 +98,7 @@
     ]
   },
   "Decline Pushups": {
+    "source": "free-exercise-db",
     "sourceName": "Decline Push-Up",
     "sourceId": "Decline_Push-Up",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -104,6 +112,7 @@
     ]
   },
   "Feet Elevated Pushups": {
+    "source": "free-exercise-db",
     "sourceName": "Push-Ups With Feet Elevated",
     "sourceId": "Push-Ups_With_Feet_Elevated",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -117,6 +126,7 @@
     ]
   },
   "Incline Machine Press": {
+    "source": "free-exercise-db",
     "sourceName": "Leverage Incline Chest Press",
     "sourceId": "Leverage_Incline_Chest_Press",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -130,6 +140,7 @@
     ]
   },
   "Smith Machine Incline Press": {
+    "source": "free-exercise-db",
     "sourceName": "Smith Machine Incline Bench Press",
     "sourceId": "Smith_Machine_Incline_Bench_Press",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -143,6 +154,7 @@
     ]
   },
   "Flat Dumbbell Press": {
+    "source": "free-exercise-db",
     "sourceName": "Dumbbell Bench Press",
     "sourceId": "Dumbbell_Bench_Press",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -156,6 +168,7 @@
     ]
   },
   "Dumbbell Flat Fly": {
+    "source": "free-exercise-db",
     "sourceName": "Dumbbell Flyes",
     "sourceId": "Dumbbell_Flyes",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -169,6 +182,7 @@
     ]
   },
   "Floor Press (Dumbbell)": {
+    "source": "free-exercise-db",
     "sourceName": "Dumbbell Floor Press",
     "sourceId": "Dumbbell_Floor_Press",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -182,6 +196,7 @@
     ]
   },
   "Flat Barbell Bench Press": {
+    "source": "free-exercise-db",
     "sourceName": "Barbell Bench Press - Medium Grip",
     "sourceId": "Barbell_Bench_Press_-_Medium_Grip",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -195,6 +210,7 @@
     ]
   },
   "Middle Cable Fly": {
+    "source": "free-exercise-db",
     "sourceName": "Cable Crossover",
     "sourceId": "Cable_Crossover",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -208,6 +224,7 @@
     ]
   },
   "Cable Crossover (Middle)": {
+    "source": "free-exercise-db",
     "sourceName": "Cable Crossover",
     "sourceId": "Cable_Crossover",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -221,6 +238,7 @@
     ]
   },
   "Standing Cable Chest Press": {
+    "source": "free-exercise-db",
     "sourceName": "Standing Cable Chest Press",
     "sourceId": "Standing_Cable_Chest_Press",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -234,6 +252,7 @@
     ]
   },
   "Standard Push-ups": {
+    "source": "free-exercise-db",
     "sourceName": "Pushups",
     "sourceId": "Pushups",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -246,7 +265,36 @@
       "e835d50facea325828d7a3700185a0d8ba9f908db3f033334f81a6f85f774f27"
     ]
   },
+  "Diamond Push-ups": {
+    "source": "workout-guide",
+    "sourceName": "Diamond Push-up",
+    "sourceId": "diamond-push-up",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/diamond-push-up-1.svg",
+      "/exercises/workout-guide/diamond-push-up-2.svg"
+    ],
+    "hashes": [
+      "cdad9a6bd4c55785b0cda57b81d1b4d2e3799ce9b52479f95cd1dff2b8588890",
+      "3c6212be1dca22b9cab1669a32d62473f0f095ad2dd11caf3a7f85d1d8e1bb31"
+    ]
+  },
+  "Wide Grip Push-ups": {
+    "source": "workout-guide",
+    "sourceName": "Wide Push-up",
+    "sourceId": "wide-push-up",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/wide-push-up-1.svg",
+      "/exercises/workout-guide/wide-push-up-2.svg"
+    ],
+    "hashes": [
+      "92538c6e34854bd01692787d347c844015dcebad37b6156c3de92eac5566dfac",
+      "d44901e186ed41f1ba6d1485f5bd417bdb8abfd4e611ac7d39ee0307685f1760"
+    ]
+  },
   "Pec Deck Machine": {
+    "source": "free-exercise-db",
     "sourceName": "Butterfly",
     "sourceId": "Butterfly",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -260,6 +308,7 @@
     ]
   },
   "Chest Press Machine": {
+    "source": "free-exercise-db",
     "sourceName": "Leverage Chest Press",
     "sourceId": "Leverage_Chest_Press",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -273,6 +322,7 @@
     ]
   },
   "Lever Chest Press": {
+    "source": "free-exercise-db",
     "sourceName": "Leverage Chest Press",
     "sourceId": "Leverage_Chest_Press",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -286,6 +336,7 @@
     ]
   },
   "Decline Dumbbell Press": {
+    "source": "free-exercise-db",
     "sourceName": "Decline Dumbbell Bench Press",
     "sourceId": "Decline_Dumbbell_Bench_Press",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -298,7 +349,22 @@
       "5b58e2173ecc01fcb2044867779897522f30372c96d1d579d962d3ccd13526c0"
     ]
   },
+  "Dumbbell Pullover": {
+    "source": "free-exercise-db",
+    "sourceName": "Straight-Arm Dumbbell Pullover",
+    "sourceId": "Straight-Arm_Dumbbell_Pullover",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "images": [
+      "/exercises/Straight-Arm_Dumbbell_Pullover-0.jpg",
+      "/exercises/Straight-Arm_Dumbbell_Pullover-1.jpg"
+    ],
+    "hashes": [
+      "dc47dbb75ee344369b90d81dd3b9db164f48603746141743550430a51ce15df3",
+      "36c717ae69a47a96b042c890bdd2fd8c32c5bea68a5988d109ac7ba5d7a51566"
+    ]
+  },
   "Weighted Dips (Chest Focus)": {
+    "source": "free-exercise-db",
     "sourceName": "Dips - Chest Version",
     "sourceId": "Dips_-_Chest_Version",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -312,6 +378,7 @@
     ]
   },
   "Decline Barbell Bench Press": {
+    "source": "free-exercise-db",
     "sourceName": "Decline Barbell Bench Press",
     "sourceId": "Decline_Barbell_Bench_Press",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -325,6 +392,7 @@
     ]
   },
   "Decline Cable Fly": {
+    "source": "free-exercise-db",
     "sourceName": "Cable Crossover",
     "sourceId": "Cable_Crossover",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -338,6 +406,7 @@
     ]
   },
   "Single Arm High Cable Fly": {
+    "source": "free-exercise-db",
     "sourceName": "Single-Arm Cable Crossover",
     "sourceId": "Single-Arm_Cable_Crossover",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -351,6 +420,7 @@
     ]
   },
   "Standing Decline Cable Press": {
+    "source": "free-exercise-db",
     "sourceName": "Standing Cable Chest Press",
     "sourceId": "Standing_Cable_Chest_Press",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -364,6 +434,7 @@
     ]
   },
   "Parallel Bar Dips": {
+    "source": "free-exercise-db",
     "sourceName": "Dips - Chest Version",
     "sourceId": "Dips_-_Chest_Version",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -377,6 +448,7 @@
     ]
   },
   "Incline Push-ups": {
+    "source": "free-exercise-db",
     "sourceName": "Incline Push-Up",
     "sourceId": "Incline_Push-Up",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -390,6 +462,7 @@
     ]
   },
   "Bench Dips": {
+    "source": "free-exercise-db",
     "sourceName": "Bench Dips",
     "sourceId": "Bench_Dips",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -403,6 +476,7 @@
     ]
   },
   "Machine Dip Station": {
+    "source": "free-exercise-db",
     "sourceName": "Dip Machine",
     "sourceId": "Dip_Machine",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -416,6 +490,7 @@
     ]
   },
   "Decline Chest Press Machine": {
+    "source": "free-exercise-db",
     "sourceName": "Leverage Decline Chest Press",
     "sourceId": "Leverage_Decline_Chest_Press",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -429,6 +504,7 @@
     ]
   },
   "One-Arm Dumbbell Row": {
+    "source": "free-exercise-db",
     "sourceName": "One-Arm Dumbbell Row",
     "sourceId": "One-Arm_Dumbbell_Row",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -441,7 +517,22 @@
       "83d5ceaa6d9ec6732f0afedaaa9a842c34cfdedce89e6fed75681c0bf971174a"
     ]
   },
+  "DB Pullover (Lat Focus)": {
+    "source": "free-exercise-db",
+    "sourceName": "Straight-Arm Dumbbell Pullover",
+    "sourceId": "Straight-Arm_Dumbbell_Pullover",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "images": [
+      "/exercises/Straight-Arm_Dumbbell_Pullover-0.jpg",
+      "/exercises/Straight-Arm_Dumbbell_Pullover-1.jpg"
+    ],
+    "hashes": [
+      "dc47dbb75ee344369b90d81dd3b9db164f48603746141743550430a51ce15df3",
+      "36c717ae69a47a96b042c890bdd2fd8c32c5bea68a5988d109ac7ba5d7a51566"
+    ]
+  },
   "Bent Over BB Row": {
+    "source": "free-exercise-db",
     "sourceName": "Bent Over Barbell Row",
     "sourceId": "Bent_Over_Barbell_Row",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -454,7 +545,22 @@
       "3c323601573df29cc9c6343765e0d21e7cd99a2dc830105099ac95ecba2cea72"
     ]
   },
+  "Meadows Rows": {
+    "source": "workout-guide",
+    "sourceName": "Meadows Row",
+    "sourceId": "meadows-row",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/meadows-row-1.svg",
+      "/exercises/workout-guide/meadows-row-2.svg"
+    ],
+    "hashes": [
+      "b38098dd04a7f32e831126413ecdce4040fca4cb3629e78c29b416d2e590be78",
+      "4db0b5b064348d01d056be2bbe74eb01ff26cea10ac302c496fe1de8c0ea7ce7"
+    ]
+  },
   "Front Lat Pulldown": {
+    "source": "free-exercise-db",
     "sourceName": "Close-Grip Front Lat Pulldown",
     "sourceId": "Close-Grip_Front_Lat_Pulldown",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -468,6 +574,7 @@
     ]
   },
   "Wide Grip Lat Pulldown": {
+    "source": "free-exercise-db",
     "sourceName": "Wide-Grip Lat Pulldown",
     "sourceId": "Wide-Grip_Lat_Pulldown",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -481,6 +588,7 @@
     ]
   },
   "V-Bar Lat Pulldown": {
+    "source": "free-exercise-db",
     "sourceName": "V-Bar Pulldown",
     "sourceId": "V-Bar_Pulldown",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -494,6 +602,7 @@
     ]
   },
   "Single Arm Lat Pulldown": {
+    "source": "free-exercise-db",
     "sourceName": "One Arm Lat Pulldown",
     "sourceId": "One_Arm_Lat_Pulldown",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -507,6 +616,7 @@
     ]
   },
   "Straight Arm Pulldown": {
+    "source": "free-exercise-db",
     "sourceName": "Straight-Arm Pulldown",
     "sourceId": "Straight-Arm_Pulldown",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -520,6 +630,7 @@
     ]
   },
   "Pull-ups": {
+    "source": "free-exercise-db",
     "sourceName": "Pullups",
     "sourceId": "Pullups",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -532,7 +643,36 @@
       "40549a52b064e5084a85e2c36afb51438df6ac1097169379a05f21565f8b4f3f"
     ]
   },
+  "Chin-ups": {
+    "source": "workout-guide",
+    "sourceName": "Chin-up",
+    "sourceId": "chin-up",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/chin-up-1.svg",
+      "/exercises/workout-guide/chin-up-2.svg"
+    ],
+    "hashes": [
+      "26cf91b771d937b68d120954e88644aba2c9bf127c16dea4f8ef68cc3d410f5a",
+      "24772b4ee04d9060097f9f4682f24fdb634b69a781c402649cb427467975ad76"
+    ]
+  },
+  "Neutral Grip Pull-ups": {
+    "source": "workout-guide",
+    "sourceName": "Neutral-Grip Pull-up",
+    "sourceId": "neutral-grip-pull-up",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/neutral-grip-pull-up-1.svg",
+      "/exercises/workout-guide/neutral-grip-pull-up-2.svg"
+    ],
+    "hashes": [
+      "26cf91b771d937b68d120954e88644aba2c9bf127c16dea4f8ef68cc3d410f5a",
+      "0270af4a6fa8e05ddb31770adfd1dbc5040df03b69e74d9dfa8fb6addf34253c"
+    ]
+  },
   "Assisted Pull-up Machine": {
+    "source": "free-exercise-db",
     "sourceName": "Band Assisted Pull-Up",
     "sourceId": "Band_Assisted_Pull-Up",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -545,7 +685,22 @@
       "edc82e3a48ec624be2b920262d99399d055b96333850579b22fefa7375768a30"
     ]
   },
+  "Lat Pulldown Machine": {
+    "source": "workout-guide",
+    "sourceName": "Lat Pulldown",
+    "sourceId": "lat-pulldown",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/lat-pulldown-1.svg",
+      "/exercises/workout-guide/lat-pulldown-2.svg"
+    ],
+    "hashes": [
+      "6bd3bf4edda543bb2cf255e0071122f00b0846d7f92f661c6139035271330e3e",
+      "2141b7381f05cb6756a787039db8e26e58b98af4fc5a7aeca62c33d661986ef2"
+    ]
+  },
   "Dumbbell Shrugs": {
+    "source": "free-exercise-db",
     "sourceName": "Dumbbell Shrug",
     "sourceId": "Dumbbell_Shrug",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -559,6 +714,7 @@
     ]
   },
   "Barbell Shrugs": {
+    "source": "free-exercise-db",
     "sourceName": "Barbell Shrug",
     "sourceId": "Barbell_Shrug",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -572,6 +728,7 @@
     ]
   },
   "Barbell Upright Row": {
+    "source": "free-exercise-db",
     "sourceName": "Upright Barbell Row",
     "sourceId": "Upright_Barbell_Row",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -585,6 +742,7 @@
     ]
   },
   "Behind the Back Shrugs": {
+    "source": "free-exercise-db",
     "sourceName": "Barbell Shrug Behind The Back",
     "sourceId": "Barbell_Shrug_Behind_The_Back",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -597,7 +755,22 @@
       "2e54326b170d1969e00dd936d2afc91e188c2f124f74896d7e2ad4178d9ba011"
     ]
   },
+  "Face Pulls": {
+    "source": "workout-guide",
+    "sourceName": "Face Pull",
+    "sourceId": "face-pull",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/face-pull-1.svg",
+      "/exercises/workout-guide/face-pull-2.svg"
+    ],
+    "hashes": [
+      "08a568b9c5f39101cd27fba77fca1e908e7cd91ec2c4879907bd7c58756e3c07",
+      "c65c0db910109dfd1ba3d993684fdba493aff29e9e267840717a6aa2060ca35d"
+    ]
+  },
   "Rope Face Pull": {
+    "source": "free-exercise-db",
     "sourceName": "Face Pull",
     "sourceId": "Face_Pull",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -611,6 +784,7 @@
     ]
   },
   "Cable Shrugs": {
+    "source": "free-exercise-db",
     "sourceName": "Cable Shrugs",
     "sourceId": "Cable_Shrugs",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -624,6 +798,7 @@
     ]
   },
   "Single Arm Rear Delt Fly": {
+    "source": "free-exercise-db",
     "sourceName": "Cable Rear Delt Fly",
     "sourceId": "Cable_Rear_Delt_Fly",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -637,6 +812,7 @@
     ]
   },
   "Scapular Pull-ups": {
+    "source": "free-exercise-db",
     "sourceName": "Scapular Pull-Up",
     "sourceId": "Scapular_Pull-Up",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -649,7 +825,50 @@
       "eec694838b147d03e52e2b507def487374eb95c814bfb897b41fc4ffc0eb2901"
     ]
   },
+  "Rear Delt Machine": {
+    "source": "workout-guide",
+    "sourceName": "Reverse Pec Deck",
+    "sourceId": "reverse-pec-deck",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/reverse-pec-deck-1.svg",
+      "/exercises/workout-guide/reverse-pec-deck-2.svg"
+    ],
+    "hashes": [
+      "51ee3fedca4d087fa4e487ae6339d85429a0e089d5611bbefe2be414e74fc2d4",
+      "f212c0481a5a55354a28f923970ac565ab3fc8db4faf745cdab72abc3a343147"
+    ]
+  },
+  "T-Bar Rows": {
+    "source": "workout-guide",
+    "sourceName": "T-Bar Row",
+    "sourceId": "t-bar-row",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/t-bar-row-1.svg",
+      "/exercises/workout-guide/t-bar-row-2.svg"
+    ],
+    "hashes": [
+      "f3de3ccb074e10aa2e1b9c7934a5873f89f8b0423d3f99db186aa2f1ea75bb28",
+      "e8f43881af107cb39bf430f884ca2160cbef1a8029038346580214e68dd247e4"
+    ]
+  },
+  "Pendlay Rows": {
+    "source": "workout-guide",
+    "sourceName": "Pendlay Row",
+    "sourceId": "pendlay-row",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/pendlay-row-1.svg",
+      "/exercises/workout-guide/pendlay-row-2.svg"
+    ],
+    "hashes": [
+      "e462be8e5f5b52b62e2b41185ef404bf8919a7525ff17d34343b2ce411f328b9",
+      "5f9aaedf3fe4d8d8cb12df48fc5ef9dcd39b867cd195074771f873de52a87c6a"
+    ]
+  },
   "Seated Cable Rows": {
+    "source": "free-exercise-db",
     "sourceName": "Seated Cable Rows",
     "sourceId": "Seated_Cable_Rows",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -662,7 +881,22 @@
       "0b8e1a0b0fff86cafff45d851ea631a20d469713e9fd735031d3fffb0299fde6"
     ]
   },
+  "Inverted Rows": {
+    "source": "workout-guide",
+    "sourceName": "Inverted Row",
+    "sourceId": "inverted-row",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/inverted-row-1.svg",
+      "/exercises/workout-guide/inverted-row-2.svg"
+    ],
+    "hashes": [
+      "df3bcc0e4927550ae86cacd22297bb7d311449cbe8962600f205175dce1a945e",
+      "ca2b739cfc64317f5d9095379fa7b2d5a2aa9de999512fb7eff272cad1580dee"
+    ]
+  },
   "Bodyweight Row (Rings)": {
+    "source": "free-exercise-db",
     "sourceName": "Inverted Row with Straps",
     "sourceId": "Inverted_Row_with_Straps",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -676,6 +910,7 @@
     ]
   },
   "Superman": {
+    "source": "free-exercise-db",
     "sourceName": "Superman",
     "sourceId": "Superman",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -688,7 +923,36 @@
       "ad0860abb2689c2ed27af9f4cc4aa0b944dac27c6f839e93eb47067f95e81f07"
     ]
   },
+  "Seated Row Machine": {
+    "source": "workout-guide",
+    "sourceName": "Machine Row",
+    "sourceId": "machine-row",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/machine-row-1.svg",
+      "/exercises/workout-guide/machine-row-2.svg"
+    ],
+    "hashes": [
+      "7c981719a63c592d970a468c5daf36e63815683a2e6ae276cae01808c3b9bd99",
+      "679cfab440195ee5f3c2227ba0c142ab05743495cb187c19dce3e8cec3df0913"
+    ]
+  },
+  "Chest Supported Row Machine": {
+    "source": "workout-guide",
+    "sourceName": "Chest Supported Row",
+    "sourceId": "chest-supported-row",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/chest-supported-row-1.svg",
+      "/exercises/workout-guide/chest-supported-row-2.svg"
+    ],
+    "hashes": [
+      "b4eee733b57230566a0407ae737a5435f28758535424eecc87e1cd4e9b010e16",
+      "0aa936f21b4e1558d675b7db77d831471c544b8db7fb32c01b392b6fe78e6837"
+    ]
+  },
   "Deadlifts": {
+    "source": "free-exercise-db",
     "sourceName": "Barbell Deadlift",
     "sourceId": "Barbell_Deadlift",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -702,6 +966,7 @@
     ]
   },
   "Rack Pulls": {
+    "source": "free-exercise-db",
     "sourceName": "Rack Pulls",
     "sourceId": "Rack_Pulls",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -715,6 +980,7 @@
     ]
   },
   "Stiff Leg Deadlift": {
+    "source": "free-exercise-db",
     "sourceName": "Stiff-Legged Barbell Deadlift",
     "sourceId": "Stiff-Legged_Barbell_Deadlift",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -728,6 +994,7 @@
     ]
   },
   "Good Mornings": {
+    "source": "free-exercise-db",
     "sourceName": "Good Morning",
     "sourceId": "Good_Morning",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -740,7 +1007,22 @@
       "d58742f191821aa45cc3162a07b449805bc990b6c282c7943aae32ae3bf75bff"
     ]
   },
+  "Snatch Grip DL": {
+    "source": "free-exercise-db",
+    "sourceName": "Snatch Deadlift",
+    "sourceId": "Snatch_Deadlift",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "images": [
+      "/exercises/Snatch_Deadlift-0.jpg",
+      "/exercises/Snatch_Deadlift-1.jpg"
+    ],
+    "hashes": [
+      "7799f6b9f47da60c66a0bec3624e85dd9bea5f50542090fa8ffe0b730f9d12f8",
+      "1b62740d2bcb41b54b4252b7e5630f0f101ad2affb378814bdaf55521fa694f5"
+    ]
+  },
   "Cable Deadlift": {
+    "source": "free-exercise-db",
     "sourceName": "Cable Deadlifts",
     "sourceId": "Cable_Deadlifts",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -754,6 +1036,7 @@
     ]
   },
   "Cable Pull-through": {
+    "source": "free-exercise-db",
     "sourceName": "Pull Through",
     "sourceId": "Pull_Through",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -766,7 +1049,50 @@
       "c9c71951a1879295e2a9d1e5d05d166c94aaab93a9cc3754316b30bb601f7956"
     ]
   },
+  "Hyper-extensions": {
+    "source": "free-exercise-db",
+    "sourceName": "Hyperextensions (Back Extensions)",
+    "sourceId": "Hyperextensions_Back_Extensions",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "images": [
+      "/exercises/Hyperextensions_Back_Extensions-0.jpg",
+      "/exercises/Hyperextensions_Back_Extensions-1.jpg"
+    ],
+    "hashes": [
+      "48f077fe32d2b839a2cff82450d36f50141559a8008d562495df2e6a21f8aa37",
+      "1e1d6c7131444657b0c53ca9ef05449fc7a10600af9b73a18b67d0379d97c867"
+    ]
+  },
+  "Bird-Dog": {
+    "source": "workout-guide",
+    "sourceName": "Bird Dog",
+    "sourceId": "bird-dog",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/bird-dog-1.svg",
+      "/exercises/workout-guide/bird-dog-2.svg"
+    ],
+    "hashes": [
+      "ab25efcaa49bc373d47f4bcf9fa9dacc7d3170bd7cd4f6d3a29bcb0d98c705ac",
+      "51e9ec9088bac460c64143eadb53e61396b89284b2ef9f8b5142dbbb8fe22c2f"
+    ]
+  },
+  "Hyperextension Station": {
+    "source": "free-exercise-db",
+    "sourceName": "Hyperextensions (Back Extensions)",
+    "sourceId": "Hyperextensions_Back_Extensions",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "images": [
+      "/exercises/Hyperextensions_Back_Extensions-0.jpg",
+      "/exercises/Hyperextensions_Back_Extensions-1.jpg"
+    ],
+    "hashes": [
+      "48f077fe32d2b839a2cff82450d36f50141559a8008d562495df2e6a21f8aa37",
+      "1e1d6c7131444657b0c53ca9ef05449fc7a10600af9b73a18b67d0379d97c867"
+    ]
+  },
   "Dumbbell Shoulder Press": {
+    "source": "free-exercise-db",
     "sourceName": "Dumbbell Shoulder Press",
     "sourceId": "Dumbbell_Shoulder_Press",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -780,6 +1106,7 @@
     ]
   },
   "Arnold Press": {
+    "source": "free-exercise-db",
     "sourceName": "Arnold Dumbbell Press",
     "sourceId": "Arnold_Dumbbell_Press",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -793,6 +1120,7 @@
     ]
   },
   "Dumbbell Front Raise": {
+    "source": "free-exercise-db",
     "sourceName": "Front Dumbbell Raise",
     "sourceId": "Front_Dumbbell_Raise",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -806,6 +1134,7 @@
     ]
   },
   "Barbell Overhead Press": {
+    "source": "free-exercise-db",
     "sourceName": "Standing Military Press",
     "sourceId": "Standing_Military_Press",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -819,6 +1148,7 @@
     ]
   },
   "Smith Machine Press": {
+    "source": "free-exercise-db",
     "sourceName": "Smith Machine Overhead Shoulder Press",
     "sourceId": "Smith_Machine_Overhead_Shoulder_Press",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -832,6 +1162,7 @@
     ]
   },
   "Cable Front Raise": {
+    "source": "free-exercise-db",
     "sourceName": "Front Cable Raise",
     "sourceId": "Front_Cable_Raise",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -845,6 +1176,7 @@
     ]
   },
   "Handstand Push-ups": {
+    "source": "free-exercise-db",
     "sourceName": "Handstand Push-Ups",
     "sourceId": "Handstand_Push-Ups",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -857,7 +1189,22 @@
       "5699e612c0e58c250c1d803a8c5bb8b59f689612bda739dba44a207612b112c9"
     ]
   },
+  "Pike Push-ups": {
+    "source": "workout-guide",
+    "sourceName": "Pike Push-up",
+    "sourceId": "pike-push-up",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/pike-push-up-1.svg",
+      "/exercises/workout-guide/pike-push-up-2.svg"
+    ],
+    "hashes": [
+      "b739586b439b5841ef80b25d4cd240b8d6560c86e08a022535dbfaf8a9ecd11e",
+      "83db34785ed000496f1d3f5aeff15f8a44c5944327e9ec1b3f58a197bd58825c"
+    ]
+  },
   "Shoulder Press Machine": {
+    "source": "free-exercise-db",
     "sourceName": "Machine Shoulder (Military) Press",
     "sourceId": "Machine_Shoulder_Military_Press",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -871,6 +1218,7 @@
     ]
   },
   "Dumbbell Lateral Raise": {
+    "source": "free-exercise-db",
     "sourceName": "Side Lateral Raise",
     "sourceId": "Side_Lateral_Raise",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -884,6 +1232,7 @@
     ]
   },
   "Cable Lateral Raise": {
+    "source": "free-exercise-db",
     "sourceName": "Cable Seated Lateral Raise",
     "sourceId": "Cable_Seated_Lateral_Raise",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -897,6 +1246,7 @@
     ]
   },
   "Single Arm Cable Lateral": {
+    "source": "free-exercise-db",
     "sourceName": "Cable Seated Lateral Raise",
     "sourceId": "Cable_Seated_Lateral_Raise",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -910,6 +1260,7 @@
     ]
   },
   "Cable Upright Row": {
+    "source": "free-exercise-db",
     "sourceName": "Upright Cable Row",
     "sourceId": "Upright_Cable_Row",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -922,7 +1273,50 @@
       "9662294ef4729debb227c3311c7c2aaad18f1eb2d7250e1d1aff16ea68a023db"
     ]
   },
+  "Shoulder Taps": {
+    "source": "workout-guide",
+    "sourceName": "Plank Shoulder Tap",
+    "sourceId": "plank-shoulder-tap",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/plank-shoulder-tap-1.svg",
+      "/exercises/workout-guide/plank-shoulder-tap-2.svg"
+    ],
+    "hashes": [
+      "af1e27a0fe619ecaf8ab92f4773c86e7eb22e98b6f794f268ab39da59fd9d6fe",
+      "11534aad5b06367f4ef8f778b512368dc0192689b249dc695e0c3b6913881b23"
+    ]
+  },
+  "Machine Lateral Raise": {
+    "source": "workout-guide",
+    "sourceName": "Machine Lateral Raise",
+    "sourceId": "machine-lateral-raise",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/machine-lateral-raise-1.svg",
+      "/exercises/workout-guide/machine-lateral-raise-2.svg"
+    ],
+    "hashes": [
+      "2971a1bdf46524ea2b6f44a622afaf3870262d95a3f42ad9ecf4220c97eccc02",
+      "65d7a9e7b28362f0d1cad54d8923d12b15f4c3a6d42a005ce9c60b592d56ee61"
+    ]
+  },
+  "Reverse Dumbbell Fly": {
+    "source": "workout-guide",
+    "sourceName": "Rear Delt Fly",
+    "sourceId": "rear-delt-fly",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/rear-delt-fly-1.svg",
+      "/exercises/workout-guide/rear-delt-fly-2.svg"
+    ],
+    "hashes": [
+      "b4fd1e50ed96c82b171f25ad0147362b99bf23aff5cbb38ffeadf654b0094679",
+      "f324c40b03cf754c74e022c35333c4a8b54a618a4712c8e51d784f319480caf0"
+    ]
+  },
   "Cable Face Pull": {
+    "source": "free-exercise-db",
     "sourceName": "Face Pull",
     "sourceId": "Face_Pull",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -936,6 +1330,7 @@
     ]
   },
   "Reverse Cable Crossover": {
+    "source": "free-exercise-db",
     "sourceName": "Cable Rear Delt Fly",
     "sourceId": "Cable_Rear_Delt_Fly",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -948,7 +1343,22 @@
       "f7c935718b4335ae422847b8cd6e11d6d7ff748cac8978c4b26faf4a261e8f84"
     ]
   },
+  "Rear Delt Pec Deck": {
+    "source": "workout-guide",
+    "sourceName": "Reverse Pec Deck",
+    "sourceId": "reverse-pec-deck",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/reverse-pec-deck-1.svg",
+      "/exercises/workout-guide/reverse-pec-deck-2.svg"
+    ],
+    "hashes": [
+      "51ee3fedca4d087fa4e487ae6339d85429a0e089d5611bbefe2be414e74fc2d4",
+      "f212c0481a5a55354a28f923970ac565ab3fc8db4faf745cdab72abc3a343147"
+    ]
+  },
   "Goblet Squat": {
+    "source": "free-exercise-db",
     "sourceName": "Goblet Squat",
     "sourceId": "Goblet_Squat",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -961,7 +1371,36 @@
       "49d5facb019c3be9302134edf1e4b786cc88fbe25413ee7ba3e8d278952ded85"
     ]
   },
+  "Walking Lunges (DB)": {
+    "source": "workout-guide",
+    "sourceName": "Walking Lunge",
+    "sourceId": "walking-lunge",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/walking-lunge-1.svg",
+      "/exercises/workout-guide/walking-lunge-2.svg"
+    ],
+    "hashes": [
+      "f8824b193196979f7742db392146255abab276c22063e812b3e6db333088e018",
+      "65b5a43e53c48119b42dd9ef8654b5a079d56591b2d53369b138914c2efce109"
+    ]
+  },
+  "Bulgarian Split Squat": {
+    "source": "workout-guide",
+    "sourceName": "Bulgarian Split Squat",
+    "sourceId": "bulgarian-split-squat",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/bulgarian-split-squat-1.svg",
+      "/exercises/workout-guide/bulgarian-split-squat-2.svg"
+    ],
+    "hashes": [
+      "a4fcfffb3d8a51946329cb086c345b98d4bd2614dcdf99f04c358bb2361be017",
+      "7c4fcb4403b6731abd40dbc3dd519f2c6f3591c41c46e35a43f4313cf8d9d797"
+    ]
+  },
   "Back Squat": {
+    "source": "free-exercise-db",
     "sourceName": "Barbell Squat",
     "sourceId": "Barbell_Squat",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -975,6 +1414,7 @@
     ]
   },
   "Front Squat": {
+    "source": "free-exercise-db",
     "sourceName": "Front Barbell Squat",
     "sourceId": "Front_Barbell_Squat",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -987,7 +1427,22 @@
       "6bb5c5eee794bd13d411271f0ad1cdeabdfecf5cdeb471727996555d07ff43fb"
     ]
   },
+  "Pistol Squats": {
+    "source": "workout-guide",
+    "sourceName": "Pistol Squat",
+    "sourceId": "pistol-squat",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/pistol-squat-1.svg",
+      "/exercises/workout-guide/pistol-squat-2.svg"
+    ],
+    "hashes": [
+      "3d9e3d625d3815e388a7af4beafd5a2ed22246890decb10a8d018c4c48b285cd",
+      "7853fe9277dd6fa84ac8d93d81cb647aba7add43fa76e514672cb8c89c0c485d"
+    ]
+  },
   "Bodyweight Squats": {
+    "source": "free-exercise-db",
     "sourceName": "Bodyweight Squat",
     "sourceId": "Bodyweight_Squat",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1000,7 +1455,22 @@
       "3fa6886632674f02308cdee53ce32649fd648774701fbd20ee280d63be40e5a4"
     ]
   },
+  "Sissy Squats": {
+    "source": "workout-guide",
+    "sourceName": "Sissy Squat",
+    "sourceId": "sissy-squat",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/sissy-squat-1.svg",
+      "/exercises/workout-guide/sissy-squat-2.svg"
+    ],
+    "hashes": [
+      "b4ca4b16d8f5107e5e8c78de9e841191e7b91251e3f9d37ec08f9fb23bcdfbc4",
+      "0eb56e140bf4b8470a30e1d939596a1c4e161b40a741c4476274f2869b062b60"
+    ]
+  },
   "Leg Press Machine": {
+    "source": "free-exercise-db",
     "sourceName": "Leg Press",
     "sourceId": "Leg_Press",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1014,6 +1484,7 @@
     ]
   },
   "Hack Squat Machine": {
+    "source": "free-exercise-db",
     "sourceName": "Hack Squat",
     "sourceId": "Hack_Squat",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1027,6 +1498,7 @@
     ]
   },
   "Leg Extension Machine": {
+    "source": "free-exercise-db",
     "sourceName": "Leg Extensions",
     "sourceId": "Leg_Extensions",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1039,7 +1511,22 @@
       "9e04d0e306d8fee608305766b14a56df1d1312956d374152f58dcbf267d591a9"
     ]
   },
+  "DB RDL": {
+    "source": "workout-guide",
+    "sourceName": "Dumbbell Romanian Deadlift",
+    "sourceId": "dumbbell-romanian-deadlift",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/dumbbell-romanian-deadlift-1.svg",
+      "/exercises/workout-guide/dumbbell-romanian-deadlift-2.svg"
+    ],
+    "hashes": [
+      "ff05da6e13d1f1cc053af32e37b0cf4c2c47f472bf2f53706c7061b484f9ad05",
+      "6b34ffe50fb458f1386a06bf953d8c5d711383a3c42656282c65abc857f5cb29"
+    ]
+  },
   "Romanian Deadlift": {
+    "source": "free-exercise-db",
     "sourceName": "Romanian Deadlift",
     "sourceId": "Romanian_Deadlift",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1053,6 +1540,7 @@
     ]
   },
   "Sumo Deadlift": {
+    "source": "free-exercise-db",
     "sourceName": "Sumo Deadlift",
     "sourceId": "Sumo_Deadlift",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1065,7 +1553,50 @@
       "ece39dbd0f736ffd2071a252b8f6a9cad6341c629257509aa44c0a425a47a432"
     ]
   },
+  "Cable Pull Through": {
+    "source": "workout-guide",
+    "sourceName": "Cable Pull-Through",
+    "sourceId": "cable-pull-through",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/cable-pull-through-1.svg",
+      "/exercises/workout-guide/cable-pull-through-2.svg"
+    ],
+    "hashes": [
+      "03a7e4599f4c0e915d56e92231c27940f94c58ca7b907b53b7625abc25ea7570",
+      "d65a84da42d53304676c7a312b2452b6ea2f7133f2134251f49a3728c8698abb"
+    ]
+  },
+  "Nordic Curls": {
+    "source": "workout-guide",
+    "sourceName": "Nordic Hamstring Curl",
+    "sourceId": "nordic-hamstring-curl",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/nordic-hamstring-curl-1.svg",
+      "/exercises/workout-guide/nordic-hamstring-curl-2.svg"
+    ],
+    "hashes": [
+      "5f6896e96757755f220b8277baca5358a29aee9f526d11cdade2d49011e23c96",
+      "02120bdb5c2aa44351b4c87e8abe251a9bb7809aed704e089fd719eb0bc239f7"
+    ]
+  },
+  "Sliding Leg Curls": {
+    "source": "workout-guide",
+    "sourceName": "Towel Hamstring Curl",
+    "sourceId": "towel-hamstring-curl",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/towel-hamstring-curl-1.svg",
+      "/exercises/workout-guide/towel-hamstring-curl-2.svg"
+    ],
+    "hashes": [
+      "1b2c60416afc3d0e84d4a1e96a1f439412cb60164cb595d82dc9df3717c58b3b",
+      "4059d75ac1e0955448b87a58efa3d25aad8bf6025cc6b6dd406b1d114d21e2ff"
+    ]
+  },
   "Single Leg Glute Bridge": {
+    "source": "free-exercise-db",
     "sourceName": "Single Leg Glute Bridge",
     "sourceId": "Single_Leg_Glute_Bridge",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1079,6 +1610,7 @@
     ]
   },
   "Lying Leg Curl Machine": {
+    "source": "free-exercise-db",
     "sourceName": "Lying Leg Curls",
     "sourceId": "Lying_Leg_Curls",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1092,6 +1624,7 @@
     ]
   },
   "Seated Leg Curl Machine": {
+    "source": "free-exercise-db",
     "sourceName": "Seated Leg Curl",
     "sourceId": "Seated_Leg_Curl",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1105,6 +1638,7 @@
     ]
   },
   "Standing Leg Curl Machine": {
+    "source": "free-exercise-db",
     "sourceName": "Standing Leg Curl",
     "sourceId": "Standing_Leg_Curl",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1118,6 +1652,7 @@
     ]
   },
   "Glute-Ham Raise Machine": {
+    "source": "free-exercise-db",
     "sourceName": "Glute Ham Raise",
     "sourceId": "Glute_Ham_Raise",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1130,7 +1665,22 @@
       "5e4add29994c8664b8675f17233e289ddcf11fe12e8d53cd449af1f4a501e859"
     ]
   },
+  "Sumo Squat (DB)": {
+    "source": "workout-guide",
+    "sourceName": "Dumbbell Sumo Squat",
+    "sourceId": "dumbbell-sumo-squat",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/dumbbell-sumo-squat-1.svg",
+      "/exercises/workout-guide/dumbbell-sumo-squat-2.svg"
+    ],
+    "hashes": [
+      "97d883d97d94d0391b1744e5b6c881866cb39caa1a4ed8f5c395767e10ef7b18",
+      "2ce592368cf6f86bc450ae3f4c34015d460128a84f35b871e9eef49272a009e8"
+    ]
+  },
   "Weighted Step Ups": {
+    "source": "free-exercise-db",
     "sourceName": "Dumbbell Step Ups",
     "sourceId": "Dumbbell_Step_Ups",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1144,6 +1694,7 @@
     ]
   },
   "Weighted Lunges": {
+    "source": "free-exercise-db",
     "sourceName": "Dumbbell Lunges",
     "sourceId": "Dumbbell_Lunges",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1157,6 +1708,7 @@
     ]
   },
   "Barbell Hip Thrust": {
+    "source": "free-exercise-db",
     "sourceName": "Barbell Hip Thrust",
     "sourceId": "Barbell_Hip_Thrust",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1170,6 +1722,7 @@
     ]
   },
   "Barbell Glute Bridge": {
+    "source": "free-exercise-db",
     "sourceName": "Barbell Glute Bridge",
     "sourceId": "Barbell_Glute_Bridge",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1183,6 +1736,7 @@
     ]
   },
   "Cable Glute Kickback": {
+    "source": "free-exercise-db",
     "sourceName": "One-Legged Cable Kickback",
     "sourceId": "One-Legged_Cable_Kickback",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1195,7 +1749,64 @@
       "0baa168e9e558cdb4867d2819d5e7a6787423a857a6e0db7f07bb1fcea27e6ac"
     ]
   },
+  "Cable Abduction": {
+    "source": "workout-guide",
+    "sourceName": "Cable Standing Hip Abduction",
+    "sourceId": "cable-standing-hip-abduction",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/cable-standing-hip-abduction-1.svg",
+      "/exercises/workout-guide/cable-standing-hip-abduction-2.svg"
+    ],
+    "hashes": [
+      "436a0fc1266b911c9bf89b041c31caf2d6464c82cd84b361e3726cedd2bed952",
+      "f5f5ef69f7839557b5f5402ec8c029284029458b582c57b8731fb487578b5857"
+    ]
+  },
+  "Glute Bridges": {
+    "source": "workout-guide",
+    "sourceName": "Glute Bridge",
+    "sourceId": "glute-bridge",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/glute-bridge-1.svg",
+      "/exercises/workout-guide/glute-bridge-2.svg"
+    ],
+    "hashes": [
+      "64830d042d3ef122b54391cee0339f60d10dc05a79007893f56f6ba35c344e96",
+      "4eeffd0c95b32e0306bed86b9cda802ad3b3ac52135bd1f49f4939569f113375"
+    ]
+  },
+  "Donkey Kicks": {
+    "source": "workout-guide",
+    "sourceName": "Donkey Kick",
+    "sourceId": "donkey-kick",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/donkey-kick-1.svg",
+      "/exercises/workout-guide/donkey-kick-2.svg"
+    ],
+    "hashes": [
+      "62791496c1ec35f81778ef9a4d0b270ba33ba33fa511d053cb94ee5459f203e9",
+      "0cdb0c27c37a3c8d4e20341f4a24c45f60216f290cf3faee4085574e686c9ea8"
+    ]
+  },
+  "Fire Hydrants": {
+    "source": "workout-guide",
+    "sourceName": "Fire Hydrant",
+    "sourceId": "fire-hydrant",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/fire-hydrant-1.svg",
+      "/exercises/workout-guide/fire-hydrant-2.svg"
+    ],
+    "hashes": [
+      "33df11dc4a33122ea58d546e137dcb2ab5657a8c5526b7430d0d21282c2049bc",
+      "d4968443591582278367aaf0db57c1901bdf3c072f71ecfd886ad21fe489a184"
+    ]
+  },
   "Glute Kickback Machine": {
+    "source": "free-exercise-db",
     "sourceName": "Glute Kickback",
     "sourceId": "Glute_Kickback",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1209,6 +1820,7 @@
     ]
   },
   "Dumbbell Calf Raise": {
+    "source": "free-exercise-db",
     "sourceName": "Standing Dumbbell Calf Raise",
     "sourceId": "Standing_Dumbbell_Calf_Raise",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1222,6 +1834,7 @@
     ]
   },
   "Standing Calf Raise": {
+    "source": "free-exercise-db",
     "sourceName": "Standing Barbell Calf Raise",
     "sourceId": "Standing_Barbell_Calf_Raise",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1235,6 +1848,7 @@
     ]
   },
   "Seated Calf Raise": {
+    "source": "free-exercise-db",
     "sourceName": "Seated Calf Raise",
     "sourceId": "Seated_Calf_Raise",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1248,6 +1862,7 @@
     ]
   },
   "Barbell Calf Raise": {
+    "source": "free-exercise-db",
     "sourceName": "Standing Barbell Calf Raise",
     "sourceId": "Standing_Barbell_Calf_Raise",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1261,6 +1876,7 @@
     ]
   },
   "Bodyweight Calf Raise": {
+    "source": "free-exercise-db",
     "sourceName": "Standing Calf Raises",
     "sourceId": "Standing_Calf_Raises",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1273,7 +1889,36 @@
       "f0990fed5d984fdf31c7b6a8420adb59ed6a3f286af6f228d53b68445caa1c51"
     ]
   },
+  "Single Leg BW Raise": {
+    "source": "workout-guide",
+    "sourceName": "Single-Leg Calf Raise",
+    "sourceId": "single-leg-calf-raise",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/single-leg-calf-raise-1.svg",
+      "/exercises/workout-guide/single-leg-calf-raise-2.svg"
+    ],
+    "hashes": [
+      "445b33e98b591aa844524110afab0c1bc3a51d9977204dcf9cc70d6e998191f4",
+      "f8803092b6dce9140291bf933f71887a9127d4ed5d402f882faa4c6dd16fd684"
+    ]
+  },
+  "Jumping Jacks": {
+    "source": "workout-guide",
+    "sourceName": "Jumping Jack",
+    "sourceId": "jumping-jack",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/jumping-jack-1.svg",
+      "/exercises/workout-guide/jumping-jack-2.svg"
+    ],
+    "hashes": [
+      "98fb9a29a8401ba9db367f62db7fb415b1233fd0cc7c40e1f7c634d3481d9d31",
+      "b69e2176c17c60b913d0f4409ab3a90da4fbe50669fb43a659f0286d3e8d8ec1"
+    ]
+  },
   "Seated Calf Machine": {
+    "source": "free-exercise-db",
     "sourceName": "Seated Calf Raise",
     "sourceId": "Seated_Calf_Raise",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1287,6 +1932,7 @@
     ]
   },
   "Dumbbell Curls": {
+    "source": "free-exercise-db",
     "sourceName": "Dumbbell Bicep Curl",
     "sourceId": "Dumbbell_Bicep_Curl",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1300,6 +1946,7 @@
     ]
   },
   "Hammer Curls": {
+    "source": "free-exercise-db",
     "sourceName": "Hammer Curls",
     "sourceId": "Hammer_Curls",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1313,6 +1960,7 @@
     ]
   },
   "Barbell Curls": {
+    "source": "free-exercise-db",
     "sourceName": "Barbell Curl",
     "sourceId": "Barbell_Curl",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1326,6 +1974,7 @@
     ]
   },
   "Standing Cable Curl": {
+    "source": "free-exercise-db",
     "sourceName": "Standing Biceps Cable Curl",
     "sourceId": "Standing_Biceps_Cable_Curl",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1339,6 +1988,7 @@
     ]
   },
   "Preacher Curl Machine": {
+    "source": "free-exercise-db",
     "sourceName": "Machine Preacher Curls",
     "sourceId": "Machine_Preacher_Curls",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1352,6 +2002,7 @@
     ]
   },
   "Bicep Curl Machine": {
+    "source": "free-exercise-db",
     "sourceName": "Machine Bicep Curl",
     "sourceId": "Machine_Bicep_Curl",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1365,6 +2016,7 @@
     ]
   },
   "Close Grip Bench Press": {
+    "source": "free-exercise-db",
     "sourceName": "Close-Grip Barbell Bench Press",
     "sourceId": "Close-Grip_Barbell_Bench_Press",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1377,7 +2029,22 @@
       "108a66dc2dcb09d184157eb81b7fafba5f898b00654c39cb2f0c7f8bdfec5ceb"
     ]
   },
+  "Skull Crushers": {
+    "source": "workout-guide",
+    "sourceName": "Skull Crusher",
+    "sourceId": "skull-crusher",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/skull-crusher-1.svg",
+      "/exercises/workout-guide/skull-crusher-2.svg"
+    ],
+    "hashes": [
+      "542bd7378068fc1aee8fcc6481f4b2d2a02b465a98beafb9a1603a36a460e465",
+      "db39dda7b535503dc41ce744d6c1b1a3ab3208f6bdb36edeb010e8cedaedb523"
+    ]
+  },
   "Tricep Pushdown": {
+    "source": "free-exercise-db",
     "sourceName": "Triceps Pushdown",
     "sourceId": "Triceps_Pushdown",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1391,6 +2058,7 @@
     ]
   },
   "Rope Pushdown": {
+    "source": "free-exercise-db",
     "sourceName": "Triceps Pushdown - Rope Attachment",
     "sourceId": "Triceps_Pushdown_-_Rope_Attachment",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1404,6 +2072,7 @@
     ]
   },
   "Dips": {
+    "source": "free-exercise-db",
     "sourceName": "Parallel Bar Dip",
     "sourceId": "Parallel_Bar_Dip",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1417,6 +2086,7 @@
     ]
   },
   "Dip Machine": {
+    "source": "free-exercise-db",
     "sourceName": "Dip Machine",
     "sourceId": "Dip_Machine",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1429,7 +2099,36 @@
       "07b6b394bcb6e5cdd1f17ff10c4b9a8bc8e4815f54274a9297cad525bd4d3cdf"
     ]
   },
+  "Barbell Wrist Curls": {
+    "source": "workout-guide",
+    "sourceName": "Wrist Curl",
+    "sourceId": "wrist-curl",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/wrist-curl-1.svg",
+      "/exercises/workout-guide/wrist-curl-2.svg"
+    ],
+    "hashes": [
+      "f19588288ed58a99ca0cb98040515c097bb4a850edcb75ccb037907b08b69195",
+      "8499dfb42b71a4b75b5dd5028ad21792d8641c93b2d9938bf8a9bb11c7342129"
+    ]
+  },
+  "Dead Hang": {
+    "source": "workout-guide",
+    "sourceName": "Dead Hang",
+    "sourceId": "dead-hang",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/dead-hang-1.svg",
+      "/exercises/workout-guide/dead-hang-2.svg"
+    ],
+    "hashes": [
+      "1c4426d126d7264a5b5564712880f1203dff410c014566ef134f42f85d382df4",
+      "997ea29832ed1851d152d29b5520f67f63c9d9e45882fa52cc80ec4535b103e2"
+    ]
+  },
   "Weighted Crunches": {
+    "source": "free-exercise-db",
     "sourceName": "Weighted Crunches",
     "sourceId": "Weighted_Crunches",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1443,6 +2142,7 @@
     ]
   },
   "Cable Crunches": {
+    "source": "free-exercise-db",
     "sourceName": "Cable Crunch",
     "sourceId": "Cable_Crunch",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1456,6 +2156,7 @@
     ]
   },
   "Hanging Leg Raises": {
+    "source": "free-exercise-db",
     "sourceName": "Hanging Leg Raise",
     "sourceId": "Hanging_Leg_Raise",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1469,6 +2170,7 @@
     ]
   },
   "Plank": {
+    "source": "free-exercise-db",
     "sourceName": "Plank",
     "sourceId": "Plank",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1482,6 +2184,7 @@
     ]
   },
   "Ab Wheel Rollouts": {
+    "source": "free-exercise-db",
     "sourceName": "Ab Roller",
     "sourceId": "Ab_Roller",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1495,6 +2198,7 @@
     ]
   },
   "Ab Crunch Machine": {
+    "source": "free-exercise-db",
     "sourceName": "Ab Crunch Machine",
     "sourceId": "Ab_Crunch_Machine",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1507,7 +2211,22 @@
       "fb435de8360740438f7097e29afe5329e2f5b2d3a8b73d14cea259583013fd58"
     ]
   },
+  "Burpees": {
+    "source": "workout-guide",
+    "sourceName": "Burpee",
+    "sourceId": "burpee",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/burpee-1.svg",
+      "/exercises/workout-guide/burpee-2.svg"
+    ],
+    "hashes": [
+      "043442c1bd2ed73f387951f335a80ee2b01ddd9f8e9f8c2261886a7eeca21ed3",
+      "76e68827ee48eabde283f36eaacdd30692065b91f86b900df4b61fbf60207ab1"
+    ]
+  },
   "Mountain Climbers": {
+    "source": "free-exercise-db",
     "sourceName": "Mountain Climbers",
     "sourceId": "Mountain_Climbers",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1520,7 +2239,50 @@
       "c1b5473de6d58555b58f3b10f7593231f9ad4c82696bff87e467eb767b24b5f8"
     ]
   },
+  "High Knees": {
+    "source": "workout-guide",
+    "sourceName": "High Knees",
+    "sourceId": "high-knees",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/high-knees-1.svg",
+      "/exercises/workout-guide/high-knees-2.svg"
+    ],
+    "hashes": [
+      "bb809a2074aa31806ad4481b01ef11f7c4f569442464840a8980c6b5962fe3a7",
+      "43c53e014324426d933861bf5f73faa0c1b8cf87c8e6e79bf610dd88cdd4aa09"
+    ]
+  },
+  "Running (Outdoors)": {
+    "source": "workout-guide",
+    "sourceName": "Running",
+    "sourceId": "running",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/running-1.svg",
+      "/exercises/workout-guide/running-2.svg"
+    ],
+    "hashes": [
+      "2c91eb272d6201d9a3f79dcd8aa6fdde8811c940146748b09050bf111ec131a2",
+      "753166e2e20aa2c0d71cb1e778774f9042d28c887b237446e334f4381cc25173"
+    ]
+  },
+  "Walking": {
+    "source": "workout-guide",
+    "sourceName": "Walking",
+    "sourceId": "walking",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/walking-1.svg",
+      "/exercises/workout-guide/walking-2.svg"
+    ],
+    "hashes": [
+      "bfacc7f4c46f8f682b24f5e645e2e2a5262fc13aaee0a59f95cd8f195ac5ed95",
+      "8661f5b938bfc6cf0eed3a7b446d7ac835e05d1ec9a7fcef50c80bfc7d4b36a5"
+    ]
+  },
   "Treadmill": {
+    "source": "free-exercise-db",
     "sourceName": "Running, Treadmill",
     "sourceId": "Running_Treadmill",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1534,6 +2296,7 @@
     ]
   },
   "Stationary Bike": {
+    "source": "free-exercise-db",
     "sourceName": "Bicycling, Stationary",
     "sourceId": "Bicycling_Stationary",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1547,6 +2310,7 @@
     ]
   },
   "Elliptical Trainer": {
+    "source": "free-exercise-db",
     "sourceName": "Elliptical Trainer",
     "sourceId": "Elliptical_Trainer",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
@@ -1559,7 +2323,22 @@
       "f40b3f77d7f0f0d0af7ff49cbbb006ef3cd362664bdde2c7bb24dd57d822b003"
     ]
   },
+  "Stair Climber": {
+    "source": "workout-guide",
+    "sourceName": "Stair Climber",
+    "sourceId": "stair-climber",
+    "revision": "aac599224bb9780305239607ef98540b7e0ce389",
+    "images": [
+      "/exercises/workout-guide/stair-climber-1.svg",
+      "/exercises/workout-guide/stair-climber-2.svg"
+    ],
+    "hashes": [
+      "1c864becfd1e7b0556026af659be7be8f5b2c9d51e62e2cab7c26970c8a2a4e4",
+      "1f5843aa98804cf2ca4eaa2b6b2bda7d971149021260559d65f2f457670b6fa6"
+    ]
+  },
   "Rowing Machine": {
+    "source": "free-exercise-db",
     "sourceName": "Rowing, Stationary",
     "sourceId": "Rowing_Stationary",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",

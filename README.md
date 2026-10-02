@@ -28,8 +28,8 @@ Windows commands and local Postgres/Mailpit are in [Development](docs/DEVELOPMEN
   bearer sessions, account deletion, version-checked account snapshots.
 - Account-separated offline storage, export/import and explicit sync conflicts.
 - Installable offline web app with versioned assets and no cached API responses.
-- English, French and Arabic; revised training guidance and 41 licensed,
-  locally bundled two-frame exercise demonstrations with exact mappings.
+- English, French and Arabic; revised training guidance and 168 licensed,
+  locally bundled two-frame exercise demonstrations with reviewed mappings.
 - Secure-by-default native configuration and cross-platform build preparation.
 
 ## Verify

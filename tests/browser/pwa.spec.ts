@@ -10,6 +10,7 @@ test('built app and matching media survive offline reload; APIs are not cached',
  await page.reload();
  await expect(page.getByRole('heading', {name:'Account & sync'})).toBeVisible();
  expect(await page.evaluate(async () => (await fetch('/exercises/Incline_Dumbbell_Press-0.jpg')).ok)).toBe(true);
+ expect(await page.evaluate(async () => (await fetch('/exercises/workout-guide/nordic-hamstring-curl-1.svg')).ok)).toBe(true);
  const keys = await page.evaluate(async () => {
   const names = await caches.keys();
   const requests = await Promise.all(names.map(async n => (await caches.open(n)).keys()));

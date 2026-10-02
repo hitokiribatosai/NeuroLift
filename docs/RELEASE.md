@@ -44,7 +44,9 @@ pass does not prove those remote jobs or native device tests passed.
 
 - Visually review every bundled demonstration with a qualified exercise reviewer;
   provenance/checksum tests cannot assess technique or performer rights.
-  Only 41 library exercises currently have exact two-frame demonstrations.
+  Currently 168 distinct library exercise names have two-frame demonstrations
+  with reviewed source mappings. Some illustrations are CC BY-SA 4.0; keep
+  Workout Guide and Everkinetic attribution with the app and released assets.
 - Keep the no-media fallback for the remaining library. Do not substitute a
   different exercise merely to fill the space.
 - Validate EN/FR/AR copy, RTL layout, screen-reader names, large fonts and contrast.

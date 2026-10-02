@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { Card } from '../ui/Card';
 import { SpotlightButton } from '../ui/SpotlightButton';
-import { getExerciseDatabase, getLocalizedMuscleName, getExerciseTranslation } from '../../utils/exerciseData';
+import { getExerciseDatabase, getLocalizedMuscleName, getExerciseTranslation, getEnglishExerciseName } from '../../utils/exerciseData';
 import { TrainingGuidance } from '../ui/TrainingGuidance';
 import { ExerciseDemo } from '../ui/ExerciseDemo';
 import { ExerciseEvidenceHighlights } from '../ui/ExerciseEvidenceHighlights';
+import { EXERCISE_EVIDENCE } from '../../utils/exerciseEvidence';
 import { Modal } from '../ui/Modal';
 
 export const ProgramPlanner: React.FC = () => {
@@ -14,9 +15,12 @@ export const ProgramPlanner: React.FC = () => {
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
   const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [researchOnly, setResearchOnly] = useState(false);
 
   const exerciseDB = getExerciseDatabase(language);
   const muscleList = Object.keys(exerciseDB);
+  const researchNames = new Set(EXERCISE_EVIDENCE.map(entry => entry.name));
+  const researchGroups = [...new Set(EXERCISE_EVIDENCE.map(entry => entry.group))];
 
   const filteredExercises = searchQuery
     ? Object.entries(exerciseDB).flatMap(([muscle, subCats]) => {
@@ -24,7 +28,8 @@ export const ProgramPlanner: React.FC = () => {
       Object.entries(subCats).forEach(([subName, categories]) => {
         (['machines', 'dumbbells', 'barbells', 'cables', 'bodyweight'] as const).forEach(cat => {
           categories[cat].forEach(ex => {
-            if (ex.toLowerCase().includes(searchQuery.toLowerCase())) {
+            if (ex.toLowerCase().includes(searchQuery.toLowerCase())
+              && (!researchOnly || researchNames.has(getEnglishExerciseName(ex)))) {
               allExs.push({ name: ex, muscle, subCategory: subName, category: cat });
             }
           });
@@ -55,6 +60,26 @@ export const ProgramPlanner: React.FC = () => {
             }}
             className="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl pl-12 pr-4 py-4 text-sm text-white focus:outline-none focus:border-teal-500 shadow-sm transition-all font-medium"
           />
+        </div>
+        <div className="flex gap-2" role="group" aria-label={t('planner_title')}>
+          <button type="button" aria-pressed={!researchOnly} onClick={() => {
+            setResearchOnly(false);
+            if (!selectedMuscle && !searchQuery) {
+              setSelectedMuscle(muscleList[0]);
+              setSelectedSubCategory(Object.keys(exerciseDB[muscleList[0]])[0]);
+            }
+          }}
+            className={`rounded-xl border px-3 py-3 text-xs font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 ${!researchOnly ? 'border-teal-500 bg-teal-500/15 text-teal-700 dark:text-teal-300' : 'border-zinc-300 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200'}`}>
+            {t('picker_all_filter')}
+          </button>
+          <button type="button" aria-pressed={researchOnly}
+            onClick={() => {
+              setResearchOnly(true);
+              if (!searchQuery) setSelectedMuscle(null);
+            }}
+            className={`rounded-xl border px-3 py-3 text-xs font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 ${researchOnly ? 'border-teal-500 bg-teal-500/15 text-teal-700 dark:text-teal-300' : 'border-zinc-300 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200'}`}>
+            {t('picker_research_filter')}
+          </button>
         </div>
       </div>
 
@@ -121,6 +146,14 @@ export const ProgramPlanner: React.FC = () => {
                 ))}
               </div>
             </div>
+          ) : researchOnly && !selectedMuscle ? (
+            <div className="space-y-8">
+              <h3 className="text-2xl font-black uppercase text-zinc-900 dark:text-white">{t('research_picks_title')}</h3>
+              {researchGroups.map(group => <div key={group}>
+                <h4 className="mb-3 text-lg font-bold text-zinc-800 dark:text-zinc-200">{getLocalizedMuscleName(group, language)}</h4>
+                <ExerciseEvidenceHighlights group={group} onViewDemo={setSelectedExercise} />
+              </div>)}
+            </div>
           ) : selectedMuscle ? (
             <div className="animate-in slide-in-from-right-8 duration-500 space-y-12">
               <div className="flex flex-col gap-6">
@@ -154,7 +187,9 @@ export const ProgramPlanner: React.FC = () => {
                   const allExercises: string[] = [];
                   (['machines', 'dumbbells', 'barbells', 'cables', 'bodyweight'] as const).forEach(cat => {
                     const exs = exerciseDB[selectedMuscle]?.[selectedSubCategory]?.[cat] || [];
-                    exs.forEach(ex => { if (!allExercises.includes(ex)) allExercises.push(ex); });
+                    exs.forEach(ex => {
+                      if ((!researchOnly || researchNames.has(getEnglishExerciseName(ex))) && !allExercises.includes(ex)) allExercises.push(ex);
+                    });
                   });
 
                   const renderCard = (ex: string, i: number) => (
@@ -202,6 +237,7 @@ export const ProgramPlanner: React.FC = () => {
                           </div>
                         </div>
                       )}
+                      {researchOnly && allExercises.length === 0 && <p className="rounded-2xl border border-zinc-200 bg-white p-5 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">{t('picker_no_research')}</p>}
                     </>
                   );
                 })()}

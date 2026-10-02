@@ -4,7 +4,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { SpotlightButton } from '../ui/SpotlightButton';
 import { Card } from '../ui/Card';
 import { CompletedWorkout, ActiveExercise, WorkoutSet, WorkoutTemplate } from '../../types';
-import { getExerciseDatabase, getLocalizedMuscleName, getMuscleForExercise, getExerciseTranslation } from '../../utils/exerciseData';
+import { getExerciseDatabase, getLocalizedMuscleName, getMuscleForExercise, getSubMuscleForExercise, getExerciseTranslation } from '../../utils/exerciseData';
 import { useClock } from '../../contexts/ClockContext';
 import { playNotificationSound } from '../../utils/audio';
 import { ConfirmModal } from '../ui/ConfirmModal';
@@ -20,6 +20,7 @@ import { Capacitor } from '@capacitor/core';
 import { hapticFeedback } from '../../utils/haptics';
 import { exerciseHistoryService } from '../../utils/exerciseHistory';
 import { ExerciseDemo } from '../ui/ExerciseDemo';
+import { ExerciseGroupSelector } from '../ui/ExerciseGroupSelector';
 
 export const Tracker: React.FC = () => {
   const {
@@ -45,6 +46,11 @@ export const Tracker: React.FC = () => {
   const [selectedExercises, setSelectedExercises] = useState<string[]>(() => {
     return safeStorage.getParsed<string[]>('neuroLift_tracker_selected_exercises', []);
   });
+  const [pickerMuscle, setPickerMuscle] = useState(() => selectedMuscles[0] || 'Chest');
+  const [pickerSubgroup, setPickerSubgroup] = useState('');
+  const [templatePickerMuscle, setTemplatePickerMuscle] = useState('Chest');
+  const [templatePickerSubgroup, setTemplatePickerSubgroup] = useState('');
+  const [templateSearch, setTemplateSearch] = useState('');
   const [tutorialExercise, setTutorialExercise] = useState<string | null>(null);
 
   const [plateCalcWeight, setPlateCalcWeight] = useState<number | null>(null);
@@ -144,6 +150,15 @@ export const Tracker: React.FC = () => {
   // Dynamic DB
   const exercisesByMuscle = getExerciseDatabase(language);
   const selectableMuscles = Object.keys(exercisesByMuscle);
+  const currentPickerMuscle = exercisesByMuscle[pickerMuscle] ? pickerMuscle : selectableMuscles[0];
+  const currentPickerSubgroup = exercisesByMuscle[currentPickerMuscle]?.[pickerSubgroup]
+    ? pickerSubgroup : Object.keys(exercisesByMuscle[currentPickerMuscle] || {})[0];
+  const currentTemplateMuscle = exercisesByMuscle[templatePickerMuscle] ? templatePickerMuscle : selectableMuscles[0];
+  const currentTemplateSubgroup = exercisesByMuscle[currentTemplateMuscle]?.[templatePickerSubgroup]
+    ? templatePickerSubgroup : Object.keys(exercisesByMuscle[currentTemplateMuscle] || {})[0];
+  const templateAvailableCount = Object.values(exercisesByMuscle[currentTemplateMuscle]?.[currentTemplateSubgroup] || {})
+    .flat().filter(ex => !editingTemplate?.exercises.some(te => te.name === ex)
+      && getExerciseTranslation(ex, language).toLocaleLowerCase().includes(templateSearch.trim().toLocaleLowerCase())).length;
 
   // Notification logic is now partially in ClockContext
   // but we still trigger the rest start here
@@ -320,6 +335,8 @@ export const Tracker: React.FC = () => {
       setSelectedExercises(selectedExercises.filter(i => i !== ex));
     } else {
       setSelectedExercises([...selectedExercises, ex]);
+      const muscle = getMuscleForExercise(ex);
+      if (exercisesByMuscle[muscle]) setSelectedMuscles(previous => previous.includes(muscle) ? previous : [...previous, muscle]);
     }
   };
 
@@ -561,6 +578,11 @@ export const Tracker: React.FC = () => {
 
   const editTemplate = (template: WorkoutTemplate) => {
     setEditingTemplate(template);
+    const first = template.exercises[0]?.name;
+    const muscle = first ? getMuscleForExercise(first) : 'Chest';
+    setTemplatePickerMuscle(exercisesByMuscle[muscle] ? muscle : 'Chest');
+    setTemplatePickerSubgroup(first ? getSubMuscleForExercise(first) : '');
+    setTemplateSearch('');
     setShowEditTemplateModal(true);
   };
 
@@ -877,6 +899,23 @@ export const Tracker: React.FC = () => {
               </div>
 
               <div className="space-y-20 mb-20">
+                <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-4 sm:p-5">
+                  <ExerciseGroupSelector
+                    database={exercisesByMuscle}
+                    muscle={currentPickerMuscle}
+                    subgroup={currentPickerSubgroup}
+                    onMuscleChange={muscle => {
+                      setPickerMuscle(muscle);
+                      setPickerSubgroup(Object.keys(exercisesByMuscle[muscle])[0]);
+                      setSearchQuery('');
+                    }}
+                    onSubgroupChange={subgroup => {
+                      setPickerSubgroup(subgroup);
+                      setSearchQuery('');
+                    }}
+                  />
+                  <p className="mt-3 text-xs font-semibold text-teal-300">{t('picker_selected_count')}: {selectedExercises.length}</p>
+                </div>
                 {searchQuery ? (
                   /* Search Results View */
                   <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -973,7 +1012,7 @@ export const Tracker: React.FC = () => {
                   </div>
 
                 ) : (
-                  selectedMuscles.map(majorMuscle => (
+                  [currentPickerMuscle].map(majorMuscle => (
                     <div key={majorMuscle} className="space-y-12">
                       {/* Show Major Group Header */}
                       <h3 className="text-3xl font-black text-white uppercase tracking-tighter flex items-center gap-4">
@@ -982,7 +1021,7 @@ export const Tracker: React.FC = () => {
                       </h3>
 
                       {/* Render functional sub-groups */}
-                      {Object.keys(exercisesByMuscle[majorMuscle] || {}).map(subGroup => {
+                      {Object.keys(exercisesByMuscle[majorMuscle] || {}).filter(subGroup => subGroup === currentPickerSubgroup).map(subGroup => {
                         const categoryMeta: Record<string, { icon: string; key: Parameters<typeof t>[0] }> = {
                           dumbbells: { icon: '🏋️', key: 'cat_dumbbells' },
                           barbells: { icon: '🔩', key: 'cat_barbells' },
@@ -1762,26 +1801,39 @@ export const Tracker: React.FC = () => {
 
             {/* Add Exercise from Library */}
             <div className="space-y-4">
-              <h4 className="text-sm font-black text-zinc-400 uppercase tracking-widest">Add Exercise from Library</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto custom-scrollbar">
-                {Object.entries(exercisesByMuscle).map(([muscle, subCats]) =>
-                  Object.entries(subCats).map(([subCat, categories]) =>
-                    Object.entries(categories).map(([category, exercises]) =>
-                      exercises
-                        .filter(ex => !editingTemplate?.exercises.some(te => te.name === ex))
-                        .map(exercise => (
-                          <button
-                            key={exercise}
-                            onClick={() => addExerciseToTemplate(exercise)}
-                            className="p-3 bg-zinc-900/30 border border-zinc-800 rounded-lg text-left hover:border-teal-500/50 hover:bg-teal-500/10 transition-all"
-                          >
-                            <div className="text-sm font-bold text-white">{exercise}</div>
-                            <div className="text-xs text-zinc-500 uppercase tracking-widest">{muscle}</div>
-                          </button>
-                        ))
-                    )
-                  )
-                ).flat(2)}
+              <h4 className="text-sm font-black text-zinc-400 uppercase tracking-widest">{t('picker_add_from_library')}</h4>
+              <ExerciseGroupSelector
+                database={exercisesByMuscle}
+                muscle={currentTemplateMuscle}
+                subgroup={currentTemplateSubgroup}
+                onMuscleChange={muscle => {
+                  setTemplatePickerMuscle(muscle);
+                  setTemplatePickerSubgroup(Object.keys(exercisesByMuscle[muscle])[0]);
+                }}
+                onSubgroupChange={setTemplatePickerSubgroup}
+              />
+              <input type="search" value={templateSearch} onChange={event => setTemplateSearch(event.target.value)}
+                aria-label={t('planner_search_placeholder')} placeholder={t('planner_search_placeholder')}
+                className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-white focus:border-teal-400 focus:outline-none" />
+              <p className="text-xs font-semibold text-teal-300">{t('picker_selected_count')}: {editingTemplate?.exercises.length || 0}</p>
+              <div className="max-h-96 space-y-5 overflow-y-auto custom-scrollbar">
+                {templateAvailableCount === 0 && <p className="rounded-xl border border-zinc-800 p-4 text-sm text-zinc-400">{t('picker_no_matches')}</p>}
+                {Object.entries(exercisesByMuscle[currentTemplateMuscle]?.[currentTemplateSubgroup] || {}).map(([category, exercises]) => {
+                  const available = exercises.filter(ex => !editingTemplate?.exercises.some(te => te.name === ex)
+                    && getExerciseTranslation(ex, language).toLocaleLowerCase().includes(templateSearch.trim().toLocaleLowerCase()));
+                  if (!available.length) return null;
+                  const categoryKey = `cat_${category}` as Parameters<typeof t>[0];
+                  return <div key={category}>
+                    <h5 className="mb-2 text-xs font-bold uppercase tracking-widest text-zinc-400">{t(categoryKey)}</h5>
+                    <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                      {available.map(exercise => <button key={`${category}-${exercise}`} type="button"
+                        onClick={() => addExerciseToTemplate(exercise)}
+                        className="rounded-lg border border-zinc-800 bg-zinc-900/30 p-3 text-left text-sm font-bold text-white hover:border-teal-500/50 hover:bg-teal-500/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400">
+                        {getExerciseTranslation(exercise, language)}
+                      </button>)}
+                    </div>
+                  </div>;
+                })}
               </div>
             </div>
           </div>
