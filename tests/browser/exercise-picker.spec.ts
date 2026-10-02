@@ -1,5 +1,28 @@
 import { test, expect } from '@playwright/test';
 
+test('home introduces the app in English and opens the exercise library', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({
+    version: 0, dirty: false, data: { neuroLift_hasCompletedOnboarding: 'true', neuroLift_userGoal: 'strength' },
+  })));
+  await page.goto('/#home');
+  await expect(page.getByText('Build a session, log every set, and see your progress in one place.')).toBeVisible();
+  await page.getByRole('button', { name: 'Browse exercises' }).click();
+  await expect(page.getByRole('heading', { name: 'Exercise Library' })).toBeVisible();
+  await expect(page.getByText('Incline Dumbbell Press', { exact: true })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test('library opens on exercises and previews a bundled demonstration', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({
+    version: 0, dirty: false, data: { neuroLift_hasCompletedOnboarding: 'true', neuroLift_userGoal: 'strength' },
+  })));
+  await page.goto('/#planner');
+  const card = page.getByRole('button').filter({ hasText: 'Incline Dumbbell Press' }).first();
+  await expect(card).toBeVisible();
+  await expect(card.locator('img')).toHaveAttribute('src', /Incline_Dumbbell_Press-0\.jpg$/);
+});
+
 test('workout exercise choices persist while switching muscle areas', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({

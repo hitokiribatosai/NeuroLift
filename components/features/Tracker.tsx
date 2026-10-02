@@ -724,43 +724,32 @@ export const Tracker: React.FC = () => {
           className="w-full"
         >
           {phase === 'setup' && (
-            <div className="mx-auto max-w-5xl px-6 pt-4 pb-32 text-center">
-              <div className="mb-12">
-                <h2 className="text-4xl md:text-5xl font-black text-white mb-2 uppercase tracking-tight">{t('tracker_select_muscle')}</h2>
-                <div className="h-1.5 w-24 bg-teal-500 mx-auto rounded-full mb-8"></div>
-                <label className="inline-flex items-center gap-3 text-sm mb-6">
-                  {language === 'ar' ? 'الراحة بين المجموعات' : language === 'fr' ? 'Repos entre les séries' : 'Rest between sets'}
-                  <select className="rounded-lg bg-zinc-900 border border-zinc-700 p-2 text-white"
+            <div className="mx-auto max-w-6xl px-5 pb-32 pt-5 sm:px-8 lg:pt-10">
+              <div className="mb-6 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-teal-700 dark:text-teal-300">{t('tracker_setup_step')}</p>
+                  <h2 className="text-3xl font-black tracking-tight text-zinc-950 dark:text-white sm:text-4xl">{t('tracker_select_muscle')}</h2>
+                  <p className="mt-2 max-w-xl text-sm text-zinc-600 dark:text-zinc-400">{t('tracker_setup_hint')}</p>
+                </div>
+                <label className="inline-flex w-fit items-center gap-3 rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+                  {t('tracker_rest_between_sets')}
+                  <select className="rounded-lg border border-zinc-300 bg-zinc-50 p-2 text-zinc-950 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
                     defaultValue={safeStorage.getItem('neuroLift_rest_seconds') || '120'}
                     onChange={e => safeStorage.setItem('neuroLift_rest_seconds', e.target.value)}>
                     {[60, 90, 120, 180, 300].map(seconds => <option key={seconds} value={seconds}>{seconds} s</option>)}
                   </select>
                 </label>
-
-                {selectedMuscles.length > 0 && (
-                  <div className="flex flex-wrap justify-center gap-2 mb-4 animate-in fade-in zoom-in duration-300">
-                    {selectedMuscles.map(m => (
-                      <span key={m} className="px-5 py-2 text-[0.625rem] font-black rounded-full uppercase tracking-[0.2em] shadow-sm" style={{
-                        backgroundColor: 'rgb(var(--accent-500) / 0.1)',
-                        borderWidth: '1px',
-                        borderStyle: 'solid',
-                        borderColor: 'rgb(var(--accent-500) / 0.3)',
-                        color: 'rgb(var(--accent-300))',
-                      }}>
-                        {getLocalizedMuscleName(m, language)}
-                      </span>
-                    ))}
-                  </div>
-                )}
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-4xl mx-auto px-4 mb-16">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                 {selectableMuscles.map((muscle) => (
                   <motion.button
                     key={muscle}
+                    type="button"
+                    aria-pressed={selectedMuscles.includes(muscle)}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => toggleMuscle(muscle)}
-                    className="group relative flex items-center justify-center p-6 rounded-3xl border transition-all duration-300"
+                    className="group relative flex min-h-24 items-center justify-center rounded-2xl border p-4 transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400"
                     style={{
                       backgroundColor: selectedMuscles.includes(muscle)
                         ? 'rgb(var(--accent-500))'
@@ -779,40 +768,37 @@ export const Tracker: React.FC = () => {
                         : (isLight ? '#18181b' : '#ffffff'),
                     }}
                   >
-                    <span className="text-xl font-black text-center transition-colors">
+                    <span className="text-lg font-black text-center transition-colors">
                       {getLocalizedMuscleName(muscle, language)}
                     </span>
                   </motion.button>
                 ))}
               </div>
 
-              {selectedMuscles.length > 0 && (
-                <div className="mt-4 animate-in slide-in-from-bottom-6 duration-500">
-                  <SpotlightButton onClick={() => handleSetPhase('selection')} className="px-20 py-5 text-lg font-black uppercase tracking-widest shadow-xl">
-                    {t('tracker_select_exercises')} ({selectedMuscles.length})
-                  </SpotlightButton>
-
-                  <button
-                    onClick={() => setShowResetSessionConfirm(true)}
-                    className="mt-4 text-xs text-zinc-500 hover:text-rose-500 font-bold uppercase tracking-widest transition-colors"
-                  >
-                    {t('tracker_reset_session')}
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/60">
+                <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">{selectedMuscles.length} {t(selectedMuscles.length === 1 ? 'tracker_group_selected' : 'tracker_groups_selected')}</p>
+                <div className="flex flex-wrap items-center gap-3">
+                  {selectedMuscles.length > 0 && <button type="button" onClick={() => setShowResetSessionConfirm(true)} className="text-xs font-bold text-zinc-600 hover:text-rose-500 dark:text-zinc-400">{t('tracker_reset_session')}</button>}
+                  <button type="button" disabled={selectedMuscles.length === 0} onClick={() => handleSetPhase('selection')}
+                    className="min-h-11 rounded-xl bg-teal-600 px-5 py-3 text-sm font-black text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-teal-400 dark:text-zinc-950 dark:hover:bg-teal-300">
+                    {t('tracker_select_exercises')} <span aria-hidden="true">→</span>
                   </button>
                 </div>
-              )}
+              </div>
             </div>
           )}
 
           {phase === 'selection' && (
-            <div className="mx-auto max-w-4xl px-6 pt-4 pb-32">
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-b border-zinc-200 dark:border-zinc-800 pb-8">
+            <div className="mx-auto max-w-6xl px-5 pb-32 pt-5 sm:px-8 lg:pt-10">
+              <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-zinc-200 pb-5 dark:border-zinc-800">
                 <div>
-                  <h2 className="text-3xl font-black text-white uppercase tracking-tight mb-2">
+                  <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-teal-700 dark:text-teal-300">{t('tracker_exercises_step')}</p>
+                  <h2 className="mb-2 text-3xl font-black tracking-tight text-zinc-950 dark:text-white">
                     {t('tracker_add_to_workout')}
                   </h2>
                   <div className="flex flex-wrap gap-2">
                     {selectedMuscles.map(m => (
-                      <span key={m} className="text-[0.625rem] text-teal-300 dark:text-teal-300 font-bold uppercase tracking-widest px-2 py-0.5 bg-teal-500/10 rounded shadow-sm">
+                      <span key={m} className="rounded-lg bg-teal-500/10 px-2.5 py-1 text-xs font-bold text-teal-800 dark:text-teal-200">
                         {getLocalizedMuscleName(m, language)}
                       </span>
                     ))}
@@ -820,7 +806,7 @@ export const Tracker: React.FC = () => {
                 </div>
 
                 {/* Search Input */}
-                <div className="flex-1 w-full md:max-w-md mx-4 md:mx-0 order-last md:order-none mt-4 md:mt-0">
+                <div className="order-2 w-full lg:order-none lg:max-w-sm">
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                       <svg className="h-5 w-5 text-zinc-500 group-focus-within:text-teal-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -832,14 +818,14 @@ export const Tracker: React.FC = () => {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder={t('planner_search_placeholder') || "Search exercises..."}
-                      className="block w-full pl-11 pr-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-2xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 transition-all"
+                      className="block w-full rounded-xl border border-zinc-300 bg-white py-3 pl-11 pr-4 text-sm text-zinc-950 placeholder-zinc-500 transition-all focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
                     />
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="order-3 flex w-full flex-wrap gap-2">
                   <button onClick={() => setPhase('setup')} className="text-xs text-zinc-400 hover:text-white uppercase tracking-widest font-black flex items-center gap-2 transition-colors">
-                    <svg className="w-4 h-4 text-teal-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                      <svg className="w-4 h-4 text-teal-700 dark:text-teal-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                     {t('tracker_back')}
                   </button>
 
@@ -898,10 +884,11 @@ export const Tracker: React.FC = () => {
 
               </div>
 
-              <div className="space-y-20 mb-20">
-                <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-4 sm:p-5">
+              <div className="mb-10 grid gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
+                <div className="h-fit rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950/80 sm:p-5 lg:sticky lg:top-24">
                   <ExerciseGroupSelector
                     database={exercisesByMuscle}
+                    stacked
                     muscle={currentPickerMuscle}
                     subgroup={currentPickerSubgroup}
                     onMuscleChange={muscle => {
@@ -914,7 +901,6 @@ export const Tracker: React.FC = () => {
                       setSearchQuery('');
                     }}
                   />
-                  <p className="mt-3 text-xs font-semibold text-teal-300">{t('picker_selected_count')}: {selectedExercises.length}</p>
                 </div>
                 {searchQuery ? (
                   /* Search Results View */
@@ -967,7 +953,7 @@ export const Tracker: React.FC = () => {
                                     : (isLight ? '#ffffff' : 'rgba(24,24,27,0.6)'),
                                   color: isLight ? '#18181b' : '#ffffff',
                                 }}
-                                className={`flex items-center gap-4 p-5 border-2 rounded-2xl cursor-pointer transition-all duration-300 ${selectedExercises.includes(name)
+                                className={`flex items-center gap-4 p-5 border-2 rounded-2xl cursor-pointer transition-all duration-300 focus-within:outline focus-within:outline-2 focus-within:outline-teal-400 ${selectedExercises.includes(name)
                                   ? 'border-teal-500 shadow-md'
                                   : (isLight ? 'border-zinc-200 hover:border-zinc-300' : 'border-zinc-800 hover:border-zinc-700')}`}>
                                 <input
@@ -976,7 +962,7 @@ export const Tracker: React.FC = () => {
                                   onChange={() => {
                                     toggleExercise(name);
                                   }}
-                                  className="hidden"
+                                  className="sr-only"
                                 />
                                 <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${selectedExercises.includes(name)
                                   ? 'bg-teal-500 border-teal-500 text-white shadow-lg shadow-teal-500/20'
@@ -1013,10 +999,10 @@ export const Tracker: React.FC = () => {
 
                 ) : (
                   [currentPickerMuscle].map(majorMuscle => (
-                    <div key={majorMuscle} className="space-y-12">
+                    <div key={majorMuscle} className="space-y-6">
                       {/* Show Major Group Header */}
-                      <h3 className="text-3xl font-black text-white uppercase tracking-tighter flex items-center gap-4">
-                        <span className="w-4 h-12 bg-teal-500 rounded-full"></span>
+                      <h3 className="flex items-center gap-3 text-2xl font-black text-zinc-950 dark:text-white">
+                        <span className="h-8 w-1 rounded-full bg-teal-500"></span>
                         {getLocalizedMuscleName(majorMuscle, language)}
                       </h3>
 
@@ -1040,14 +1026,14 @@ export const Tracker: React.FC = () => {
                                   : (isLight ? '#ffffff' : 'rgba(24,24,27,0.6)'),
                                 color: isLight ? '#18181b' : '#ffffff',
                               }}
-                              className={`flex items-center gap-4 p-5 border-2 rounded-2xl cursor-pointer transition-all duration-300 ${selectedExercises.includes(ex)
+                              className={`flex items-center gap-4 p-5 border-2 rounded-2xl cursor-pointer transition-all duration-300 focus-within:outline focus-within:outline-2 focus-within:outline-teal-400 ${selectedExercises.includes(ex)
                                 ? 'border-teal-500 shadow-md'
                                 : (isLight ? 'border-zinc-200 hover:border-zinc-300' : 'border-zinc-800 hover:border-zinc-700')}`}>
                               <input
                                 type="checkbox"
                                 checked={selectedExercises.includes(ex)}
                                 onChange={() => toggleExercise(ex)}
-                                className="hidden"
+                                className="sr-only"
                               />
                               <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${selectedExercises.includes(ex)
                                 ? 'bg-teal-500 border-teal-500 text-white shadow-lg shadow-teal-500/20'
@@ -1077,12 +1063,12 @@ export const Tracker: React.FC = () => {
 
                         return (
                           <div key={subGroup} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <h4 className="text-xl font-black text-zinc-200 mb-8 uppercase tracking-widest flex items-center gap-4 ml-4">
+                            <h4 className="mb-5 flex items-center gap-3 text-lg font-black text-zinc-950 dark:text-zinc-200">
                               <span className="w-1.5 h-6 bg-teal-500/50 rounded-full"></span>
                               {getLocalizedMuscleName(subGroup, language)}
                             </h4>
 
-                            <div className="space-y-10 ml-4">
+                            <div className="space-y-6">
                               {categories.map(cat => {
                                 const exercises = exercisesByMuscle[majorMuscle]?.[subGroup]?.[cat] || [];
                                 if (exercises.length === 0) return null;
@@ -1113,10 +1099,10 @@ export const Tracker: React.FC = () => {
 
               </div>
 
-              <div className="sticky bottom-0 md:bottom-6 p-6 md:p-8 flex items-center justify-between z-40 pb-[calc(2rem+env(safe-area-inset-bottom))] md:pb-8">
-                <div className="hidden md:block">
-                  <div className="text-[10px] text-zinc-300 font-black uppercase tracking-[0.3em] mb-1">{selectedExercises.length} Exercises Picked</div>
-                  <div className="text-sm text-zinc-200 font-bold max-w-[400px] truncate">{selectedExercises.join(', ')}</div>
+              <div className="sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-white/95 p-3 shadow-2xl backdrop-blur dark:border-zinc-700 dark:bg-zinc-950/95 md:bottom-6 md:p-4">
+                <div className="min-w-0">
+                  <div className="text-xs font-black text-zinc-900 dark:text-white">{t('picker_selected_count')}: {selectedExercises.length}</div>
+                  <div className="hidden max-w-[400px] truncate text-xs text-zinc-600 dark:text-zinc-400 md:block">{selectedExercises.join(', ')}</div>
                 </div>
                 <div className="flex gap-4 w-full md:w-auto">
                   {activeExercises.length > 0 && (

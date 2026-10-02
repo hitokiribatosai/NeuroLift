@@ -7,10 +7,11 @@ export function ExerciseEvidenceHighlights({
  group, onViewDemo,
 }: { group: string; onViewDemo: (name: string) => void }) {
  const { language, t } = useLanguage();
+ const headingId = React.useId();
  const entries = getResearchExercisesForGroup(group);
- return <section className="rounded-3xl border border-teal-200 dark:border-teal-900/70 bg-teal-50/60 dark:bg-teal-950/20 p-5 sm:p-6" aria-labelledby="research-exercises-heading">
+ return <section className="rounded-3xl border border-teal-200 dark:border-teal-900/70 bg-teal-50/60 dark:bg-teal-950/20 p-5 sm:p-6" aria-labelledby={headingId}>
   <div className="mb-4">
-   <h4 id="research-exercises-heading" className="text-sm font-black uppercase tracking-wide text-teal-900 dark:text-teal-200">{t('research_picks_title')}</h4>
+   <h4 id={headingId} className="text-sm font-black uppercase tracking-wide text-teal-900 dark:text-teal-200">{t('research_picks_title')}</h4>
    <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">{t('research_picks_note')}</p>
   </div>
   {entries.length === 0 ? <p className="rounded-2xl bg-white/70 dark:bg-zinc-900/60 p-4 text-sm text-zinc-600 dark:text-zinc-400">{t('research_empty')}</p> :

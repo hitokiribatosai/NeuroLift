@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --color-teal-300: rgb(var(--accent-300));
@@ -750,4 +751,38 @@ html.dark ::-webkit-scrollbar-thumb {
 
 html.dark ::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+/* Explicit dark: utilities must win over the legacy device color guards above.
+   Otherwise a light-mode base class such as text-zinc-700 stays nearly black
+   on a dark surface even when dark:text-zinc-300 is present. */
+html.dark [class~="dark:text-zinc-200"] {
+  color: #e4e4e7 !important;
+  -webkit-text-fill-color: #e4e4e7 !important;
+}
+
+html.dark [class~="dark:text-zinc-300"] {
+  color: #d4d4d8 !important;
+  -webkit-text-fill-color: #d4d4d8 !important;
+}
+
+html.dark [class~="dark:text-zinc-400"] {
+  color: #a1a1aa !important;
+  -webkit-text-fill-color: #a1a1aa !important;
+}
+
+html.dark [class~="dark:text-teal-200"] {
+  color: rgb(var(--accent-300)) !important;
+  -webkit-text-fill-color: rgb(var(--accent-300)) !important;
+}
+
+html.dark [class~="dark:text-teal-300"] {
+  color: rgb(var(--accent-300)) !important;
+  -webkit-text-fill-color: rgb(var(--accent-300)) !important;
+}
+
+/* The light accent is blue; text on its solid buttons must remain white. */
+html.light .bg-teal-600.text-white {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
 }
