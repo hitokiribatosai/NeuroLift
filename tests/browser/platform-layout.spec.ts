@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.use({ serviceWorkers: 'block' });
 const base = { neuroLift_hasCompletedOnboarding: 'true', neuroLift_userGoal: 'strength' };
-for (const width of [360, 390, 768, 900, 1440]) {
+for (const width of [360, 390, 412, 768, 900, 1440]) {
   test(`navigation stays reachable after scrolling at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 844 });
     await page.addInitScript(data => localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({ version: 0, dirty: false, data })), base);
@@ -12,6 +12,16 @@ for (const width of [360, 390, 768, 900, 1440]) {
     const bounds = await navigation.boundingBox();
     expect(bounds!.y).toBeGreaterThanOrEqual(0);
     expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(845);
+    if (width <= 800) {
+      // Being visible alone also passes for the obsolete top-navigation APK.
+      const sidebar = page.locator('.web-sidebar');
+      await expect(sidebar).toHaveCSS('position', 'fixed');
+      const bar = await sidebar.boundingBox();
+      expect(bar!.y).toBeGreaterThan(650);
+      expect(Math.abs(bar!.y + bar!.height - 844)).toBeLessThanOrEqual(1);
+      await expect(sidebar.locator('.web-brand')).toBeHidden();
+      await expect(navigation.getByRole('button', { name: 'Progress', exact: true })).toBeVisible();
+    }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await navigation.getByRole('button', { name: 'Home', exact: true }).click();
     await expect(page.locator('.web-dashboard')).toBeVisible();

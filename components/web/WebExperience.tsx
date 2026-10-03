@@ -7,6 +7,7 @@ import { TRAINING_SOURCES } from '../../utils/trainingEvidence';
 import './website.css';
 import { WebStatus } from './WebStatus';
 import { Capacitor } from '@capacitor/core';
+import { App as NativeApp } from '@capacitor/app';
 import { Modal } from '../ui/Modal';
 
 type Navigation = { currentView: string; setCurrentView: (view: string) => void };
@@ -28,6 +29,15 @@ function useCopy() {
 }
 export function WebFrame({ currentView, setCurrentView, children }: Navigation & { children: React.ReactNode }) {
   const [moreOpen, setMoreOpen] = React.useState(false);
+  const [nativeVersion, setNativeVersion] = React.useState('');
+  React.useEffect(() => {
+    if (Capacitor.getPlatform() !== 'android') return;
+    let mounted = true;
+    NativeApp.getInfo().then(info => {
+      if (mounted) setNativeVersion(`${info.version} (${info.build})`);
+    }).catch(() => { /* Version info is optional; navigation must still work. */ });
+    return () => { mounted = false; };
+  }, []);
   const { t, dir } = useLanguage();
   const c = useCopy();
   const [keyboardOpen, setKeyboardOpen] = React.useState(false);
@@ -91,6 +101,7 @@ export function WebFrame({ currentView, setCurrentView, children }: Navigation &
     </div>
     <Modal isOpen={moreOpen} onClose={() => setMoreOpen(false)} label={c('More', 'Plus', 'المزيد')} sheet>
       <div className="web-more-panel"><div className="web-section-heading"><h2>{c('More', 'Plus', 'المزيد')}</h2><button className="web-secondary" onClick={() => setMoreOpen(false)}>{c('Close', 'Fermer', 'إغلاق')}</button></div>
+        {nativeVersion && <p className="web-small" data-testid="android-build">NeuroLift · Android {nativeVersion}</p>}
         {[...items.slice(4), ['privacy', t('privacy_policy')]].map(([id, label]) => <button className="web-more-link" key={id} onClick={() => { setMoreOpen(false); setCurrentView(id); }}><Icon name={id} />{label}</button>)}
         <button className="web-more-link" onClick={() => { setMoreOpen(false); window.scrollTo(0, 0); window.dispatchEvent(new Event('neurolift-open-settings')); }}>{c('Settings', 'Réglages', 'الإعدادات')}</button>
       </div>
