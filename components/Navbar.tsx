@@ -6,6 +6,8 @@ import { useFontSize, FontSize } from '../contexts/FontSizeContext';
 import { useTheme, Theme, AccentColor } from '../contexts/ThemeContext';
 import { DataManager } from '../utils/dataManager';
 import { Language } from '../types';
+import { registerOverlay } from '../utils/overlays';
+import { usesModernInterface } from '../utils/interfacePlatform';
 interface NavbarProps {
   currentView: string;
   setCurrentView: (view: string) => void;
@@ -14,6 +16,15 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, settingsOnly = false }) => {
   const [scrolled, setScrolled] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  useEffect(() => {
+    if (isSettingsOpen && usesModernInterface()) return registerOverlay(() => setIsSettingsOpen(false));
+  }, [isSettingsOpen]);
+  useEffect(() => {
+    if (!settingsOnly) return;
+    const open = () => setIsSettingsOpen(true);
+    window.addEventListener('neurolift-open-settings', open);
+    return () => window.removeEventListener('neurolift-open-settings', open);
+  }, [settingsOnly]);
   const settingsButton = React.useRef<HTMLButtonElement>(null);
   const { language, setLanguage, t, dir } = useLanguage();
   const { fontSize, setFontSize } = useFontSize();
@@ -307,7 +318,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
         className={settingsOnly ? 'web-settings-nav' : `fixed top-0 z-[60] w-full transition-all duration-500 ${scrolled ? 'bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-zinc-800/50 shadow-xl' : 'bg-gradient-to-b from-[#0a0a0a]/80 to-transparent'}`}
         dir={dir}
         style={{
-          paddingTop: 'env(safe-area-inset-top)',
+          paddingTop: settingsOnly ? 0 : 'env(safe-area-inset-top)',
           ...(scrolled ? { WebkitBackdropFilter: 'blur(12px)' } : {})
         }}
       >

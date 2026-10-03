@@ -23,6 +23,7 @@ import { exerciseHistoryService } from '../../utils/exerciseHistory';
 import { ExerciseDemo } from '../ui/ExerciseDemo';
 import { ExerciseGroupSelector } from '../ui/ExerciseGroupSelector';
 import { WebSession } from '../web/WebSession';
+import { useInterfaceState } from '../../hooks/useInterfaceState';
 
 export const Tracker: React.FC = () => {
   const {
@@ -48,12 +49,14 @@ export const Tracker: React.FC = () => {
   const [selectedExercises, setSelectedExercises] = useState<string[]>(() => {
     return safeStorage.getParsed<string[]>('neuroLift_tracker_selected_exercises', []);
   });
-  const [pickerMuscle, setPickerMuscle] = useState(() => selectedMuscles[0] || 'Chest');
-  const [pickerSubgroup, setPickerSubgroup] = useState('');
+  const [pickerMuscle, setPickerMuscle] = useInterfaceState('picker_muscle', selectedMuscles[0] || 'Chest');
+  const [pickerSubgroup, setPickerSubgroup] = useInterfaceState('picker_subgroup', '');
   const [templatePickerMuscle, setTemplatePickerMuscle] = useState('Chest');
   const [templatePickerSubgroup, setTemplatePickerSubgroup] = useState('');
   const [templateSearch, setTemplateSearch] = useState('');
   const [tutorialExercise, setTutorialExercise] = useState<string | null>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const [plateCalcWeight, setPlateCalcWeight] = useState<number | null>(null);
   const [barWeight, setBarWeight] = useState<number>(20);
@@ -147,7 +150,7 @@ export const Tracker: React.FC = () => {
   const [activeExercises, setActiveExercises] = useState<ActiveExercise[]>(() => {
     return safeStorage.getParsed<ActiveExercise[]>('neuroLift_tracker_active_exercises', []);
   });
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useInterfaceState('picker_search', '');
 
   // Dynamic DB
   const exercisesByMuscle = getExerciseDatabase(language);
@@ -247,6 +250,7 @@ export const Tracker: React.FC = () => {
 
   // Sync Phase with URL & Handle Back Navigation
   useEffect(() => {
+    if (usesModernInterface()) return; // Modern navigation never rewinds a saved workout.
     // 1. Handle Web Back Button (PopState)
     const handlePopState = () => {
       // Check if we are still in tracker view
@@ -300,6 +304,7 @@ export const Tracker: React.FC = () => {
 
   // Update URL when phase changes (Forward Navigation)
   useEffect(() => {
+    if (usesModernInterface()) return;
     const currentHash = window.location.hash;
     const targetHash = `#tracker?phase=${phase}`;
 
@@ -714,19 +719,19 @@ export const Tracker: React.FC = () => {
   };
 
   return (
-    <div className="relative w-full min-h-screen overflow-x-hidden">
+    <div className={`relative w-full min-h-screen ${usesModernInterface() ? '' : 'overflow-x-hidden'}`}>
       <AnimatePresence mode="wait" custom={direction} initial={false}>
         <motion.div
           key={phase}
           custom={direction}
-          initial={{ opacity: 0, x: direction * 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: direction * -50 }}
+          initial={usesModernInterface() ? false : { opacity: 0, x: direction * 50 }}
+          animate={usesModernInterface() ? { opacity: 1 } : { opacity: 1, x: 0 }}
+          exit={usesModernInterface() ? { opacity: 0 } : { opacity: 0, x: direction * -50 }}
           transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
           className="w-full"
         >
           {phase === 'setup' && (
-            <div className="mx-auto max-w-6xl px-5 pb-32 pt-5 sm:px-8 lg:pt-10">
+            <div className={`${usesModernInterface() ? 'web-workout-picker ' : ''}mx-auto max-w-6xl px-5 pb-32 pt-5 sm:px-8 lg:pt-10`}>
               <div className="mb-6 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-teal-700 dark:text-teal-300">{t('tracker_setup_step')}</p>
@@ -791,7 +796,7 @@ export const Tracker: React.FC = () => {
           )}
 
           {phase === 'selection' && (
-            <div className="mx-auto max-w-6xl px-5 pb-32 pt-5 sm:px-8 lg:pt-10">
+            <div className={`${usesModernInterface() ? 'web-workout-picker ' : ''}mx-auto max-w-6xl px-5 pb-32 pt-5 sm:px-8 lg:pt-10`}>
               <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-zinc-200 pb-5 dark:border-zinc-800">
                 <div>
                   <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-teal-700 dark:text-teal-300">{t('tracker_exercises_step')}</p>
@@ -886,8 +891,9 @@ export const Tracker: React.FC = () => {
 
               </div>
 
-              <div className="mb-10 grid gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
-                <div className="h-fit rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950/80 sm:p-5 lg:sticky lg:top-24">
+              {usesModernInterface() && <button className="web-secondary web-mobile-filters" onClick={() => setPickerOpen(true)}>{getLocalizedMuscleName(currentPickerMuscle, language)} · {getLocalizedMuscleName(currentPickerSubgroup, language)} ▾</button>}
+              <div className="web-picker-grid mb-10 grid gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
+                <div className="web-picker-groups h-fit rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950/80 sm:p-5 lg:sticky lg:top-24">
                   <ExerciseGroupSelector
                     database={exercisesByMuscle}
                     stacked
@@ -1099,11 +1105,13 @@ export const Tracker: React.FC = () => {
                   ))
                 )}
 
+                {usesModernInterface() && <aside className="web-selection-panel"><h3>{t('picker_selected_count')}: {selectedExercises.length}</h3><ul>{selectedExercises.map(name => <li key={name}><span>{getExerciseTranslation(name, language)}</span><button aria-label={`${t('tracker_delete_exercise')}: ${name}`} onClick={() => toggleExercise(name)}>×</button></li>)}</ul><button className="web-primary" disabled={!selectedExercises.length} onClick={() => setReviewOpen(true)}>{language === 'fr' ? 'Vérifier' : language === 'ar' ? 'مراجعة' : 'Review'}</button></aside>}
               </div>
 
-              <div className="sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-white/95 p-3 shadow-2xl backdrop-blur dark:border-zinc-700 dark:bg-zinc-950/95 md:bottom-6 md:p-4">
+              <div className="web-selection-actions sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-white/95 p-3 shadow-2xl backdrop-blur dark:border-zinc-700 dark:bg-zinc-950/95 md:bottom-6 md:p-4">
                 <div className="min-w-0">
                   <div className="text-xs font-black text-zinc-900 dark:text-white">{t('picker_selected_count')}: {selectedExercises.length}</div>
+                  {usesModernInterface() && <button className="web-text-button" onClick={() => setReviewOpen(true)}>{language === 'fr' ? 'Vérifier' : language === 'ar' ? 'مراجعة' : 'Review'}</button>}
                   <div className="hidden max-w-[400px] truncate text-xs text-zinc-600 dark:text-zinc-400 md:block">{selectedExercises.join(', ')}</div>
                 </div>
                 <div className="flex gap-4 w-full md:w-auto">
@@ -1124,6 +1132,9 @@ export const Tracker: React.FC = () => {
                   </SpotlightButton>
                 </div>
               </div>
+
+              <Modal isOpen={reviewOpen} onClose={() => setReviewOpen(false)} label={t('picker_selected_count')} sheet><div className="web-more-panel"><div className="web-section-heading"><h2>{t('picker_selected_count')}: {selectedExercises.length}</h2><button className="web-secondary" onClick={() => setReviewOpen(false)}>{t('modal_close')}</button></div><ul className="web-selection-list">{selectedExercises.map(name => <li key={name}><span>{getExerciseTranslation(name, language)}</span><button aria-label={`${t('tracker_delete_exercise')}: ${name}`} onClick={() => toggleExercise(name)}>×</button></li>)}</ul><button className="web-primary" disabled={!selectedExercises.length} onClick={() => { setReviewOpen(false); handleStartWorkout(); }}>{activeExercises.length ? t('tracker_resume') : t('tracker_start')}</button></div></Modal>
+              <Modal isOpen={pickerOpen} onClose={() => setPickerOpen(false)} label={t('picker_muscle_group')} sheet><div className="web-more-panel"><h2>{t('picker_muscle_group')}</h2><ExerciseGroupSelector database={exercisesByMuscle} stacked muscle={currentPickerMuscle} subgroup={currentPickerSubgroup} onMuscleChange={value => { setPickerMuscle(value); setPickerSubgroup(Object.keys(exercisesByMuscle[value])[0]); setSearchQuery(''); }} onSubgroupChange={value => { setPickerSubgroup(value); setSearchQuery(''); }} /><button className="web-primary" onClick={() => setPickerOpen(false)}>{t('modal_close')}</button></div></Modal>
 
               {/* Tutorial Modal */}
               <Modal isOpen={!!tutorialExercise} onClose={() => setTutorialExercise(null)}>

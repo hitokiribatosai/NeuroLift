@@ -259,3 +259,72 @@ html.dark[data-accent="yellow"] .website-redesign { --web-green: #f5df7e; }
   .website-redesign .web-navigation .web-more-nav { display: flex; grid-column: 5; grid-row: 1; }
   .website-redesign .web-navigation:not(.is-expanded) .web-secondary-nav { display: none; }
 }
+
+/* Platform shell: width determines layout; platform determines system behavior. */
+.website-redesign { --web-bottom-nav: 0px; }
+.website-redesign .web-view { min-width: 0; }
+.website-redesign .web-sidebar { overflow-y: auto; }
+.website-redesign button:focus-visible { outline: 3px solid var(--web-green); outline-offset: 3px; }
+.website-redesign .web-more-panel { background: var(--web-paper); padding: 24px; display: grid; gap: 20px; }
+.website-redesign .web-more-panel h2 { font-size: 1.4rem; font-weight: 750; }
+.website-redesign .web-more-link { display: flex; align-items: center; gap: 14px; padding: 16px; border: 1px solid var(--web-line); border-radius: 10px; text-align: start; }
+.website-redesign .web-resume-strip { display: block; margin: 14px 24px 0; padding: 14px 18px; border: 1px solid var(--web-green); border-radius: 10px; text-align: start; background: var(--web-soft); font-weight: 650; }
+.website-redesign .web-mobile-filters { display: none; }
+.website-redesign .web-selection-panel { display: none; }
+.website-redesign .web-selection-list li, .website-redesign .web-selection-panel li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 8px; border-bottom: 1px solid var(--web-line); }
+.website-redesign .web-selection-list button, .website-redesign .web-selection-panel li button { min-width: 44px; min-height: 44px; }
+.website-redesign .web-selection-actions { bottom: 16px; }
+.website-redesign .web-surface .web-selection-actions { top: auto; }
+.website-redesign .web-session-exercises { position: sticky; top: 16px; align-self: start; }
+.website-redesign .web-set-row input { scroll-margin-block: 100px; }
+@media (min-width: 1200px) {
+  .website-redesign .web-picker-grid { grid-template-columns: 190px minmax(0, 1fr) 240px; align-items: start; }
+  .website-redesign .web-selection-panel { display: grid; gap: 16px; position: sticky; top: 20px; max-height: calc(100dvh - 40px); overflow-y: auto; border: 1px solid var(--web-line); border-radius: 12px; padding: 16px; background: var(--web-paper); }
+  .website-redesign .web-picker-grid .md\:grid-cols-2 { grid-template-columns: 1fr; }
+}
+@media (min-width: 801px) and (max-width: 1100px) {
+  .website-redesign .web-sidebar { width: 112px; padding: 20px 8px; overflow-y: auto; }
+  .website-redesign .web-sidebar > .web-brand { font-size: 0; justify-content: center; }
+  .website-redesign .web-sidebar > .web-eyebrow, .website-redesign .web-sidebar-note, .website-redesign .web-nav-arrow { display: none; }
+  .website-redesign .web-navigation { margin-top: 26px; }
+  .website-redesign .web-navigation button { flex-direction: column; gap: 8px; padding: 12px 4px; font-size: .72rem; text-align: center; }
+  .website-redesign .web-workspace { margin-inline-start: 112px; }
+  .website-redesign .web-surface .fixed.bottom-0 { inset-inline-start: 112px; }
+  .website-redesign .web-skip { inset-inline-start: 125px; }
+}
+@media (max-width: 800px) {
+  .website-redesign { --web-bottom-nav: calc(76px + env(safe-area-inset-bottom, 0px)); }
+  .website-redesign:not(.web-modal-theme):not(.web-welcome) { padding-bottom: var(--web-bottom-nav); }
+  .website-redesign .web-sidebar { position: fixed; inset: auto 0 0; width: auto; padding: 6px max(8px, env(safe-area-inset-left)) max(6px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-right)); border: 0; border-top: 1px solid var(--web-line); z-index: 80; background: var(--web-paper); }
+  .website-redesign .web-sidebar > .web-brand { display: none; }
+  .website-redesign .web-navigation { margin: 0; padding: 0; gap: 4px; }
+  .website-redesign .web-navigation button { min-height: 64px; font-size: .72rem; padding: 8px 2px; overflow-wrap: anywhere; }
+  .website-redesign[data-platform="android"] .web-navigation button { min-height: 68px; }
+  .website-redesign[data-platform="android"] { --web-bottom-nav: calc(80px + env(safe-area-inset-bottom, 0px)); }
+  .website-redesign .web-topbar { height: auto; min-height: 60px; padding: 10px 16px; }
+  .website-redesign .web-topbar .web-eyebrow, .website-redesign .web-date { display: none; }
+  .website-redesign .web-topbar p { font-size: 1.1rem; margin: 0; }
+  .website-redesign .web-status-region { padding: 8px 16px 0; }
+  .website-redesign .web-surface { padding: 20px 16px 32px; min-height: calc(100dvh - 160px); }
+  .website-redesign .web-footer { display: none; }
+  .website-redesign .web-hero h1 { font-size: clamp(2rem, 7vw, 3rem); }
+  .website-redesign .web-mobile-filters { display: block; min-height: 48px; text-align: start; }
+  .website-redesign .web-library-muscles, .website-redesign .web-workout-picker .web-picker-groups { display: none; }
+  .website-redesign .web-library-toolbar { top: env(safe-area-inset-top, 0px); padding: 10px; gap: 8px; }
+  .website-redesign .web-workout-picker { padding-inline: 0; padding-bottom: 110px; }
+  .website-redesign .web-workout-picker > .web-mobile-filters { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 35; width: 100%; margin-bottom: 16px; background: var(--web-paper); }
+  .website-redesign .web-selection-actions { position: fixed; inset-inline: 12px; bottom: calc(var(--web-bottom-nav) + 8px); padding: 10px; gap: 8px; z-index: 50; flex-wrap: wrap; }
+  .website-redesign .web-selection-actions > div:last-child { width: auto; flex: 1; }
+  .website-redesign .web-selection-actions button { min-height: 48px; padding: 10px 14px; font-size: .8rem; }
+  .website-redesign .web-session { padding-bottom: 16px; }
+  .website-redesign .web-session-header h1 { font-size: 1.8rem; }
+  .website-redesign .web-session-exercises { position: static; }
+  .website-redesign .web-session-actions { bottom: calc(var(--web-bottom-nav) + 8px); margin-bottom: 0; }
+  .website-redesign .web-set-row button, .website-redesign .web-set-row input { min-height: 48px; }
+  .website-redesign .web-resume-strip { margin-inline: 16px; }
+  .web-sheet-backdrop { align-items: flex-end; padding: 0; }
+  .web-sheet-backdrop > [role="dialog"] { max-width: none; border-radius: 22px 22px 0 0; max-height: calc(90dvh - env(safe-area-inset-top)); padding-bottom: env(safe-area-inset-bottom); }
+  .website-redesign[data-keyboard="true"] .web-sidebar { display: none; }
+  .website-redesign[data-keyboard="true"] { --web-bottom-nav: 0px; }
+  .website-redesign[data-keyboard="true"] .web-selection-actions, .website-redesign[data-keyboard="true"] .web-session-actions, .website-redesign[data-keyboard="true"] .web-library-toolbar { position: static; }
+}

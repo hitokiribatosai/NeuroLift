@@ -6,6 +6,8 @@ import { CompletedWorkout } from '../../types';
 import { TRAINING_SOURCES } from '../../utils/trainingEvidence';
 import './website.css';
 import { WebStatus } from './WebStatus';
+import { Capacitor } from '@capacitor/core';
+import { Modal } from '../ui/Modal';
 
 type Navigation = { currentView: string; setCurrentView: (view: string) => void };
 const paths: Record<string, string> = {
@@ -28,20 +30,54 @@ export function WebFrame({ currentView, setCurrentView, children }: Navigation &
   const [moreOpen, setMoreOpen] = React.useState(false);
   const { t, dir } = useLanguage();
   const c = useCopy();
+  const [keyboardOpen, setKeyboardOpen] = React.useState(false);
+  const navigation = React.useRef<HTMLElement>(null);
+  const [navigationHeight, setNavigationHeight] = React.useState<number>();
+  React.useEffect(() => {
+    const measure = () => setNavigationHeight(window.innerWidth <= 800 ? navigation.current?.getBoundingClientRect().height : 0);
+    const observer = new ResizeObserver(measure);
+    if (navigation.current) observer.observe(navigation.current);
+    window.addEventListener('resize', measure);
+    measure();
+    return () => { observer.disconnect(); window.removeEventListener('resize', measure); };
+  }, []);
+  React.useEffect(() => {
+    const viewport = window.visualViewport;
+    let largestHeight = window.innerHeight;
+    const update = () => {
+      largestHeight = Math.max(largestHeight, window.innerHeight);
+      const editing = document.activeElement?.matches('input, textarea, [contenteditable="true"]');
+      setKeyboardOpen(Boolean(editing && largestHeight - (viewport?.height || window.innerHeight) > 150));
+    };
+    const orientation = () => { largestHeight = window.innerHeight; update(); };
+    viewport?.addEventListener('resize', update);
+    window.addEventListener('resize', update);
+    window.addEventListener('orientationchange', orientation);
+    document.addEventListener('focusin', update);
+    document.addEventListener('focusout', update);
+    return () => {
+      viewport?.removeEventListener('resize', update);
+      window.removeEventListener('resize', update);
+      window.removeEventListener('orientationchange', orientation);
+      document.removeEventListener('focusin', update);
+      document.removeEventListener('focusout', update);
+    };
+  }, []);
   const items = [
     ['home', t('nav_home')], ['tracker', t('nav_workout')], ['planner', t('nav_planner')],
-    ['journal', t('nav_journal')], ['clock', t('nav_clock')],
+    ['journal', c('Progress', 'Progrès', 'التقدم')], ['clock', t('nav_clock')],
     ['nutrition', c('Nutrition', 'Nutrition', 'التغذية')], ['account', c('Account', 'Compte', 'الحساب')],
   ];
   const title = items.find(([id]) => id === currentView)?.[1] || t('privacy_policy');
-  return <div className="website-redesign" dir={dir} data-view={currentView}>
+  const activeSession = safeStorage.getItem('neuroLift_tracker_phase') === 'active';
+  return <div className="website-redesign" dir={dir} data-view={currentView} data-platform={Capacitor.getPlatform()} data-keyboard={keyboardOpen} style={navigationHeight === undefined ? undefined : { '--web-bottom-nav': `${keyboardOpen ? 0 : navigationHeight}px` } as React.CSSProperties}>
     <a className="web-skip" href="#web-content">{c('Skip to content', 'Aller au contenu', 'انتقل إلى المحتوى')}</a>
-    <aside className="web-sidebar">
+    <aside className="web-sidebar" ref={navigation}>
       <button className="web-brand" onClick={() => setCurrentView('home')} aria-label="NeuroLift home"><span className="web-monogram" aria-hidden="true">N<span>↗</span></span>NeuroLift</button>
       <p className="web-eyebrow">{c('Your training space', 'Votre espace sportif', 'مساحتك للتدريب')}</p>
-      <nav aria-label={c('Main navigation', 'Navigation principale', 'التنقل الرئيسي')} className={`web-navigation ${moreOpen ? 'is-expanded' : ''}`}>
+      <nav aria-label={c('Main navigation', 'Navigation principale', 'التنقل الرئيسي')} className="web-navigation">
         {items.map(([id, label], index) => <button className={index > 3 ? 'web-secondary-nav' : undefined} key={id} aria-current={currentView === id ? 'page' : undefined} onClick={() => { setCurrentView(id); setMoreOpen(false); }}><Icon name={id} /><span>{label}</span><span className="web-nav-arrow" aria-hidden="true">↗</span></button>)}
-        <button className="web-more-nav" aria-expanded={moreOpen} onClick={() => setMoreOpen(!moreOpen)}><span aria-hidden="true">•••</span><span>{c('More', 'Plus', 'المزيد')}</span></button>
+        <button className="web-more-nav" aria-current={items.slice(4).some(([id]) => id === currentView) || currentView === 'privacy' ? 'page' : undefined} aria-haspopup="dialog" aria-expanded={moreOpen} onClick={() => setMoreOpen(true)}><span aria-hidden="true">•••</span><span>{c('More', 'Plus', 'المزيد')}</span></button>
       </nav>
       <div className="web-sidebar-note"><span className="web-status-dot" /><strong>{c('Your pace. Your progress.', 'Votre rythme. Vos progrès.', 'وتيرتك. تقدمك.')}</strong><p>{c('One session at a time.', 'Une séance à la fois.', 'حصة واحدة في كل مرة.')}</p></div>
       <button className="web-privacy" onClick={() => setCurrentView('privacy')}>{t('privacy_policy')} ↗</button>
@@ -49,9 +85,16 @@ export function WebFrame({ currentView, setCurrentView, children }: Navigation &
     <div className="web-workspace">
       <header className="web-topbar"><div><span className="web-eyebrow">NEUROLIFT / {c('WORKSPACE', 'ESPACE', 'مساحة العمل')}</span><p>{title}</p></div><div className="web-topbar-actions"><span className="web-date">{new Date().toLocaleDateString(dir === 'rtl' ? 'ar' : document.documentElement.lang || 'en', { month: 'short', day: 'numeric', weekday: 'short' })}</span><Navbar settingsOnly currentView={currentView} setCurrentView={setCurrentView} /></div></header>
       <WebStatus openAccount={() => setCurrentView('account')} />
+      {activeSession && currentView !== 'tracker' && <button className="web-resume-strip" onClick={() => setCurrentView('tracker')}>{c('Workout in progress · Resume workout', 'Séance en cours · Reprendre', 'حصة جارية · استئناف التمرين')} →</button>}
       <main id="web-content" tabIndex={-1} className="web-surface">{children}</main>
       <footer className="web-footer"><span>NEUROLIFT</span><span>{c('Built for the long run.', 'Pensé pour durer.', 'مصمم للاستمرار.')}</span></footer>
     </div>
+    <Modal isOpen={moreOpen} onClose={() => setMoreOpen(false)} label={c('More', 'Plus', 'المزيد')} sheet>
+      <div className="web-more-panel"><div className="web-section-heading"><h2>{c('More', 'Plus', 'المزيد')}</h2><button className="web-secondary" onClick={() => setMoreOpen(false)}>{c('Close', 'Fermer', 'إغلاق')}</button></div>
+        {[...items.slice(4), ['privacy', t('privacy_policy')]].map(([id, label]) => <button className="web-more-link" key={id} onClick={() => { setMoreOpen(false); setCurrentView(id); }}><Icon name={id} />{label}</button>)}
+        <button className="web-more-link" onClick={() => { setMoreOpen(false); window.scrollTo(0, 0); window.dispatchEvent(new Event('neurolift-open-settings')); }}>{c('Settings', 'Réglages', 'الإعدادات')}</button>
+      </div>
+    </Modal>
   </div>;
 }
 

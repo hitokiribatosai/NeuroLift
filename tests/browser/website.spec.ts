@@ -83,7 +83,7 @@ test('Android uses the focused session editor and measurement sections', async (
   await expect(page.getByLabel('REPS — SET 1', { exact: true })).toHaveValue('8');
   await expect(page.locator('html')).toHaveClass(/light/);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await page.locator('.web-navigation').getByRole('button', { name: 'Journal', exact: true }).click();
+  await page.locator('.web-navigation').getByRole('button', { name: 'Progress', exact: true }).click();
   await page.getByRole('button', { name: 'Body Metrics', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Add entry', exact: true })).toBeVisible();
 });

@@ -22,7 +22,7 @@ test('log sets, reload, finish, and find the saved workout in the journal', asyn
   await page.getByRole('button', { name: /Finish Workout/ }).click();
   await page.getByRole('button', { name: 'Finish Workout', exact: true }).click();
   await expect.poll(() => page.evaluate(() => JSON.parse(JSON.parse(localStorage.getItem('neuroLift_workspace_guest')!).data.neuroLift_history)[0].totalVolume)).toBe(200);
-  await page.locator('.web-navigation').getByRole('button', { name: 'Journal', exact: true }).click();
+  await page.locator('.web-navigation').getByRole('button', { name: 'Progress', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Training journal' })).toBeVisible();
   await expect(page.getByText('Incline Dumbbell Press', { exact: true }).first()).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Add entry', exact: true })).toBeHidden();
@@ -40,7 +40,7 @@ test('mobile More menu exposes secondary destinations and closes on selection', 
   const nav = page.locator('.web-navigation');
   await expect(nav.getByRole('button', { name: 'Account', exact: true })).toBeHidden();
   await nav.getByRole('button', { name: 'More', exact: true }).click();
-  await nav.getByRole('button', { name: 'Account', exact: true }).click();
+  await page.getByRole('dialog', { name: 'More', exact: true }).getByRole('button', { name: 'Account', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Account & sync' })).toBeVisible();
   await expect(nav.getByRole('button', { name: 'More', exact: true })).toHaveAttribute('aria-expanded', 'false');
 });

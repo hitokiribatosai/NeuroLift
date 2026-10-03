@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ActiveExercise, ExerciseHistory } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { getExerciseTranslation } from '../../utils/exerciseData';
+import { useInterfaceState } from '../../hooks/useInterfaceState';
 
 interface Props {
   exercises: ActiveExercise[];
@@ -29,7 +30,7 @@ interface Props {
 export function WebSession(p: Props) {
   const { t, language } = useLanguage();
   const c = (en: string, fr: string, ar: string) => language === 'fr' ? fr : language === 'ar' ? ar : en;
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useInterfaceState<string | null>('session_exercise', null);
   const [confirmFinish, setConfirmFinish] = useState(false);
   const index = Math.max(0, p.exercises.findIndex(e => e.name === selected));
   const exercise = p.exercises[index];

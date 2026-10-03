@@ -9,6 +9,8 @@ import { EXERCISE_EVIDENCE } from '../../utils/exerciseEvidence';
 import { Modal } from '../ui/Modal';
 import media from '../../utils/exerciseMedia.json';
 import { WebResearchNote } from '../web/WebResearchNote';
+import { useInterfaceState } from '../../hooks/useInterfaceState';
+import { ExerciseGroupSelector } from '../ui/ExerciseGroupSelector';
 
 type MediaEntry = { source: string; images: string[] };
 const demos = media as Record<string, MediaEntry>;
@@ -37,11 +39,17 @@ function LibraryCard({ name, detail, onOpen }: { name: string; detail?: string; 
 export const ProgramPlanner: React.FC<{ initialMuscle?: string }> = ({ initialMuscle }) => {
   const { t, language } = useLanguage();
   const isWebsite = usesModernInterface();
-  const [selectedMuscle, setSelectedMuscle] = useState<string | null>(initialMuscle && Object.hasOwn(getExerciseDatabase(language), initialMuscle) ? initialMuscle : 'Chest');
-  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>('Upper Chest');
+  const [selectedMuscle, setSelectedMuscle] = useInterfaceState<string | null>('library_muscle', initialMuscle && Object.hasOwn(getExerciseDatabase(language), initialMuscle) ? initialMuscle : 'Chest');
+  const [selectedSubCategory, setSelectedSubCategory] = useInterfaceState<string | null>('library_subgroup', 'Upper Chest');
   const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [researchOnly, setResearchOnly] = useState(false);
+  const [searchQuery, setSearchQuery] = useInterfaceState('library_search', '');
+  const [researchOnly, setResearchOnly] = useInterfaceState('library_research', false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  React.useEffect(() => {
+    if (initialMuscle && Object.hasOwn(getExerciseDatabase(language), initialMuscle)) {
+      setSelectedMuscle(initialMuscle); setSearchQuery(''); setResearchOnly(false);
+    }
+  }, [initialMuscle, language, setSelectedMuscle, setSearchQuery, setResearchOnly]);
 
   const exerciseDB = getExerciseDatabase(language);
   const muscleList = Object.keys(exerciseDB);
@@ -71,6 +79,7 @@ export const ProgramPlanner: React.FC<{ initialMuscle?: string }> = ({ initialMu
     </div>
 
     <div className={`${isWebsite ? 'web-library-toolbar ' : ''}mb-6 flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-3 sm:flex-row sm:items-center dark:border-zinc-800 dark:bg-zinc-900/50`}>
+      {isWebsite && <button className="web-secondary web-mobile-filters" onClick={() => setFiltersOpen(true)}>{t('picker_muscle_group')} · {selectedMuscle ? getLocalizedMuscleName(selectedMuscle, language) : t('picker_all_filter')}</button>}
       <div className="relative min-w-0 flex-1">
         <svg className="absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
         <input type="search" aria-label={t('planner_search_placeholder')} placeholder={t('planner_search_placeholder')}
@@ -88,7 +97,7 @@ export const ProgramPlanner: React.FC<{ initialMuscle?: string }> = ({ initialMu
     {isWebsite && <p className="web-library-context" role="status">{query ? `${uniqueResults.length} ${t('library_results')}` : selectedMuscle && currentSubgroup ? `${getLocalizedMuscleName(selectedMuscle, language)} / ${getLocalizedMuscleName(currentSubgroup, language)}` : t('research_picks_title')}{query && <button onClick={() => setSearchQuery('')}>{language === 'fr' ? 'Effacer la recherche' : language === 'ar' ? 'مسح البحث' : 'Clear search'}</button>}</p>}
     {isWebsite && researchOnly && <WebResearchNote />}
     <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
-      <nav className="flex gap-2 overflow-x-auto pb-2 lg:sticky lg:top-24 lg:h-fit lg:flex-col lg:overflow-visible" aria-label={t('picker_muscle_group')}>
+      <nav className={`${isWebsite ? 'web-library-muscles ' : ''}flex gap-2 overflow-x-auto pb-2 lg:sticky lg:top-24 lg:h-fit lg:flex-col lg:overflow-visible`} aria-label={t('picker_muscle_group')}>
         {muscleList.map(muscle => <button type="button" key={muscle} aria-pressed={selectedMuscle === muscle && !query}
           onClick={() => { setSelectedMuscle(muscle); setSelectedSubCategory(Object.keys(exerciseDB[muscle])[0]); setSearchQuery(''); }}
           className={`min-h-11 shrink-0 rounded-xl border px-4 py-2 text-start text-sm font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 ${selectedMuscle === muscle && !query ? 'border-teal-600 bg-teal-600 text-white dark:border-teal-400 dark:bg-teal-400 dark:text-zinc-950' : 'border-zinc-200 bg-white text-zinc-700 hover:border-teal-500 dark:border-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-200'}`}>{getLocalizedMuscleName(muscle, language)}</button>)}
@@ -123,6 +132,9 @@ export const ProgramPlanner: React.FC<{ initialMuscle?: string }> = ({ initialMu
       <TrainingGuidance />
     </details>
 
+    <Modal isOpen={filtersOpen} onClose={() => setFiltersOpen(false)} label={t('picker_muscle_group')} sheet>
+      <div className="web-more-panel"><h2>{t('picker_muscle_group')}</h2><ExerciseGroupSelector database={exerciseDB} stacked muscle={selectedMuscle || 'Chest'} subgroup={currentSubgroup || ''} onMuscleChange={value => { setSelectedMuscle(value); setSearchQuery(''); }} onSubgroupChange={setSelectedSubCategory} /><button className="web-primary" onClick={() => setFiltersOpen(false)}>{language === 'fr' ? 'Afficher les exercices' : language === 'ar' ? 'عرض التمارين' : 'Show exercises'}</button></div>
+    </Modal>
     <Modal isOpen={!!selectedExercise} onClose={() => setSelectedExercise(null)}>
       {selectedExercise && <div className="relative mx-auto w-full max-w-2xl rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xl dark:border-zinc-800 dark:bg-zinc-950 sm:p-8">
         <button type="button" onClick={() => setSelectedExercise(null)} aria-label={t('modal_close')}

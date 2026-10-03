@@ -35,14 +35,20 @@ test('workout exercise choices persist while switching muscle areas', async ({ p
     },
   })));
   await page.goto('/#tracker');
+  await page.locator('.web-workout-picker > .web-mobile-filters').click();
   const groups = page.getByRole('group', { name: 'Muscle group' });
   const areas = page.getByRole('group', { name: 'Muscle area' });
   await expect(groups.getByRole('button', { name: 'Back' })).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click();
   await page.getByText('Pull-ups', { exact: true }).click();
+  await page.locator('.web-workout-picker > .web-mobile-filters').click();
   await areas.getByRole('button', { name: 'Mid Back (Thickness)' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click();
   await page.getByText('Inverted Rows', { exact: true }).click();
-  await expect(page.getByText('Selected exercises: 2')).toBeVisible();
+  await expect(page.locator('.web-selection-actions').getByText('Selected exercises: 2')).toBeVisible();
+  await page.locator('.web-workout-picker > .web-mobile-filters').click();
   await areas.getByRole('button', { name: 'Lats (Width)' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click();
   await expect(page.getByLabel('Pull-ups', { exact: true })).toBeChecked();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });

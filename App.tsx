@@ -23,6 +23,9 @@ import { SyncIndicator } from './components/ui/SyncIndicator';
 import { PwaStatus } from './components/ui/PwaStatus';
 import { usesModernInterface } from './utils/interfacePlatform';
 import { WebFrame, WebHome, WebWelcome, WebGoals } from './components/web/WebExperience';
+import { Capacitor } from '@capacitor/core';
+import { App as CapApp } from '@capacitor/app';
+import { dismissTopOverlay } from './utils/overlays';
 
 function AppInner() {
   const { theme } = useTheme();
@@ -36,10 +39,42 @@ function AppInner() {
   });
 
   const [direction, setDirection] = useState(0);
+  const scrollPositions = React.useRef<Record<string, number>>({});
+  const viewRef = React.useRef(currentView);
+  viewRef.current = currentView;
+  const navigationDepth = React.useRef(0);
+  React.useEffect(() => {
+    if (!isWebsite) return;
+    window.history.replaceState({ ...window.history.state, neuroLiftDepth: 0 }, '', window.location.href);
+    const save = () => { scrollPositions.current[viewRef.current] = window.scrollY; };
+    window.addEventListener('scroll', save, { passive: true });
+    return () => window.removeEventListener('scroll', save);
+  }, [isWebsite]);
+  React.useLayoutEffect(() => {
+    if (!isWebsite) return;
+    const frame = requestAnimationFrame(() => {
+      document.getElementById('web-content')?.focus({ preventScroll: true });
+      window.scrollTo(0, scrollPositions.current[currentView] || 0);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [currentView, isWebsite]);
+  React.useEffect(() => {
+    if (!isWebsite || Capacitor.getPlatform() !== 'android' || !Capacitor.isPluginAvailable('App')) return;
+    const listener = CapApp.addListener('backButton', () => {
+      if (dismissTopOverlay()) return;
+      if (navigationDepth.current > 0) window.history.back();
+      else if (viewRef.current !== 'home') {
+        window.history.replaceState({ neuroLiftDepth: 0 }, '', '#home');
+        setCurrentView('home');
+      } else void CapApp.minimizeApp();
+    });
+    return () => { void listener.then(handle => handle.remove()); };
+  }, [isWebsite]);
   const viewOrder = ['home', 'planner', 'tracker', 'journal', 'clock', 'nutrition'];
 
   React.useEffect(() => {
     const handlePopState = () => {
+      navigationDepth.current = window.history.state?.neuroLiftDepth || 0;
       const hash = window.location.hash.replace('#', '').split('?')[0].split('/')[0];
       const validViews = ['home', 'tracker', 'planner', 'nutrition', 'journal', 'clock', 'account', 'privacy'];
       const newView = validViews.includes(hash) ? hash : 'home';
@@ -60,9 +95,11 @@ function AppInner() {
       const oldIndex = viewOrder.indexOf(currentView);
       const newIndex = viewOrder.indexOf(route);
       setDirection(newIndex < oldIndex ? -1 : 1);
-      window.history.pushState(null, '', `/#${view}`);
+      scrollPositions.current[currentView] = window.scrollY;
+      navigationDepth.current += 1;
+      window.history.pushState({ neuroLiftDepth: navigationDepth.current }, '', `/#${view}`);
       setCurrentView(route);
-      window.scrollTo(0, 0);
+      if (!isWebsite) window.scrollTo(0, 0);
     }
   };
 
@@ -81,6 +118,7 @@ function AppInner() {
       }
     })();
 
+    if (isWebsite) return <div key={currentView} className="web-view">{viewContent}</div>;
     return (
       <motion.div
         key={currentView}
@@ -125,7 +163,7 @@ function AppInner() {
   if (isWebsite) {
     if (showOnboarding && !['account', 'privacy'].includes(currentView)) return <WebWelcome onComplete={handleOnboardingComplete} />;
     if (showGoalSetting && !['account', 'privacy'].includes(currentView)) return <WebGoals onComplete={handleGoalSettingComplete} />;
-    return <WebFrame currentView={currentView} setCurrentView={handleSetView}><AnimatePresence mode="wait">{renderView()}</AnimatePresence></WebFrame>;
+    return <WebFrame currentView={currentView} setCurrentView={handleSetView}>{renderView()}</WebFrame>;
   }
 
   return (
