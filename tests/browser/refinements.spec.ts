@@ -71,6 +71,6 @@ test('Arabic active session fits with enlarged text and announces offline state'
   await expect.poll(() => page.locator('.web-surface > div').evaluate(el => getComputedStyle(el).opacity)).toBe('1');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await context.setOffline(true);
-  await expect(page.getByText('غير متصل · المزامنة متوقفة')).toBeVisible();
+  await expect(page.getByText('غير متصل · البيانات على هذا الجهاز')).toBeVisible();
   await page.screenshot({ path: 'test-results/refined-session-ar-large.png', fullPage: true });
 });

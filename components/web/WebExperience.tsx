@@ -42,6 +42,33 @@ export function WebFrame({ currentView, setCurrentView, children }: Navigation &
   const c = useCopy();
   const [keyboardOpen, setKeyboardOpen] = React.useState(false);
   const navigation = React.useRef<HTMLElement>(null);
+  const header = React.useRef<HTMLElement>(null);
+  const [headerHeight, setHeaderHeight] = React.useState(60);
+  React.useEffect(() => {
+    const measure = () => setHeaderHeight(header.current?.getBoundingClientRect().height || 60);
+    const observer = new ResizeObserver(measure);
+    if (header.current) observer.observe(header.current);
+    measure();
+    return () => observer.disconnect();
+  }, []);
+  React.useEffect(() => {
+    const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const animations: Animation[] = [];
+    const observer = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        observer.unobserve(entry.target);
+        if (!preference.matches) animations.push(entry.target.animate(
+          [{ opacity: .65, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }],
+          { duration: 240, easing: 'ease-out' },
+        ));
+      }
+    }, { threshold: .08 });
+    document.querySelectorAll('.web-dashboard .web-panel, .web-tools > button, .web-stats > div').forEach(el => observer.observe(el));
+    const stop = () => { if (preference.matches) animations.forEach(animation => animation.cancel()); };
+    preference.addEventListener('change', stop);
+    return () => { observer.disconnect(); animations.forEach(animation => animation.cancel()); preference.removeEventListener('change', stop); };
+  }, [currentView]);
   const [navigationHeight, setNavigationHeight] = React.useState<number>();
   React.useEffect(() => {
     const measure = () => setNavigationHeight(window.innerWidth <= 800 ? navigation.current?.getBoundingClientRect().height : 0);
@@ -80,10 +107,10 @@ export function WebFrame({ currentView, setCurrentView, children }: Navigation &
   ];
   const title = items.find(([id]) => id === currentView)?.[1] || t('privacy_policy');
   const activeSession = safeStorage.getItem('neuroLift_tracker_phase') === 'active';
-  return <div className="website-redesign" dir={dir} data-view={currentView} data-platform={Capacitor.getPlatform()} data-keyboard={keyboardOpen} style={navigationHeight === undefined ? undefined : { '--web-bottom-nav': `${keyboardOpen ? 0 : navigationHeight}px` } as React.CSSProperties}>
+  return <div className="website-redesign" dir={dir} data-view={currentView} data-platform={Capacitor.getPlatform()} data-keyboard={keyboardOpen} style={{ '--web-header-height': `${headerHeight}px`, ...(navigationHeight === undefined ? {} : { '--web-bottom-nav': `${keyboardOpen ? 0 : navigationHeight}px` }) } as React.CSSProperties}>
     <a className="web-skip" href="#web-content">{c('Skip to content', 'Aller au contenu', 'انتقل إلى المحتوى')}</a>
     <aside className="web-sidebar" ref={navigation}>
-      <button className="web-brand" onClick={() => setCurrentView('home')} aria-label="NeuroLift home"><span className="web-monogram" aria-hidden="true">N<span>↗</span></span>NeuroLift</button>
+      <button className="web-brand" onClick={() => setCurrentView('home')} aria-label="NeuroLift home"><img className="web-brand-icon" src="/brand/training-icon-192.png" alt="" />NeuroLift</button>
       <p className="web-eyebrow">{c('Your training space', 'Votre espace sportif', 'مساحتك للتدريب')}</p>
       <nav aria-label={c('Main navigation', 'Navigation principale', 'التنقل الرئيسي')} className="web-navigation">
         {items.map(([id, label], index) => <button className={index > 3 ? 'web-secondary-nav' : undefined} key={id} aria-current={currentView === id ? 'page' : undefined} onClick={() => { setCurrentView(id); setMoreOpen(false); }}><Icon name={id} /><span>{label}</span><span className="web-nav-arrow" aria-hidden="true">↗</span></button>)}
@@ -93,7 +120,7 @@ export function WebFrame({ currentView, setCurrentView, children }: Navigation &
       <button className="web-privacy" onClick={() => setCurrentView('privacy')}>{t('privacy_policy')} ↗</button>
     </aside>
     <div className="web-workspace">
-      <header className="web-topbar"><div><span className="web-eyebrow">NEUROLIFT / {c('WORKSPACE', 'ESPACE', 'مساحة العمل')}</span><p>{title}</p></div><div className="web-topbar-actions"><span className="web-date">{new Date().toLocaleDateString(dir === 'rtl' ? 'ar' : document.documentElement.lang || 'en', { month: 'short', day: 'numeric', weekday: 'short' })}</span><Navbar settingsOnly currentView={currentView} setCurrentView={setCurrentView} /></div></header>
+      <header className="web-topbar" ref={header}><div><span className="web-eyebrow">NEUROLIFT / {c('WORKSPACE', 'ESPACE', 'مساحة العمل')}</span><p>{title}</p></div><div className="web-topbar-actions"><span className="web-date">{new Date().toLocaleDateString(dir === 'rtl' ? 'ar' : document.documentElement.lang || 'en', { month: 'short', day: 'numeric', weekday: 'short' })}</span><Navbar settingsOnly currentView={currentView} setCurrentView={setCurrentView} /></div></header>
       <WebStatus openAccount={() => setCurrentView('account')} />
       {activeSession && currentView !== 'tracker' && <button className="web-resume-strip" onClick={() => setCurrentView('tracker')}>{c('Workout in progress · Resume workout', 'Séance en cours · Reprendre', 'حصة جارية · استئناف التمرين')} →</button>}
       <main id="web-content" tabIndex={-1} className="web-surface">{children}</main>

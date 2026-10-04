@@ -19,7 +19,7 @@ export function ExerciseGroupSelector({
   const subgroups = Object.keys(database[currentMuscle] || {});
   const currentSubgroup = database[currentMuscle]?.[subgroup] ? subgroup : subgroups[0];
 
-  return <nav className="space-y-4" aria-label={t('picker_browse_label')}>
+  return <nav className="exercise-group-selector space-y-4" aria-label={t('picker_browse_label')}>
     <div>
       <p className="mb-2 text-xs font-bold uppercase tracking-widest text-zinc-400">{t('picker_muscle_group')}</p>
       <div className={`flex gap-2 overflow-x-auto pb-2 custom-scrollbar ${stacked ? 'lg:grid lg:grid-cols-2 lg:overflow-visible' : ''}`} role="group" aria-label={t('picker_muscle_group')}>

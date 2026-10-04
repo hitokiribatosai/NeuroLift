@@ -22,9 +22,9 @@ services:
       - key: DJANGO_ALLOWED_HOSTS
         sync: false
       - key: FRONTEND_URL
-        sync: false
+        value: https://myneurolift.vercel.app
       - key: CORS_ALLOWED_ORIGINS
-        sync: false
+        value: https://myneurolift.vercel.app,capacitor://localhost,https://localhost
       - key: EMAIL_BACKEND
         value: api.email_backend.ResendBackend
       - key: RESEND_API_KEY

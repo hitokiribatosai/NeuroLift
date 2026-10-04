@@ -1,5 +1,9 @@
 /* Shared browser/Android presentation; iOS retains the legacy interface. */
-.website-redesign:not(.web-modal-theme) { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.website-redesign {
+  --web-safe-top: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+  --web-safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
+}
+.website-redesign:not(.web-modal-theme) { padding-top: var(--web-safe-top); padding-bottom: var(--web-safe-bottom); }
 .website-redesign .web-session-actions { margin-bottom: env(safe-area-inset-bottom, 0px); }
 .website-redesign .web-confirm-panel { padding: 30px !important; }
 .website-redesign .web-confirm-panel h2 { font-size: 1.6rem; font-weight: 700; }
@@ -83,6 +87,8 @@ html.dark .website-redesign { --web-bg:#111a20; --web-paper:#1a262d; --web-ink:#
 .website-redesign .web-sidebar { position: fixed; inset-block: 0; inset-inline-start: 0; width: 232px; padding: 32px 20px 22px; display: flex; flex-direction: column; border-inline-end: 1px solid var(--web-line); background: var(--web-paper); z-index: 60; }
 .website-redesign .web-brand { display: flex; align-items: center; gap: 10px; font-size: 1.4rem; letter-spacing: -.06em; font-weight: 850; color: var(--web-ink); white-space: nowrap; }
 .website-redesign .web-brand-dot { align-self: start; font-size: .7rem; padding-top: 7px; }
+.website-redesign .web-brand-icon { width: 42px; height: 42px; flex-shrink: 0; border-radius: 12px; background: #17242a; }
+.website-redesign.web-welcome .web-brand::before { content: ''; width: 42px; height: 42px; flex-shrink: 0; border-radius: 12px; background: #17242a url('/brand/training-icon-192.png') center / cover no-repeat; }
 .website-redesign .web-monogram { display: flex; align-items: center; justify-content: center; position: relative; background: var(--web-accent); color: #17242a; width: 36px; height: 38px; border-radius: 9px; font-style: italic; font-size: 1.35rem; }
 .website-redesign .web-monogram span { font-size: .9rem; margin-inline-start: -3px; }
 .website-redesign .web-sidebar > .web-eyebrow { margin: 54px 12px 18px; font-size: .58rem; }
@@ -98,7 +104,7 @@ html.dark .website-redesign { --web-bg:#111a20; --web-paper:#1a262d; --web-ink:#
 .website-redesign .web-status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #558332; margin-inline-end: 8px; }
 .website-redesign .web-privacy { font-size: .65rem; text-align: start; padding: 12px; border-top: 1px solid var(--web-line); color: var(--web-muted); }
 .website-redesign .web-workspace { margin-inline-start: 232px; min-width: 0; }
-.website-redesign .web-topbar { height: 90px; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; border-bottom: 1px solid var(--web-line); position: relative; z-index: 70; background: var(--web-bg); }
+.website-redesign .web-topbar { height: 90px; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; border-bottom: 1px solid var(--web-line); position: sticky; top: var(--web-safe-top); z-index: 70; background: var(--web-bg); }
 .website-redesign .web-topbar p { font-size: .9rem; margin-top: 4px; font-weight: 650; }
 .website-redesign .web-topbar .web-eyebrow { font-size: .55rem; }
 .website-redesign .web-topbar-actions { display: flex; gap: 22px; align-items: center; }
@@ -310,9 +316,9 @@ html.dark[data-accent="yellow"] .website-redesign { --web-green: #f5df7e; }
   .website-redesign .web-hero h1 { font-size: clamp(2rem, 7vw, 3rem); }
   .website-redesign .web-mobile-filters { display: block; min-height: 48px; text-align: start; }
   .website-redesign .web-library-muscles, .website-redesign .web-workout-picker .web-picker-groups { display: none; }
-  .website-redesign .web-library-toolbar { top: env(safe-area-inset-top, 0px); padding: 10px; gap: 8px; }
+  .website-redesign .web-library-toolbar { top: calc(var(--web-safe-top) + var(--web-header-height)); padding: 10px; gap: 8px; }
   .website-redesign .web-workout-picker { padding-inline: 0; padding-bottom: 110px; }
-  .website-redesign .web-workout-picker > .web-mobile-filters { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 35; width: 100%; margin-bottom: 16px; background: var(--web-paper); }
+  .website-redesign .web-workout-picker > .web-mobile-filters { position: sticky; top: calc(var(--web-safe-top) + var(--web-header-height)); z-index: 35; width: 100%; margin-bottom: 16px; background: var(--web-paper); }
   .website-redesign .web-selection-actions { position: fixed; inset-inline: 12px; bottom: calc(var(--web-bottom-nav) + 8px); padding: 10px; gap: 8px; z-index: 50; flex-wrap: wrap; }
   .website-redesign .web-selection-actions > div:last-child { width: auto; flex: 1; }
   .website-redesign .web-selection-actions button { min-height: 48px; padding: 10px 14px; font-size: .8rem; }
@@ -327,4 +333,64 @@ html.dark[data-accent="yellow"] .website-redesign { --web-green: #f5df7e; }
   .website-redesign[data-keyboard="true"] .web-sidebar { display: none; }
   .website-redesign[data-keyboard="true"] { --web-bottom-nav: 0px; }
   .website-redesign[data-keyboard="true"] .web-selection-actions, .website-redesign[data-keyboard="true"] .web-session-actions, .website-redesign[data-keyboard="true"] .web-library-toolbar { position: static; }
+}
+
+/* Modern surfaces must not inherit the legacy rule that paints every nav white. */
+html .website-redesign nav { background: transparent !important; }
+.website-redesign .web-surface:focus { outline: none; }
+.website-redesign:not(.web-modal-theme)::before {
+  content: ''; position: fixed; inset: 0 0 auto; height: var(--web-safe-top);
+  z-index: 1100; pointer-events: none; background: var(--web-bg);
+}
+.website-redesign .web-settings-nav > div, .website-redesign .settings-container { background: transparent; }
+.website-redesign .web-settings-nav .settings-container > button {
+  width: 44px; height: 44px; border-radius: 50%; background: var(--web-soft) !important;
+}
+.website-redesign .web-settings-nav .settings-container > div {
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - var(--web-safe-top) - var(--web-header-height) - var(--web-bottom-nav) - 24px);
+  overscroll-behavior: contain;
+}
+.website-redesign .web-save-status { gap: 6px 12px; line-height: 1.5; }
+.website-redesign .web-icon-button { flex-shrink: 0; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+.website-redesign .web-library-toolbar { top: calc(var(--web-safe-top) + var(--web-header-height)); }
+@media (min-width: 801px) {
+  .website-redesign .web-session-exercises, .website-redesign .web-selection-panel { top: calc(var(--web-safe-top) + var(--web-header-height) + 16px); }
+}
+.website-redesign .web-session-layout > *, .website-redesign .web-section-heading > *, .website-redesign .web-more-panel > * { min-width: 0; }
+.website-redesign .web-session-exercises { scrollbar-width: thin; scrollbar-color: var(--web-line) transparent; gap: 10px; padding-bottom: 6px; }
+.website-redesign .web-session-exercises > button { background: var(--web-soft); border-radius: 14px; }
+.website-redesign .web-session-exercises > button[aria-current] { background: var(--web-accent); }
+.website-redesign .web-session-exercises::-webkit-scrollbar { height: 3px; }
+.website-redesign .web-session-exercises::-webkit-scrollbar-track { background: transparent; }
+.website-redesign .web-session-exercises::-webkit-scrollbar-thumb { background: var(--web-line); border-radius: 4px; }
+.website-redesign .web-session progress { appearance: none; border: 0; border-radius: 6px; overflow: hidden; background: var(--web-line); }
+.website-redesign .web-session progress::-webkit-progress-bar { background: var(--web-line); }
+.website-redesign .web-session progress::-webkit-progress-value { background: var(--web-green); border-radius: 6px; }
+.website-redesign .web-session progress::-moz-progress-bar { background: var(--web-green); border-radius: 6px; }
+.website-redesign .web-more-panel { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+html.light body .web-modal-backdrop, html.dark body .web-modal-backdrop { background: #17242a66 !important; }
+.web-modal-backdrop > [role="dialog"] { min-width: 0; width: 100%; max-width: min(672px, 100%); overflow-x: hidden; overscroll-behavior: contain; }
+.web-modal-backdrop .web-surface { min-width: 0; }
+.web-modal-backdrop .exercise-group-selector [role="group"] {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible;
+}
+.web-modal-backdrop .exercise-group-selector button { min-width: 0; white-space: normal; overflow-wrap: anywhere; min-height: 48px; }
+@media (max-width: 800px) {
+  .website-redesign .web-sidebar { padding-bottom: max(6px, var(--web-safe-bottom)); }
+  .website-redesign .web-session-actions { padding: 10px; border-radius: 16px; gap: 8px; box-shadow: 0 -4px 18px #17242a08; }
+  .website-redesign .web-session-actions > button { flex: 1; padding: 12px 8px; min-height: 48px; font-size: .8rem; }
+  .website-redesign .web-set-editor .web-section-heading { align-items: start; flex-wrap: wrap; gap: 12px; }
+  .website-redesign .web-set-editor .web-section-heading h2 { font-size: 1.2rem; }
+  .web-modal-backdrop.web-sheet-backdrop { padding: var(--safe-area-inset-top, env(safe-area-inset-top, 0px)) 0 0; }
+  .web-sheet-backdrop > [role="dialog"] { max-width: 100%; max-height: calc(100dvh - var(--web-safe-top) - 12px); padding-bottom: var(--web-safe-bottom); }
+  .web-sheet-backdrop .web-more-panel { padding: 20px 16px; gap: 20px; }
+  .web-sheet-backdrop .web-more-panel > .web-primary { width: 100%; min-width: 0; }
+}
+@media (max-width: 380px) { .web-modal-backdrop .exercise-group-selector [role="group"] { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: no-preference) {
+  .website-redesign .web-view { animation: web-view-enter 160ms ease-out; }
+  .web-modal-backdrop > .web-modal-theme { animation: web-sheet-enter 200ms ease-out; }
+  @keyframes web-view-enter { from { opacity: .65; } to { opacity: 1; } }
+  @keyframes web-sheet-enter { from { opacity: .5; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 }
