@@ -176,6 +176,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
               {languages.map((lang) => (
                 <motion.button
                   key={lang.code}
+                  aria-pressed={language === lang.code}
                   onClick={() => { setLanguage(lang.code); }}
                   whileTap={{ scale: 0.95 }}
                   className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all ${language === lang.code ? 'bg-teal-500/10 text-teal-400' : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'}`}
@@ -196,6 +197,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
               {fontSizes.map((size) => (
                 <motion.button
                   key={size.id}
+                  aria-pressed={fontSize === size.id}
                   onClick={() => setFontSize(size.id)}
                   whileTap={{ scale: 0.95 }}
                   className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all ${fontSize === size.id ? 'bg-teal-500/10 border-teal-500/50 text-teal-400 shadow-sm' : 'bg-zinc-900/50 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300'}`}
@@ -222,6 +224,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
               ]).map((acc) => (
                 <motion.button
                   key={acc.id}
+                  aria-pressed={accent === acc.id}
                   onClick={() => setAccent(acc.id)}
                   whileTap={{ scale: 0.95 }}
                   className={`flex items-center justify-start gap-2 p-2.5 rounded-xl border transition-all ${accent === acc.id
@@ -246,6 +249,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
               {([{ id: 'dark', icon: '🌙', label: t('theme_dark') as string || 'Dark' }, { id: 'light', icon: '☀️', label: t('theme_light') as string || 'Light' }] as { id: Theme; icon: string; label: string }[]).map((th) => (
                 <motion.button
                   key={th.id}
+                  aria-pressed={theme === th.id}
                   onClick={() => setTheme(th.id)}
                   whileTap={{ scale: 0.95 }}
                   className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all ${theme === th.id

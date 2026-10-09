@@ -68,7 +68,7 @@ export function Account() {
    <label className="block">{c.password}<input className={fieldClass} type="password" required minLength={mode === 'signup' ? 10 : 1} maxLength={256} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} value={password} onChange={e => setPassword(e.target.value)} /></label>
    <p className="text-sm text-zinc-500">{c.notice}</p>
    <div className="flex flex-wrap gap-3">
-    <button className={buttonClass} disabled={busy}>{mode === 'login' ? c.login : c.signup}</button>
+    <button className={`${buttonClass} account-primary`} disabled={busy}>{mode === 'login' ? c.login : c.signup}</button>
     <button className={buttonClass} type="button" onClick={() => setMode(m => m === 'login' ? 'signup' : 'login')}>{mode === 'login' ? c.signup : c.login}</button>
     <button type="button" className={buttonClass} disabled={busy || !email} onClick={() => void run(() => authService.requestLink('reset', email))}>{c.forgot}</button>
     <button type="button" className={buttonClass} disabled={busy || !email} onClick={() => void run(() => authService.requestLink('verify', email))}>{c.verify}</button>

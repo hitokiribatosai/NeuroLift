@@ -1,4 +1,25 @@
 /* Shared browser/Android presentation; iOS retains the legacy interface. */
+/* Match native scroll chrome to the modern palette without changing legacy iOS. */
+html:has(.website-redesign), .website-redesign * {
+  scrollbar-width: thin;
+  scrollbar-color: #84918a transparent;
+}
+html:has(.website-redesign)::-webkit-scrollbar-thumb,
+html:has(.website-redesign) .website-redesign ::-webkit-scrollbar-thumb {
+  background: #84918a; border-radius: 8px;
+}
+html:has(.website-redesign)::-webkit-scrollbar-thumb:hover,
+html:has(.website-redesign) .website-redesign ::-webkit-scrollbar-thumb:hover { background: #66766d; }
+html:has(.website-redesign)::-webkit-scrollbar-track { background: transparent; }
+#root .website-redesign .web-settings-nav button[aria-pressed="true"] {
+  background: var(--web-accent) !important; color: #17242a !important;
+  border-color: var(--web-green) !important;
+}
+#root .website-redesign .web-settings-nav button[aria-pressed="true"] * { color: inherit !important; }
+#root .website-redesign .web-surface .account-primary {
+  background: var(--web-accent) !important; color: #17242a !important;
+  border-color: var(--web-accent) !important; font-weight: 750;
+}
 .website-redesign {
   --web-safe-top: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
   --web-safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
@@ -304,7 +325,8 @@ html.dark[data-accent="yellow"] .website-redesign { --web-green: #f5df7e; }
   .website-redesign .web-sidebar { position: fixed; inset: auto 0 0; width: auto; padding: 6px max(8px, env(safe-area-inset-left)) max(6px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-right)); border: 0; border-top: 1px solid var(--web-line); z-index: 80; background: var(--web-paper); }
   .website-redesign .web-sidebar > .web-brand { display: none; }
   .website-redesign .web-navigation { margin: 0; padding: 0; gap: 4px; }
-  .website-redesign .web-navigation button { min-height: 64px; font-size: .72rem; padding: 8px 2px; overflow-wrap: anywhere; }
+  .website-redesign .web-navigation button { min-height: 64px; font-size: clamp(11px, .65rem, 12px); padding: 8px 2px; overflow-wrap: normal; word-break: normal; }
+  .website-redesign .web-navigation button > span:not(.web-nav-arrow) { white-space: nowrap; }
   .website-redesign[data-platform="android"] .web-navigation button { min-height: 68px; }
   .website-redesign[data-platform="android"] { --web-bottom-nav: calc(80px + env(safe-area-inset-bottom, 0px)); }
   .website-redesign .web-topbar { height: auto; min-height: 60px; padding: 10px 16px; }
