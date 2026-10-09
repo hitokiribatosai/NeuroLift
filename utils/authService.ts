@@ -11,7 +11,8 @@ export async function api<T>(path: string, method = 'GET', data?: unknown): Prom
  if (accessToken && currentUser?.id !== scope()) throw new ApiError('Account changed. Sign in again before synchronizing.', 401);
  const requestToken = accessToken;
  const response = await fetch(apiBase + path, {
-  method, credentials: 'omit', cache: 'no-store', signal: AbortSignal.timeout(20000),
+  // The free preview backend can take over 50 seconds to wake from sleep.
+  method, credentials: 'omit', cache: 'no-store', signal: AbortSignal.timeout(90000),
   headers: { ...(data !== undefined ? { 'Content-Type': 'application/json' } : {}), ...(accessToken ? { Authorization: 'Bearer ' + accessToken } : {}) },
   body: data === undefined ? undefined : JSON.stringify(data),
  });
