@@ -26,6 +26,7 @@ import { WebFrame, WebHome, WebWelcome, WebGoals } from './components/web/WebExp
 import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
 import { dismissTopOverlay } from './utils/overlays';
+import { TourProvider } from './components/web/GuidedTour';
 
 function AppInner() {
   const { theme } = useTheme();
@@ -163,7 +164,7 @@ function AppInner() {
   if (isWebsite) {
     if (showOnboarding && !['account', 'privacy'].includes(currentView)) return <WebWelcome onComplete={handleOnboardingComplete} />;
     if (showGoalSetting && !['account', 'privacy'].includes(currentView)) return <WebGoals onComplete={handleGoalSettingComplete} />;
-    return <WebFrame currentView={currentView} setCurrentView={handleSetView}>{renderView()}</WebFrame>;
+    return <TourProvider><WebFrame currentView={currentView} setCurrentView={handleSetView}>{renderView()}</WebFrame></TourProvider>;
   }
 
   return (

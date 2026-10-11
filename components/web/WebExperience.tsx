@@ -9,6 +9,7 @@ import { WebStatus } from './WebStatus';
 import { Capacitor } from '@capacitor/core';
 import { App as NativeApp } from '@capacitor/app';
 import { Modal } from '../ui/Modal';
+import { TourOverview } from './GuidedTour';
 
 type Navigation = { currentView: string; setCurrentView: (view: string) => void };
 const paths: Record<string, string> = {
@@ -82,18 +83,24 @@ export function WebFrame({ currentView, setCurrentView, children }: Navigation &
     const viewport = window.visualViewport;
     let largestHeight = window.innerHeight;
     const update = () => {
+      // WKWebView pans its visual viewport to reveal focused inputs. Sticky
+      // elements otherwise remain attached to the obscured layout viewport.
+      document.documentElement.style.setProperty('--web-viewport-top', `${Math.max(0, viewport?.offsetTop || 0)}px`);
       largestHeight = Math.max(largestHeight, window.innerHeight);
       const editing = document.activeElement?.matches('input, textarea, [contenteditable="true"]');
       setKeyboardOpen(Boolean(editing && largestHeight - (viewport?.height || window.innerHeight) > 150));
     };
     const orientation = () => { largestHeight = window.innerHeight; update(); };
     viewport?.addEventListener('resize', update);
+    viewport?.addEventListener('scroll', update);
     window.addEventListener('resize', update);
     window.addEventListener('orientationchange', orientation);
     document.addEventListener('focusin', update);
     document.addEventListener('focusout', update);
     return () => {
       viewport?.removeEventListener('resize', update);
+      viewport?.removeEventListener('scroll', update);
+      document.documentElement.style.removeProperty('--web-viewport-top');
       window.removeEventListener('resize', update);
       window.removeEventListener('orientationchange', orientation);
       document.removeEventListener('focusin', update);
@@ -123,7 +130,7 @@ export function WebFrame({ currentView, setCurrentView, children }: Navigation &
       <header className="web-topbar" ref={header}><div><span className="web-eyebrow">NEUROLIFT / {c('WORKSPACE', 'ESPACE', 'مساحة العمل')}</span><p>{title}</p></div><div className="web-topbar-actions"><span className="web-date">{new Date().toLocaleDateString(dir === 'rtl' ? 'ar' : document.documentElement.lang || 'en', { month: 'short', day: 'numeric', weekday: 'short' })}</span><Navbar settingsOnly currentView={currentView} setCurrentView={setCurrentView} /></div></header>
       <WebStatus openAccount={() => setCurrentView('account')} />
       {activeSession && currentView !== 'tracker' && <button className="web-resume-strip" onClick={() => setCurrentView('tracker')}>{c('Workout in progress · Resume workout', 'Séance en cours · Reprendre', 'حصة جارية · استئناف التمرين')} →</button>}
-      <main id="web-content" tabIndex={-1} className="web-surface">{children}</main>
+      <main id="web-content" tabIndex={-1} className="web-surface"><TourOverview view={currentView} navigate={setCurrentView} />{children}</main>
       <footer className="web-footer"><span>NEUROLIFT</span><span>{c('Built for the long run.', 'Pensé pour durer.', 'مصمم للاستمرار.')}</span></footer>
     </div>
     <Modal isOpen={moreOpen} onClose={() => setMoreOpen(false)} label={c('More', 'Plus', 'المزيد')} sheet>

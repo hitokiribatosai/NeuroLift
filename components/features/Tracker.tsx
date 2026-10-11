@@ -1,4 +1,5 @@
 import { usesModernInterface } from '../../utils/interfacePlatform';
+import { WorkoutGuide } from '../web/GuidedTour';
 import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -720,6 +721,7 @@ export const Tracker: React.FC = () => {
 
   return (
     <div className={`relative w-full min-h-screen ${usesModernInterface() ? '' : 'overflow-x-hidden'}`}>
+      <WorkoutGuide phase={phase} selected={selectedExercises.length} completed={activeExercises.reduce((sum, exercise) => sum + exercise.sets.filter(set => set.completed).length, 0)} />
       <AnimatePresence mode="wait" custom={direction} initial={false}>
         <motion.div
           key={phase}

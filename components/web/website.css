@@ -1,5 +1,15 @@
-/* Shared browser/Android presentation; iOS retains the legacy interface. */
-/* Match native scroll chrome to the modern palette without changing legacy iOS. */
+/* Shared presentation with native safe areas and platform-specific navigation. */
+.website-redesign .web-tour { border: 1px solid var(--web-line); border-inline-start: 4px solid var(--web-green); border-radius: 14px; padding: 18px; margin: 0 0 24px; background: var(--web-soft); min-width: 0; }
+.website-redesign .web-tour h2 { font-size: 1.2rem; font-weight: 750; margin-block: 8px; }
+.website-redesign .web-tour p { font-size: .85rem; line-height: 1.65; max-width: 70ch; }
+.website-redesign .web-tour-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 16px; }
+.website-redesign .web-tour button { min-height: 44px; white-space: normal; }
+.website-redesign .web-tour-invite { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.website-redesign .web-tour-invite > div { flex: 1 1 260px; }
+.website-redesign .web-tour-settings { display: grid; gap: 8px; margin-bottom: 24px; }
+.website-redesign .web-tour-settings h3 { font-weight: 750; }
+.website-redesign .web-tour-settings button { padding: 10px; border: 1px solid var(--web-line); border-radius: 8px; text-align: start; min-height: 44px; }
+/* Match scroll chrome to the modern palette. */
 html:has(.website-redesign), .website-redesign * {
   scrollbar-width: thin;
   scrollbar-color: #84918a transparent;
@@ -228,7 +238,7 @@ html.dark[data-accent="yellow"] .website-redesign { --web-green: #f5df7e; }
 .website-redesign[data-view="privacy"] .web-surface > div > div { background: transparent !important; max-width: 850px; }
 .website-redesign[data-view="clock"] .web-surface > div > div, .website-redesign[data-view="nutrition"] .web-surface > div > div { min-height: 65vh; }
 .website-redesign .web-surface .text-8xl { font-size: clamp(3.7rem, 7vw, 6rem); }
-.website-redesign.web-welcome { padding: 30px clamp(24px, 7vw, 120px); }
+.website-redesign.web-welcome { padding: calc(30px + var(--web-safe-top)) clamp(24px, 7vw, 120px) calc(30px + var(--web-safe-bottom)); }
 .website-redesign.web-welcome header { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
 .website-redesign.web-welcome main { max-width: 1100px; margin: clamp(50px, 10vh, 120px) auto 30px; }
 .website-redesign.web-welcome h1 { max-width: 950px; }
@@ -242,6 +252,12 @@ html.dark[data-accent="yellow"] .website-redesign { --web-green: #f5df7e; }
 .website-redesign .web-goal-options button[aria-pressed="true"] { border-color: var(--web-green); background: var(--web-soft); outline: 2px solid var(--web-green); }
 .website-redesign .web-goal-options strong { display: block; font-size: 1.4rem; margin: 22px 0 8px; }
 .website-redesign .web-goal-options p { font-size: .8rem; color: var(--web-muted); line-height: 1.7; }
+@media (max-width: 560px) {
+  .website-redesign.web-welcome main { margin-top: 32px; }
+  .website-redesign .web-goal-options { margin: 24px 0; }
+  .website-redesign .web-goal-options button { padding: 16px; }
+  .website-redesign .web-goal-options strong { margin: 8px 0 4px; font-size: 1.15rem; }
+}
 @media (min-width: 1600px) { .website-redesign .web-surface { padding-inline: 65px; } }
 @media (max-width: 1150px) { .website-redesign .web-sidebar { width: 200px; padding-inline: 14px; } .website-redesign .web-workspace { margin-inline-start: 200px; } .website-redesign .web-surface { padding-inline: 25px; } .website-redesign .web-topbar { padding-inline: 25px; } .website-redesign .web-surface .fixed.bottom-0 { inset-inline-start: 200px; } .website-redesign .web-dashboard-grid { grid-template-columns: 1fr; } }
 @media (max-width: 800px) {
@@ -360,6 +376,12 @@ html.dark[data-accent="yellow"] .website-redesign { --web-green: #f5df7e; }
 /* Modern surfaces must not inherit the legacy rule that paints every nav white. */
 html .website-redesign nav { background: transparent !important; }
 .website-redesign .web-surface:focus { outline: none; }
+.website-redesign[data-platform="ios"] .web-topbar {
+  top: calc(var(--web-safe-top) + var(--web-viewport-top, 0px));
+}
+.website-redesign[data-platform="ios"]::before {
+  transform: translateY(var(--web-viewport-top, 0px));
+}
 .website-redesign:not(.web-modal-theme)::before {
   content: ''; position: fixed; inset: 0 0 auto; height: var(--web-safe-top);
   z-index: 1100; pointer-events: none; background: var(--web-bg);

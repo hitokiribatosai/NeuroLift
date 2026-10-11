@@ -167,6 +167,14 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
           transition={{ duration: 0.2 }}
           className={`absolute top-full mt-2 w-64 max-h-[80vh] overflow-y-auto bg-zinc-950/95 backdrop-blur-xl border border-zinc-800 rounded-3xl p-4 shadow-2xl z-[100] ${dir === 'rtl' ? 'left-0' : 'right-0'}`}
         >
+          {usesModernInterface() && <div className="web-tour-settings">
+            <h3>{language === 'fr' ? 'Aide et visite' : language === 'ar' ? 'المساعدة والدليل' : 'Help & tour'}</h3>
+            {(['overview', 'workout'] as const).map(mode => <button key={mode} type="button" onClick={() => {
+              setIsSettingsOpen(false);
+              window.dispatchEvent(new CustomEvent('neurolift-tour', { detail: mode }));
+              setCurrentView(mode === 'workout' ? 'tracker' : 'home');
+            }}>{mode === 'overview' ? (language === 'fr' ? 'Visite de l’application' : language === 'ar' ? 'جولة التطبيق' : 'App overview') : (language === 'fr' ? 'Guide de séance' : language === 'ar' ? 'دليل الحصة' : 'Workout walkthrough')}</button>)}
+          </div>}
           <div className="mb-6">
             <h3 className="text-[0.625rem] font-black text-zinc-500 uppercase tracking-widest mb-3 px-2 flex items-center gap-2">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>

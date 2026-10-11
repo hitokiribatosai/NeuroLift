@@ -59,7 +59,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
 
         safeStorage.setItem(themeKey, theme);
-        if (platform === 'android' && Capacitor.isPluginAvailable('StatusBar')) {
+        if (Capacitor.isNativePlatform() && Capacitor.isPluginAvailable('StatusBar')) {
             void StatusBar.setStyle({ style: theme === 'light' ? Style.Light : Style.Dark }).catch(() => { /* WebView remains usable if the OS rejects a status-bar update. */ });
         }
     }, [theme, themeKey, platform]);

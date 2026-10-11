@@ -49,10 +49,7 @@ for (const platform of ['android', 'ios']) test(`${platform} runtime selects its
     localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({ version: 0, dirty: false, data: { ...seed, neuroLift_theme: 'dark', neuroLift_web_theme: 'light' } }));
   }, { seed: data, platform });
   await page.goto('/#home');
-  if (platform === 'ios') {
-    await expect(page.locator('.website-redesign')).toHaveCount(0);
-    await expect(page.getByRole('heading', { name: 'Train with purpose.' })).toBeVisible();
-  } else {
+  {
     await expect(page.locator('.web-dashboard')).toBeVisible();
     await page.getByRole('button', { name: 'Browse exercises', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Research-supported', exact: true })).toBeVisible();
