@@ -44,6 +44,7 @@ export const ProgramPlanner: React.FC<{ initialMuscle?: string }> = ({ initialMu
   const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useInterfaceState('library_search', '');
   const [researchOnly, setResearchOnly] = useInterfaceState('library_research', false);
+  const [equipmentFilter, setEquipmentFilter] = useInterfaceState<'all' | typeof categories[number]>('library_equipment', 'all');
   const [filtersOpen, setFiltersOpen] = useState(false);
   React.useEffect(() => {
     if (initialMuscle && Object.hasOwn(getExerciseDatabase(language), initialMuscle)) {
@@ -59,6 +60,7 @@ export const ProgramPlanner: React.FC<{ initialMuscle?: string }> = ({ initialMu
   const filteredExercises = query ? Object.entries(exerciseDB).flatMap(([muscle, subCats]) =>
     Object.entries(subCats).flatMap(([subgroup, groups]) => categories.flatMap(category =>
       groups[category].filter(name => name.toLocaleLowerCase().includes(query)
+        && (equipmentFilter === 'all' || equipmentFilter === category)
         && (!researchOnly || researchNames.has(getEnglishExerciseName(name))))
         .map(name => ({ name, muscle, subgroup, category })))))
     : [];
@@ -66,7 +68,8 @@ export const ProgramPlanner: React.FC<{ initialMuscle?: string }> = ({ initialMu
   const currentSubgroup = selectedMuscle && exerciseDB[selectedMuscle]?.[selectedSubCategory || '']
     ? selectedSubCategory : selectedMuscle ? Object.keys(exerciseDB[selectedMuscle])[0] : null;
   const currentExercises = selectedMuscle && currentSubgroup
-    ? [...new Set(categories.flatMap(category => exerciseDB[selectedMuscle][currentSubgroup][category]))]
+    ? [...new Set(categories.filter(category => equipmentFilter === 'all' || equipmentFilter === category)
+      .flatMap(category => exerciseDB[selectedMuscle][currentSubgroup][category]))]
       .filter(name => !researchOnly || researchNames.has(getEnglishExerciseName(name)))
     : [];
 
@@ -92,6 +95,17 @@ export const ProgramPlanner: React.FC<{ initialMuscle?: string }> = ({ initialMu
         <button type="button" aria-pressed={researchOnly} onClick={() => { setResearchOnly(true); if (!query) setSelectedMuscle(null); }}
           className={`min-h-11 rounded-xl border px-3 text-xs font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 ${researchOnly ? 'border-teal-600 bg-teal-600 text-white dark:border-teal-400 dark:bg-teal-400 dark:text-zinc-950' : 'border-zinc-300 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-200'}`}>{isWebsite ? (language === 'fr' ? 'Avec études' : language === 'ar' ? 'مدعومة بالأبحاث' : 'Research-supported') : t('picker_research_filter')}</button>
       </div>
+    </div>
+
+    <div className="mb-6 flex gap-2 overflow-x-auto pb-1" role="group" aria-label={t('library_equipment_filter')}>
+      {(['all', ...categories] as const).map(equipment => {
+        const label = equipment === 'all' ? t('library_all_equipment') : t(`cat_${equipment}` as Parameters<typeof t>[0]);
+        const active = equipmentFilter === equipment;
+        return <button key={equipment} type="button" aria-pressed={active} onClick={() => setEquipmentFilter(equipment)}
+          className={`min-h-10 shrink-0 rounded-full border px-4 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 ${active ? 'border-teal-600 bg-teal-600 text-white dark:border-teal-400 dark:bg-teal-400 dark:text-zinc-950' : 'border-zinc-200 bg-white text-zinc-700 hover:border-teal-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200'}`}>
+          {label}
+        </button>;
+      })}
     </div>
 
     {isWebsite && <p className="web-library-context" role="status">{query ? `${uniqueResults.length} ${t('library_results')}` : selectedMuscle && currentSubgroup ? `${getLocalizedMuscleName(selectedMuscle, language)} / ${getLocalizedMuscleName(currentSubgroup, language)}` : t('research_picks_title')}{query && <button onClick={() => setSearchQuery('')}>{language === 'fr' ? 'Effacer la recherche' : language === 'ar' ? 'مسح البحث' : 'Clear search'}</button>}</p>}

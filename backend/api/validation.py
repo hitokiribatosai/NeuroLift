@@ -3,7 +3,7 @@ import math
 from django.core.exceptions import ValidationError
 
 KEYS = {
- "neuroLift_history", "neuroLift_journal", "neuroLift_templates",
+ "neuroLift_history", "neuroLift_journal", "neuroLift_templates", "neuroLift_weekly_schedule",
  "neuroLift_cal_history", "neuroLift_cal_date", "neuroLift_daily_cal",
  "neuroLift_user_profile", "neuroLift_userGoal", "neuroLift_units",
  "neuroLift_hasCompletedOnboarding", "neuroLift_onboarding_completed",
@@ -64,6 +64,13 @@ def validate_snapshot(data):
                     raise ValueError()
             except ValueError:
                 raise ValidationError("Invalid daily calories.")
+        if key == "neuroLift_weekly_schedule":
+            try:
+                schedule = json.loads(raw)
+            except (ValueError, TypeError):
+                raise ValidationError("Invalid weekly schedule.")
+            if not isinstance(schedule, dict) or any(day not in {str(i) for i in range(7)} or not isinstance(template_id, str) or not template_id for day, template_id in schedule.items()):
+                raise ValidationError("Invalid weekly schedule.")
         if key == "neuroLift_user_profile":
             try:
                 if not isinstance(json.loads(raw), dict):

@@ -80,6 +80,8 @@ export interface WorkoutSet {
 export interface ActiveExercise {
   name: string;
   sets: WorkoutSet[];
+  /** A plan cue only; set entries remain blank until the user logs them. */
+  targetReps?: string;
 }
 
 export interface CompletedWorkout {
@@ -89,6 +91,7 @@ export interface CompletedWorkout {
   durationSeconds: number;
   exercises: ActiveExercise[];
   totalVolume: number;
+  templateId?: string;
   isDemo?: boolean;
 }
 

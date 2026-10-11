@@ -217,7 +217,7 @@ export const Journal: React.FC = () => {
       exercises: workoutToTemplate.exercises.map(ex => ({
         name: ex.name,
         targetSets: ex.sets.filter(s => s.completed).length,
-        targetReps: ex.sets.filter(s => s.completed).map(s => s.reps).join('-'),
+        targetReps: ex.sets.find(s => s.completed && s.reps > 0)?.reps.toString() || '10',
         notes: ''
       })),
       createdAt: new Date().toISOString(),
@@ -252,6 +252,16 @@ export const Journal: React.FC = () => {
       console.error("Failed to share entry", e);
     }
   };
+
+  const sevenDayCutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const recentTraining = history.filter(workout => {
+    const timestamp = Date.parse(workout.date);
+    return Number.isFinite(timestamp) && timestamp <= Date.now() && timestamp >= sevenDayCutoff;
+  });
+  const recentTrainingMinutes = Math.round(recentTraining.reduce((total, workout) => total + workout.durationSeconds, 0) / 60);
+  const recentCompletedSets = recentTraining.reduce((total, workout) => total + workout.exercises.reduce(
+    (exerciseTotal, exercise) => exerciseTotal + exercise.sets.filter(set => set.completed).length, 0
+  ), 0);
 
   const WorkoutHistory = () => {
     if (history.length === 0) return (
@@ -444,6 +454,16 @@ export const Journal: React.FC = () => {
         <button aria-pressed={journalView === 'workouts'} onClick={() => setJournalView('workouts')}>{t('nav_workout')}</button>
         <button aria-pressed={journalView === 'measurements'} onClick={() => setJournalView('measurements')}>{t('journal_body_metrics')}</button>
       </div>}
+      {(!isWebsite || journalView === 'workouts') && <section className="mb-8 grid grid-cols-3 gap-2 sm:gap-4" aria-label={t('journal_training_consistency')}>
+        {[
+          { label: t('journal_sessions_week'), value: recentTraining.length },
+          { label: t('journal_minutes_week'), value: recentTrainingMinutes },
+          { label: t('journal_sets_week'), value: recentCompletedSets }
+        ].map(metric => <Card key={metric.label} className="min-w-0 rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/70 sm:p-5">
+          <p className="text-[9px] font-bold uppercase leading-snug tracking-wider text-zinc-600 dark:text-zinc-400 sm:text-xs">{metric.label}</p>
+          <p className="mt-2 text-2xl font-black tabular-nums text-zinc-950 dark:text-white sm:text-3xl">{metric.value}</p>
+        </Card>)}
+      </section>}
       {(!isWebsite || journalView === 'workouts') && <VolumeChart
         history={history}
         t={t}
@@ -714,9 +734,17 @@ export const Journal: React.FC = () => {
 // Extracted VolumeChart for cleaner organization
 const VolumeChart = ({ history, t, selectedMuscle, onMuscleChange, language }: { history: CompletedWorkout[], t: any, selectedMuscle: string, onMuscleChange: (m: string) => void, language: any }) => {
   const muscleGroups = ['Total', 'Chest', 'Back', 'Shoulders', 'Legs', 'Arms', 'Core', 'Cardio'];
+  const exerciseNames = [...new Set(history.flatMap(workout => workout.exercises.map(exercise => exercise.name))) ]
+    .filter(name => getMuscleForExercise(name) !== 'Cardio');
+  const trackedExercise = selectedMuscle.startsWith('exercise:') ? selectedMuscle.slice('exercise:'.length) : null;
 
   const getVolumeForPoint = (workout: CompletedWorkout) => {
     if (selectedMuscle === 'Total') return workout.totalVolume;
+
+    if (trackedExercise) {
+      const exercise = workout.exercises.find(item => item.name === trackedExercise);
+      return Math.max(0, ...(exercise?.sets || []).filter(set => set.completed).map(set => set.weight));
+    }
 
     return (workout.exercises || []).reduce((acc, ex) => {
       const muscle = getMuscleForExercise(ex.name);
@@ -746,8 +774,9 @@ const VolumeChart = ({ history, t, selectedMuscle, onMuscleChange, language }: {
   return (
     <Card className="p-8 bg-zinc-900/40 border-zinc-800 rounded-[2.5rem] shadow-sm mb-12 backdrop-blur-xl" style={{ WebkitBackdropFilter: 'blur(24px)' }}>
       <div className="flex justify-between items-center mb-8">
-        <h3 className="text-[10px] font-black text-zinc-300 uppercase tracking-[0.3em]">{t('journal_volume_progression')}</h3>
+        <h3 className="text-[10px] font-black text-zinc-300 uppercase tracking-[0.3em]">{trackedExercise ? t('journal_load_progression') : t('journal_volume_progression')}</h3>
         <select
+          aria-label={t('journal_volume_progression')}
           value={selectedMuscle}
           onChange={(e) => onMuscleChange(e.target.value)}
           className="bg-black/40 border border-zinc-800 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest text-teal-400 outline-none focus:border-teal-500 transition-all"
@@ -755,6 +784,9 @@ const VolumeChart = ({ history, t, selectedMuscle, onMuscleChange, language }: {
           {muscleGroups.map(m => (
             <option key={m} value={m}>{m === 'Total' ? t('journal_overall_volume') : getLocalizedMuscleName(m, language)}</option>
           ))}
+          {exerciseNames.length > 0 && <optgroup label={t('journal_exercise_progress')}>
+            {exerciseNames.map(name => <option key={name} value={`exercise:${name}`}>{getExerciseTranslation(name, language)}</option>)}
+          </optgroup>}
         </select>
       </div>
 

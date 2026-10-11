@@ -33,8 +33,9 @@ test('backup rejects unknown keys, invalid collections and negative calories', (
   expect(() => validateBackup({version:1,data})).toThrow();
 });
 test('backup round trips scalar values and structured templates', () => {
- expect(validateBackup({version:1,data:{neuroLift_daily_cal:0,neuroLift_hasCompletedOnboarding:true,neuroLift_templates:[]}}))
- .toEqual({neuroLift_daily_cal:'0',neuroLift_hasCompletedOnboarding:'true',neuroLift_templates:'[]'});
+ expect(validateBackup({version:1,data:{neuroLift_daily_cal:0,neuroLift_hasCompletedOnboarding:true,neuroLift_templates:[],neuroLift_weekly_schedule:{'1':'t'}}}))
+ .toEqual({neuroLift_daily_cal:'0',neuroLift_hasCompletedOnboarding:'true',neuroLift_templates:'[]',neuroLift_weekly_schedule:'{"1":"t"}'});
+ expect(() => validateBackup({version:1,data:{neuroLift_weekly_schedule:{'7':'t'}}})).toThrow();
 });
 test('invalid restore is all-or-nothing', async () => {
  safeStorage.setItem('neuroLift_daily_cal','100');

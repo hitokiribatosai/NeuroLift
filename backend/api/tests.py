@@ -44,15 +44,20 @@ class AccountTests(TestCase):
     def test_snapshot_isolation_conflict_and_invalid_payload(self):
         user, token = self.account()
         other, other_token = self.account("other@example.test")
-        data = {"neuroLift_templates":json.dumps([{"id":"t1","name":"Routine","exercises":[]}])}
+        data = {
+            "neuroLift_templates":json.dumps([{"id":"t1","name":"Routine","exercises":[]}]),
+            "neuroLift_weekly_schedule":json.dumps({"0":"t1"}),
+        }
         url = "/api/snapshot/"
         headers = {"content_type":"application/json","HTTP_AUTHORIZATION":"Bearer " + token}
         response = self.client.put(url, data=json.dumps({"version":0,"data":data}), **headers)
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.client.get(url, HTTP_AUTHORIZATION="Bearer " + token).json()["data"]["neuroLift_weekly_schedule"], data["neuroLift_weekly_schedule"])
         self.assertEqual(self.client.put(url, data=json.dumps({"version":0,"data":{}}), **headers).status_code, 409)
         self.assertEqual(self.client.get(url, HTTP_AUTHORIZATION="Bearer " + other_token).json()["data"], {})
         self.assertEqual(self.client.put(url, data=json.dumps({"version":1,"data":{"evil":"yes"}}), **headers).status_code, 400)
         self.assertEqual(self.client.put(url, data=json.dumps({"version":1,"data":{"neuroLift_history":"[1]"}}), **headers).status_code, 400)
+        self.assertEqual(self.client.put(url, data=json.dumps({"version":1,"data":{"neuroLift_weekly_schedule":"{\"7\":\"t1\"}"}}), **headers).status_code, 400)
         self.assertEqual(self.client.get(url).status_code, 401)
         self.assertEqual(Snapshot.objects.get(user=user).version, 1)
 

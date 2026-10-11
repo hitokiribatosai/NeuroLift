@@ -32,6 +32,10 @@ export function validateBackup(backup: unknown): Record<string, string> {
    }
   } else if (key === 'neuroLift_user_profile') {
    if (!object(value)) throw new Error('Invalid profile.');
+  } else if (key === 'neuroLift_weekly_schedule') {
+   if (!object(value) || Object.entries(value).some(([day, templateId]) =>
+    !/^[0-6]$/.test(day) || typeof templateId !== 'string' || !templateId
+   )) throw new Error('Invalid weekly schedule.');
   } else if (!['string', 'number', 'boolean'].includes(typeof value)) throw new Error('Invalid setting.');
   if (key === 'neuroLift_daily_cal' && (!Number.isFinite(Number(value)) || Number(value) < 0)) throw new Error('Invalid daily calories.');
   result[key] = typeof value === 'string' ? value : JSON.stringify(value);

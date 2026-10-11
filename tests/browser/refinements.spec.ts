@@ -63,6 +63,24 @@ test('mobile More menu exposes secondary destinations and closes on selection', 
   await expect(nav.getByRole('button', { name: 'More', exact: true })).toHaveAttribute('aria-expanded', 'false');
 });
 
+test('journal chart can track an exercise top-set load over time', async ({ page }) => {
+  const workout = (id: string, date: string, weight: number) => ({
+    id, date, durationSeconds: 1800, name: 'Chest', totalVolume: weight * 8,
+    exercises: [{ name: 'Incline Dumbbell Press', sets: [{ id: `${id}-set`, weight, reps: 8, completed: true }] }],
+  });
+  await page.addInitScript(data => localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({ version: 0, dirty: false, data })), {
+    ...base,
+    neuroLift_history: JSON.stringify([
+      workout('older', '2026-10-01T12:00:00.000Z', 30),
+      workout('newer', '2026-10-08T12:00:00.000Z', 35),
+    ]),
+  });
+  await page.goto('/#journal');
+  await page.getByLabel('Volume Progression').selectOption('exercise:Incline Dumbbell Press');
+  await expect(page.getByRole('heading', { name: 'Heaviest set · load' })).toBeVisible();
+  await expect(page.locator('svg path').first()).toBeVisible();
+});
+
 test('library explains research and demo dialog supports keyboard dismissal', async ({ page }) => {
   await page.addInitScript(data => localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({ version: 0, dirty: false, data })), base);
   await page.goto('/#planner');

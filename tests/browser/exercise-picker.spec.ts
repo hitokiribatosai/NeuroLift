@@ -23,6 +23,17 @@ test('library opens on exercises and previews a bundled demonstration', async ({
   await expect(card.locator('img')).toHaveAttribute('src', /Incline_Dumbbell_Press-0\.jpg$/);
 });
 
+test('library equipment filter narrows exercise results', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({
+    version: 0, dirty: false, data: { neuroLift_hasCompletedOnboarding: 'true', neuroLift_userGoal: 'strength' },
+  })));
+  await page.goto('/#planner');
+  const equipment = page.getByRole('group', { name: 'Filter exercises by equipment' });
+  await equipment.getByRole('button', { name: 'Dumbbells', exact: true }).click();
+  await expect(page.getByText('Incline Dumbbell Press', { exact: true })).toBeVisible();
+  await expect(page.getByText('Decline Pushups', { exact: true })).toHaveCount(0);
+});
+
 test('workout exercise choices persist while switching muscle areas', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({
@@ -77,6 +88,37 @@ test('template editor adds exercises from separate muscle groups', async ({ page
   await page.getByRole('group', { name: 'Muscle area' }).last().getByRole('button', { name: 'Quads' }).click();
   await page.getByRole('button', { name: 'Pistol Squats', exact: true }).click();
   await expect(page.getByText('Selected exercises: 3')).toBeVisible();
+});
+
+test('weekly template assignment is visible and launches a fresh planned session', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({
+    version: 0, dirty: false, data: {
+      neuroLift_hasCompletedOnboarding: 'true',
+      neuroLift_userGoal: 'strength',
+      neuroLift_tracker_phase: 'selection',
+      neuroLift_tracker_muscles: '["Chest"]',
+      neuroLift_tracker_selected_exercises: '[]',
+      neuroLift_templates: JSON.stringify([{
+        id: 'sunday', name: 'Sunday plan', createdAt: '2026-01-01T00:00:00Z',
+        exercises: [{ name: 'Incline Dumbbell Press', targetSets: 3, targetReps: '8-10' }],
+      }]),
+    },
+  })));
+  await page.goto('/#tracker');
+  await page.getByRole('button', { name: 'Load Template' }).click();
+  const dialog = page.getByRole('dialog');
+  const monday = dialog.getByRole('button', { name: 'Mon · Sunday plan', exact: true });
+  await monday.click();
+  await expect(monday).toHaveAttribute('aria-pressed', 'true');
+  await dialog.getByRole('button').filter({ hasText: 'Sunday plan' }).first().click();
+  await page.getByRole('button', { name: 'Start Session', exact: true }).click();
+  await expect(page.getByLabel('KG — SET 1', { exact: true })).toHaveValue('');
+  await expect(page.getByLabel('REPS — SET 1', { exact: true })).toHaveValue('');
+  await expect(page.locator('.web-set-row')).toHaveCount(3);
+  await expect(page.getByText('Target reps: 8-10')).toBeVisible();
+  const stored = await page.evaluate(() => JSON.parse(JSON.parse(localStorage.getItem('neuroLift_workspace_guest')!).data.neuroLift_tracker_active_exercises));
+  expect(stored[0].sets).toHaveLength(3);
+  expect(stored[0].sets.every((set: { weight: number; reps: number; completed: boolean }) => set.weight === 0 && set.reps === 0 && !set.completed)).toBe(true);
 });
 
 test('library opens a browsable research view with linked studies', async ({ page }) => {

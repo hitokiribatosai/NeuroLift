@@ -13,9 +13,9 @@ beforeEach(async () => {
  window.dispatchEvent(new Event('account-changed')); stop();
 });
 test('a fresh device pulls the same account snapshot', async () => {
- vi.mocked(api).mockResolvedValue({version:3,data:{neuroLift_daily_cal:'120'}});
+ vi.mocked(api).mockResolvedValue({version:3,data:{neuroLift_daily_cal:'120',neuroLift_weekly_schedule:'{"0":"sunday"}'}});
  await sync.syncNow();
- expect(readWorkspace()).toEqual({version:3,data:{neuroLift_daily_cal:'120'},dirty:false});
+ expect(readWorkspace()).toEqual({version:3,data:{neuroLift_daily_cal:'120',neuroLift_weekly_schedule:'{"0":"sunday"}'},dirty:false});
 });
 test('key order cannot trigger repeated workspace remounts', async () => {
  writeWorkspace({version:2,dirty:false,data:{neuroLift_daily_cal:'100',neuroLift_hasCompletedOnboarding:'true'}});

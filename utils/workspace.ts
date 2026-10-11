@@ -1,5 +1,5 @@
 export const SYNC_KEYS = [
- 'neuroLift_history', 'neuroLift_journal', 'neuroLift_templates',
+ 'neuroLift_history', 'neuroLift_journal', 'neuroLift_templates', 'neuroLift_weekly_schedule',
  'neuroLift_cal_history', 'neuroLift_cal_date', 'neuroLift_daily_cal',
  'neuroLift_user_profile', 'neuroLift_userGoal', 'neuroLift_units',
  'neuroLift_hasCompletedOnboarding', 'neuroLift_onboarding_completed',

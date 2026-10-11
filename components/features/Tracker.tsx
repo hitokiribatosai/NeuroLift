@@ -25,6 +25,8 @@ import { ExerciseDemo } from '../ui/ExerciseDemo';
 import { ExerciseGroupSelector } from '../ui/ExerciseGroupSelector';
 import { WebSession } from '../web/WebSession';
 import { useInterfaceState } from '../../hooks/useInterfaceState';
+import { createFreshTemplateExercises } from '../../utils/workoutTemplates';
+import { findNextScheduledWorkout, WeeklyWorkoutSchedule } from '../../utils/workoutSchedule';
 
 export const Tracker: React.FC = () => {
   const {
@@ -66,6 +68,13 @@ export const Tracker: React.FC = () => {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [exerciseHistory, setExerciseHistory] = useState<Map<string, any>>(new Map());
   const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
+  const [weeklySchedule, setWeeklySchedule] = useState<WeeklyWorkoutSchedule>(() =>
+    safeStorage.getParsed<WeeklyWorkoutSchedule>('neuroLift_weekly_schedule', {})
+  );
+  const [selectedTemplate, setSelectedTemplate] = useState<WorkoutTemplate | null>(() =>
+    safeStorage.getParsed<WorkoutTemplate | null>('neuroLift_tracker_selected_template', null)
+  );
+  const [activeTemplateId, setActiveTemplateId] = useState<string | null>(() => safeStorage.getItem('neuroLift_tracker_active_template'));
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
   const [showLoadTemplateModal, setShowLoadTemplateModal] = useState(false);
   const [showEditTemplateModal, setShowEditTemplateModal] = useState(false);
@@ -239,6 +248,38 @@ export const Tracker: React.FC = () => {
     safeStorage.setItem('neuroLift_tracker_active_exercises', JSON.stringify(activeExercises));
   }, [phase, selectedMuscles, selectedExercises, activeExercises]);
 
+  useEffect(() => {
+    if (selectedTemplate) {
+      safeStorage.setItem('neuroLift_tracker_selected_template', JSON.stringify(selectedTemplate));
+    } else {
+      safeStorage.removeItem('neuroLift_tracker_selected_template');
+    }
+  }, [selectedTemplate]);
+  useEffect(() => {
+    if (activeTemplateId) safeStorage.setItem('neuroLift_tracker_active_template', activeTemplateId);
+    else safeStorage.removeItem('neuroLift_tracker_active_template');
+  }, [activeTemplateId]);
+
+  const nextScheduledWorkout = findNextScheduledWorkout(
+    templates,
+    weeklySchedule,
+    new Date(),
+    safeStorage.getParsed<CompletedWorkout[]>('neuroLift_history', [])
+  );
+  const weekdayLabels = Array.from({ length: 7 }, (_, day) => {
+    const date = new Date(2024, 0, 7 + day); // 7 Jan 2024 was a Sunday.
+    const locale = language === 'fr' ? 'fr-FR' : language === 'ar' ? 'ar' : 'en';
+    return new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(date);
+  });
+
+  const assignTemplateDay = (day: number, templateId: string) => {
+    const next = { ...weeklySchedule };
+    if (next[String(day)] === templateId) delete next[String(day)];
+    else next[String(day)] = templateId;
+    setWeeklySchedule(next);
+    safeStorage.setItem('neuroLift_weekly_schedule', JSON.stringify(next));
+  };
+
   // Load Templates
   useEffect(() => {
     const fetchTemplates = async () => {
@@ -351,10 +392,17 @@ export const Tracker: React.FC = () => {
   const handleStartWorkout = () => {
     handleSetPhase('active');
 
-    // Merge logic: Preserve existing active exercises data
+    // Templates create a clean session: retain the plan, never logged weights or reps.
+    const templateExercises = selectedTemplate
+      ? new Map(createFreshTemplateExercises(selectedTemplate, generateId).map(exercise => [exercise.name, exercise]))
+      : null;
     const newActiveExercises: ActiveExercise[] = selectedExercises.map(name => {
-      const existing = activeExercises.find(a => a.name === name);
-      if (existing) return existing;
+      const fromTemplate = templateExercises?.get(name);
+      if (fromTemplate) return fromTemplate;
+      if (!templateExercises) {
+        const existing = activeExercises.find(a => a.name === name);
+        if (existing) return existing;
+      }
       return {
         name,
         sets: [{ id: generateId(), weight: 0, reps: 0, completed: false }]
@@ -362,6 +410,8 @@ export const Tracker: React.FC = () => {
     });
 
     setActiveExercises(newActiveExercises);
+    setActiveTemplateId(selectedTemplate?.id || activeTemplateId);
+    setSelectedTemplate(null);
 
     // Only reset/start timer if this is a fresh start (duration is 0)
     if (duration === 0 && !timerActive) {
@@ -454,7 +504,8 @@ export const Tracker: React.FC = () => {
       name: sessionName,
       durationSeconds: duration,
       exercises: activeExercises,
-      totalVolume: volume
+      totalVolume: volume,
+      ...(activeTemplateId ? { templateId: activeTemplateId } : {})
     };
 
     await safeStorage.saveWorkout(record.id, record);
@@ -466,6 +517,10 @@ export const Tracker: React.FC = () => {
     safeStorage.removeItem('neuroLift_tracker_muscles');
     safeStorage.removeItem('neuroLift_tracker_selected_exercises');
     safeStorage.removeItem('neuroLift_tracker_active_exercises');
+    safeStorage.removeItem('neuroLift_tracker_selected_template');
+    safeStorage.removeItem('neuroLift_tracker_active_template');
+    setSelectedTemplate(null);
+    setActiveTemplateId(null);
     resetClock();
   };
 
@@ -482,6 +537,10 @@ export const Tracker: React.FC = () => {
     safeStorage.removeItem('neuroLift_tracker_muscles');
     safeStorage.removeItem('neuroLift_tracker_selected_exercises');
     safeStorage.removeItem('neuroLift_tracker_active_exercises');
+    safeStorage.removeItem('neuroLift_tracker_selected_template');
+    safeStorage.removeItem('neuroLift_tracker_active_template');
+    setSelectedTemplate(null);
+    setActiveTemplateId(null);
     resetClock();
     setShowResetSessionConfirm(false);
     hapticFeedback.medium();
@@ -551,6 +610,13 @@ export const Tracker: React.FC = () => {
     const updatedTemplate = { ...template, lastUsed: new Date().toISOString() };
     await safeStorage.saveTemplate(updatedTemplate.id, updatedTemplate);
     setTemplates(prev => prev.map(t => t.id === updatedTemplate.id ? updatedTemplate : t));
+    setSelectedTemplate(updatedTemplate);
+
+    // Loading a template replaces any old draft so the next start is always fresh.
+    setActiveExercises([]);
+    setTimerActive(false);
+    stopRestTimer();
+    resetClock();
 
     // Infer muscles from exercises
     const musclesToSelect = new Set<string>();
@@ -565,6 +631,7 @@ export const Tracker: React.FC = () => {
     });
     setSelectedMuscles(Array.from(musclesToSelect));
     setShowLoadTemplateModal(false);
+    handleSetPhase('selection');
     hapticFeedback.light();
   };
 
@@ -579,6 +646,9 @@ export const Tracker: React.FC = () => {
     if (templateDeleteConfirm) {
       await safeStorage.deleteTemplate(templateDeleteConfirm.id);
       setTemplates(prev => prev.filter(t => t.id !== templateDeleteConfirm.id));
+      const nextSchedule = Object.fromEntries(Object.entries(weeklySchedule).filter(([, id]) => id !== templateDeleteConfirm.id));
+      setWeeklySchedule(nextSchedule);
+      safeStorage.setItem('neuroLift_weekly_schedule', JSON.stringify(nextSchedule));
       setTemplateDeleteConfirm(null);
       hapticFeedback.medium();
     }
@@ -616,7 +686,7 @@ export const Tracker: React.FC = () => {
       exercises: completedWorkout.exercises.map(ex => ({
         name: ex.name,
         targetSets: ex.sets.length,
-        targetReps: ex.sets.length > 0 ? ex.sets[0].reps.toString() : '10',
+        targetReps: ex.targetReps || ex.sets.find(set => set.completed && set.reps > 0)?.reps.toString() || '10',
         notes: ''
       })),
       createdAt: new Date().toISOString()
@@ -749,6 +819,26 @@ export const Tracker: React.FC = () => {
                   </select>
                 </label>
               </div>
+
+              {nextScheduledWorkout && (
+                <section className="mb-6 flex flex-col gap-3 rounded-2xl border border-teal-700/30 bg-teal-500/5 p-4 sm:flex-row sm:items-center sm:justify-between" aria-label={t('tracker_next_planned')}>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-700 dark:text-teal-300">{t('tracker_next_planned')}</p>
+                    <h3 className="mt-1 text-lg font-black text-zinc-950 dark:text-white">{nextScheduledWorkout.template.name}</h3>
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                      {new Intl.DateTimeFormat(language === 'fr' ? 'fr-FR' : language === 'ar' ? 'ar' : 'en', { weekday: 'long', month: 'short', day: 'numeric' }).format(nextScheduledWorkout.date)}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button type="button" onClick={() => void loadTemplate(nextScheduledWorkout.template)} className="web-primary min-h-11 rounded-xl px-4 py-2 text-sm font-bold">
+                      {t('tracker_load_template')}
+                    </button>
+                    <button type="button" onClick={() => setShowLoadTemplateModal(true)} className="web-secondary min-h-11 rounded-xl px-4 py-2 text-sm font-bold">
+                      {t('tracker_manage_templates')}
+                    </button>
+                  </div>
+                </section>
+              )}
 
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                 {selectableMuscles.map((muscle) => (
@@ -1371,6 +1461,11 @@ export const Tracker: React.FC = () => {
                           </button>
                         </div>
                       </h3>
+                      {ex.targetReps && (
+                        <p className="-mt-5 mb-6 px-4 text-xs font-semibold text-zinc-400">
+                          {t('tracker_target_reps')}: {ex.targetReps}
+                        </p>
+                      )}
 
                       {/* History & Quick Load */}
                       {exerciseHistory.get(ex.name) && (
@@ -1702,7 +1797,7 @@ export const Tracker: React.FC = () => {
 
           <div className="space-y-3 overflow-y-auto flex-1 pr-2 custom-scrollbar">
             {templates.map(template => (
-              <div key={template.id} className="group flex items-center gap-3 p-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-teal-500/50 transition-all">
+              <div key={template.id} className="group flex flex-col gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4 transition-all hover:border-teal-500/50">
                 <button
                   onClick={() => loadTemplate(template)}
                   className="flex-1 text-left"
@@ -1731,6 +1826,18 @@ export const Tracker: React.FC = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
+                </div>
+                <div className="border-t border-zinc-800 pt-3">
+                  <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500">{t('tracker_schedule_days')}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {weekdayLabels.map((dayLabel, day) => {
+                      const assigned = weeklySchedule[String(day)] === template.id;
+                      return <button key={day} type="button" aria-pressed={assigned} aria-label={`${dayLabel} · ${template.name}`} onClick={() => assignTemplateDay(day, template.id)}
+                        className={`min-h-9 min-w-10 rounded-lg border px-2 text-xs font-bold transition ${assigned ? 'border-teal-500 bg-teal-500 text-zinc-950' : 'border-zinc-700 bg-zinc-950 text-zinc-300 hover:border-teal-500/60'}`}>
+                        {dayLabel}
+                      </button>;
+                    })}
+                  </div>
                 </div>
               </div>
             ))}
