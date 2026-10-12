@@ -2,7 +2,8 @@ import React from 'react';
 import { Navbar } from '../Navbar';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { safeStorage } from '../../utils/storage';
-import { CompletedWorkout } from '../../types';
+import { CompletedWorkout, WorkoutTemplate } from '../../types';
+import { findNextScheduledWorkout, WeeklyWorkoutSchedule } from '../../utils/workoutSchedule';
 import { TRAINING_SOURCES } from '../../utils/trainingEvidence';
 import './website.css';
 import { WebStatus } from './WebStatus';
@@ -147,6 +148,11 @@ export function WebHome({ setCurrentView }: Pick<Navigation, 'setCurrentView'>) 
   const { t, language } = useLanguage();
   const c = useCopy();
   const history = safeStorage.getParsed<CompletedWorkout[]>('neuroLift_history', []).filter(w => !w.isDemo);
+  const nextWorkout = findNextScheduledWorkout(
+    safeStorage.getParsed<WorkoutTemplate[]>('neuroLift_templates', []),
+    safeStorage.getParsed<WeeklyWorkoutSchedule>('neuroLift_weekly_schedule', {}),
+    new Date(), history
+  );
   const phase = safeStorage.getItem('neuroLift_tracker_phase');
   const active = phase === 'selection' || phase === 'active';
   const recent = [...history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 3);
@@ -159,6 +165,12 @@ export function WebHome({ setCurrentView }: Pick<Navigation, 'setCurrentView'>) 
     <section className="web-stats" aria-label={c('Training summary', 'Bilan sportif', 'ملخص التدريب')}>
       {[[String(history.length).padStart(2, '0'), c('Sessions logged', 'Séances enregistrées', 'حصص مسجلة')], [String(minutes), c('Minutes of training', 'Minutes de sport', 'دقائق التدريب')], [active ? c('In progress', 'En cours', 'قيد التنفيذ') : c('Ready when you are', 'À votre rythme', 'ابدأ حين تكون جاهزاً'), c('Your next session', 'Votre prochaine séance', 'حصتك القادمة')]].map(([value, label]) => <div key={label}><p className="web-eyebrow">{label}</p><strong>{value}</strong></div>)}
     </section>
+    {nextWorkout && <section className="web-panel" aria-label={t('tracker_next_planned')}>
+      <p className="web-eyebrow">{t('tracker_next_planned')}</p>
+      <h2>{nextWorkout.template.name}</h2>
+      <p>{nextWorkout.date.toLocaleDateString(language, { weekday: 'long', month: 'short', day: 'numeric' })}</p>
+      <button className="web-secondary" onClick={() => setCurrentView('tracker')}>{active ? t('tracker_resume') : c('View workout plan', 'Voir le programme', 'عرض خطة التدريب')} ↗</button>
+    </section>}
     <div className="web-dashboard-grid">
       <section className="web-panel web-library-promo"><div className="web-section-heading"><div><p className="web-eyebrow">{c('MOVEMENT LIBRARY', 'BIBLIOTHÈQUE', 'مكتبة التمارين')}</p><h2>{c('Find your next move.', 'Trouvez votre mouvement.', 'اكتشف تمرينك القادم.')}</h2></div><button className="web-icon-button" aria-label={c('Explore the library', 'Explorer la bibliothèque', 'استكشف المكتبة')} onClick={() => setCurrentView('planner')}>↗</button></div><div className="web-exercise-preview">{['Incline_Dumbbell_Press', 'Pullups', 'Barbell_Squat'].map((name, index) => <button key={name} onClick={() => setCurrentView(`planner?muscle=${['Chest', 'Back', 'Legs'][index]}`)}><img src={`/exercises/${name}-0.jpg`} alt="" loading="lazy" /><span>{[c('Push', 'Pousser', 'دفع'), c('Pull', 'Tirer', 'سحب'), c('Legs', 'Jambes', 'أرجل')][index]} <span aria-hidden="true">↗</span></span></button>)}</div><p className="web-small">{c('Explore by muscle. See the movement. Read the evidence.', 'Explorez par muscle. Visualisez le mouvement. Consultez les études.', 'تصفح حسب العضلة. شاهد الحركة. اقرأ الدراسات.')}</p></section>
       <section className="web-panel"><div className="web-section-heading"><div><p className="web-eyebrow">{c('YOUR JOURNAL', 'VOTRE JOURNAL', 'سجلّك')}</p><h2>{c('The work you put in.', 'Le travail accompli.', 'الجهد الذي بذلته.')}</h2></div><Icon name="journal" /></div>{recent.length ? <div className="web-recent">{recent.map(workout => <button key={workout.id} onClick={() => setCurrentView('journal')}><span><strong>{workout.name || t('nav_workout')}</strong><small>{new Date(workout.date).toLocaleDateString(language)} · {Math.round(workout.durationSeconds / 60)} min</small></span><span aria-hidden="true">↗</span></button>)}</div> : <div className="web-empty"><span aria-hidden="true">↗</span><h3>{c('Your story starts here.', 'Votre histoire commence ici.', 'قصتك تبدأ هنا.')}</h3><p>{c('Complete a workout to see your sessions here. No rush. Just progress.', 'Terminez une séance pour la retrouver ici. Chaque effort compte.', 'أكمل تمريناً لتظهر حصصك هنا. كل خطوة مهمة.')}</p></div>}<button className="web-text-button" onClick={() => setCurrentView('journal')}>{t('nav_journal')} <span aria-hidden="true">→</span></button></section>

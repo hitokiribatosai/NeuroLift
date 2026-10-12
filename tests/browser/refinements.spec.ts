@@ -3,11 +3,25 @@ const base = { neuroLift_hasCompletedOnboarding: 'true', neuroLift_userGoal: 'st
 const exercises = [{ name: 'Incline Dumbbell Press', sets: [{ id: 's1', weight: 0, reps: 0, completed: false }, { id: 's2', weight: 0, reps: 0, completed: false }] }];
 const active = { ...base, neuroLift_tracker_phase: 'active', neuroLift_tracker_selected_exercises: JSON.stringify(exercises.map(e => e.name)), neuroLift_tracker_muscles: '["Chest"]', neuroLift_tracker_active_exercises: JSON.stringify(exercises) };
 test.use({ serviceWorkers: 'block' });
+test('untouched sets are blocked and clearing reps invalidates completion', async ({ page }) => {
+  await page.addInitScript(data => localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({ version: 0, dirty: false, data })), active);
+  await page.goto('/#tracker');
+  const done = page.getByRole('button', { name: 'Done — SET 1', exact: true });
+  await expect(done).toBeDisabled();
+  await page.getByLabel('REPS — SET 1', { exact: true }).fill('8');
+  await done.click();
+  await expect(done).toHaveAttribute('aria-pressed', 'true');
+  await page.getByLabel('REPS — SET 1', { exact: true }).fill('');
+  await expect(done).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.getByRole('button', { name: /Finish Workout/ })).toBeDisabled();
+  await page.getByRole('button', { name: 'Reset session', exact: true }).click();
+  await expect(page.getByRole('dialog')).toContainText('Reset Session');
+});
 test('iOS-mode workout completes offline and survives the next load', async ({ page, context }) => {
   await page.addInitScript(data => {
     Object.assign(window, { webkit: { messageHandlers: { bridge: {} } } });
     if (!localStorage.getItem('neuroLift_workspace_guest')) localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({ version: 0, dirty: false, data }));
-  }, active);
+  }, { ...active, neuroLift_tracker_active_template: 'upper-a', neuroLift_tracker_active_template_name: 'Upper A' });
   await page.goto('/#tracker');
   await context.setOffline(true);
   await page.getByLabel('KG — SET 1', { exact: true }).fill('15');
@@ -16,10 +30,11 @@ test('iOS-mode workout completes offline and survives the next load', async ({ p
   await page.getByRole('button', { name: /Finish Workout/ }).click();
   await page.getByRole('button', { name: 'Finish Workout', exact: true }).click();
   await expect.poll(() => page.evaluate(() => JSON.parse(JSON.parse(localStorage.getItem('neuroLift_workspace_guest')!).data.neuroLift_history)[0].totalVolume)).toBe(120);
+  await expect.poll(() => page.evaluate(() => JSON.parse(JSON.parse(localStorage.getItem('neuroLift_workspace_guest')!).data.neuroLift_history)[0].name)).toBe('Upper A');
   await context.setOffline(false);
   await page.reload();
   await page.locator('.web-navigation').getByRole('button', { name: 'Progress', exact: true }).click();
-  await expect(page.getByText('Incline Dumbbell Press', { exact: true }).first()).toBeVisible();
+  await expect(page.getByText('Incline Dumbbell Press', { exact: true }).last()).toBeVisible();
 });
 
 test('log sets, reload, finish, and find the saved workout in the journal', async ({ page }) => {
@@ -42,7 +57,7 @@ test('log sets, reload, finish, and find the saved workout in the journal', asyn
   await expect.poll(() => page.evaluate(() => JSON.parse(JSON.parse(localStorage.getItem('neuroLift_workspace_guest')!).data.neuroLift_history)[0].totalVolume)).toBe(200);
   await page.locator('.web-navigation').getByRole('button', { name: 'Progress', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Training journal' })).toBeVisible();
-  await expect(page.getByText('Incline Dumbbell Press', { exact: true }).first()).toBeVisible();
+  await expect(page.getByText('Incline Dumbbell Press', { exact: true }).last()).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Add entry', exact: true })).toBeHidden();
   await page.getByRole('button', { name: 'Body Metrics', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Add entry', exact: true })).toBeVisible();
@@ -64,6 +79,7 @@ test('mobile More menu exposes secondary destinations and closes on selection', 
 });
 
 test('journal chart can track an exercise top-set load over time', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   const workout = (id: string, date: string, weight: number) => ({
     id, date, durationSeconds: 1800, name: 'Chest', totalVolume: weight * 8,
     exercises: [{ name: 'Incline Dumbbell Press', sets: [{ id: `${id}-set`, weight, reps: 8, completed: true }] }],
@@ -73,11 +89,14 @@ test('journal chart can track an exercise top-set load over time', async ({ page
     neuroLift_history: JSON.stringify([
       workout('older', '2026-10-01T12:00:00.000Z', 30),
       workout('newer', '2026-10-08T12:00:00.000Z', 35),
+      { ...workout('unrelated', '2026-10-09T12:00:00.000Z', 50), exercises: [{ name: 'Barbell Squat', sets: [{ id: 'squat', weight: 50, reps: 8, completed: true }] }] },
     ]),
   });
   await page.goto('/#journal');
   await page.getByLabel('Volume Progression').selectOption('exercise:Incline Dumbbell Press');
   await expect(page.getByRole('heading', { name: 'Heaviest set · load' })).toBeVisible();
+  await expect(page.locator('svg circle')).toHaveCount(2);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await expect(page.locator('svg path').first()).toBeVisible();
 });
 

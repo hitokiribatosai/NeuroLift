@@ -119,6 +119,10 @@ test('weekly template assignment is visible and launches a fresh planned session
   const stored = await page.evaluate(() => JSON.parse(JSON.parse(localStorage.getItem('neuroLift_workspace_guest')!).data.neuroLift_tracker_active_exercises));
   expect(stored[0].sets).toHaveLength(3);
   expect(stored[0].sets.every((set: { weight: number; reps: number; completed: boolean }) => set.weight === 0 && set.reps === 0 && !set.completed)).toBe(true);
+  await page.locator('.web-navigation').getByRole('button', { name: 'Home', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Next planned workout' })).toContainText('Sunday plan');
+  await page.getByRole('region', { name: 'Next planned workout' }).getByRole('button').click();
+  await expect(page.locator('.web-set-row')).toHaveCount(3);
 });
 
 test('library opens a browsable research view with linked studies', async ({ page }) => {

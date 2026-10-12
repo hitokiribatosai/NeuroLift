@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { hasSetEffort } from '../../utils/workoutValidation';
 import { ActiveExercise, ExerciseHistory } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { getExerciseTranslation } from '../../utils/exerciseData';
@@ -54,12 +55,13 @@ export function WebSession(p: Props) {
         {exercise ? <article className="web-panel web-set-editor" key={exercise.name}>
           <div className="web-section-heading"><div><h2>{getExerciseTranslation(exercise.name, language)}</h2>{exercise.targetReps && <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{t('tracker_target_reps')}: {exercise.targetReps}</p>}</div><button className="web-secondary" onClick={() => p.demo(exercise.name)}>{t('library_view_details')}</button></div>
           <div className="web-previous"><div><strong>{t('tracker_last_session')}</strong><p>{previous ? previous.lastSets.map(s => `${s.weight} kg × ${s.reps}`).join(' · ') : c('No previous completed sets for this exercise.', 'Aucune série terminée pour cet exercice.', 'لا توجد مجموعات مكتملة سابقة لهذا التمرين.')}</p></div>{previous && exercise.sets.every(s => !s.weight && !s.reps && !s.completed) && <button className="web-secondary" onClick={() => p.quickLoad(index, exercise.name)}>{t('tracker_quick_load')}</button>}</div>
+          <p className="web-small">{c('Enter reps, then mark the set done. Weight is optional for bodyweight exercises.', 'Saisissez les répétitions, puis validez la série. La charge est facultative au poids du corps.', 'أدخل التكرارات ثم أكمل المجموعة. الوزن اختياري لتمارين وزن الجسم.')}</p>
           <div className="web-set-labels" aria-hidden="true"><span>{t('tracker_header_set')}</span><span>{t('tracker_header_kg')}</span><span>{t('tracker_header_reps')}</span><span>{t('tracker_header_check')}</span><span /></div>
           {exercise.sets.map((set, i) => <div className="web-set-row" data-completed={set.completed} key={set.id}>
             <span className="web-set-number">{i + 1}</span>
             <label><span className="sr-only">{t('tracker_header_kg')} — {t('tracker_header_set')} {i + 1}</span><input type="number" inputMode="decimal" min="0" step="0.5" value={set.weight || ''} placeholder="0" onChange={e => p.update(index, i, 'weight', e.target.value)} /></label>
             <label><span className="sr-only">{t('tracker_header_reps')} — {t('tracker_header_set')} {i + 1}</span><input type="number" inputMode="numeric" min="0" step="1" value={set.reps || ''} placeholder="0" onChange={e => p.update(index, i, 'reps', e.target.value)} /></label>
-            <button aria-pressed={set.completed} aria-label={`${t('tracker_header_check')} — ${t('tracker_header_set')} ${i + 1}`} onClick={() => p.complete(index, i)}>{set.completed ? '✓' : '○'}</button>
+            <button disabled={!set.completed && !hasSetEffort(set)} aria-pressed={set.completed} aria-label={`${t('tracker_header_check')} — ${t('tracker_header_set')} ${i + 1}`} onClick={() => p.complete(index, i)}>{set.completed ? '✓' : '○'}</button>
             <details className="web-set-menu"><summary aria-label={c(`Set ${i + 1} options`, `Options série ${i + 1}`, `خيارات المجموعة ${i + 1}`)}>⋯</summary><div><button onClick={() => p.plates(index, i)}>{t('tracker_plate_calc_title')}</button><button onClick={() => p.remove(index, i)}>{c('Remove set', 'Supprimer la série', 'احذف المجموعة')}</button></div></details>
           </div>)}
           <button className="web-text-button" onClick={() => p.add(index)}>+ {t('tracker_add_set')}</button>

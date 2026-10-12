@@ -14,7 +14,7 @@ export function findNextScheduledWorkout(
   from = new Date(),
   completedWorkouts: CompletedWorkout[] = []
 ): NextScheduledWorkout | null {
-  for (let daysUntil = 0; daysUntil < 7; daysUntil += 1) {
+  for (let daysUntil = 0; daysUntil <= 7; daysUntil += 1) {
     const date = new Date(from);
     date.setDate(from.getDate() + daysUntil);
     const templateId = schedule[String(date.getDay())];

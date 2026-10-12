@@ -331,7 +331,7 @@ export const Journal: React.FC = () => {
                   {workout.name || t('tracker_summary')}
                 </h4>
                 <div className="flex gap-4 items-center">
-                  <span className="text-teal-600 dark:text-teal-400 font-black text-[10px] uppercase tracking-widest">{workout.date}</span>
+                  <span className="text-teal-600 dark:text-teal-400 font-black text-[10px] uppercase tracking-widest">{new Date(workout.date).toLocaleDateString(language)}</span>
                   {workout.isDemo && (
                     <span className="px-2 py-0.5 bg-zinc-700 text-zinc-300 text-[9px] font-black uppercase tracking-widest rounded">
                       {t('demo_workout_label')}
@@ -755,8 +755,9 @@ const VolumeChart = ({ history, t, selectedMuscle, onMuscleChange, language }: {
     }, 0);
   };
 
-  const data = [...history].reverse().slice(-10);
-  if (data.length < 2) return null;
+  const data = [...history].filter(workout => !trackedExercise || workout.exercises.some(exercise =>
+    exercise.name === trackedExercise && exercise.sets.some(set => set.completed)
+  )).sort((a, b) => Date.parse(a.date) - Date.parse(b.date)).slice(-10);
 
   const chartData = data.map(d => getVolumeForPoint(d));
   const maxVolume = Math.max(...chartData, 1);
@@ -765,7 +766,7 @@ const VolumeChart = ({ history, t, selectedMuscle, onMuscleChange, language }: {
   const padding = 20;
 
   const points = chartData.map((v, i) => ({
-    x: (i / (data.length - 1)) * (chartWidth - padding * 2) + padding,
+    x: data.length === 1 ? chartWidth / 2 : (i / (data.length - 1)) * (chartWidth - padding * 2) + padding,
     y: chartHeight - (v / maxVolume) * (chartHeight - padding * 2) - padding
   }));
 
@@ -773,13 +774,13 @@ const VolumeChart = ({ history, t, selectedMuscle, onMuscleChange, language }: {
 
   return (
     <Card className="p-8 bg-zinc-900/40 border-zinc-800 rounded-[2.5rem] shadow-sm mb-12 backdrop-blur-xl" style={{ WebkitBackdropFilter: 'blur(24px)' }}>
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col sm:flex-row gap-3 justify-between sm:items-center min-w-0 mb-8">
         <h3 className="text-[10px] font-black text-zinc-300 uppercase tracking-[0.3em]">{trackedExercise ? t('journal_load_progression') : t('journal_volume_progression')}</h3>
         <select
           aria-label={t('journal_volume_progression')}
           value={selectedMuscle}
           onChange={(e) => onMuscleChange(e.target.value)}
-          className="bg-black/40 border border-zinc-800 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest text-teal-400 outline-none focus:border-teal-500 transition-all"
+          className="w-full sm:w-auto min-w-0 max-w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest text-teal-400 outline-none focus:border-teal-500 transition-all"
         >
           {muscleGroups.map(m => (
             <option key={m} value={m}>{m === 'Total' ? t('journal_overall_volume') : getLocalizedMuscleName(m, language)}</option>
@@ -804,7 +805,7 @@ const VolumeChart = ({ history, t, selectedMuscle, onMuscleChange, language }: {
               strokeDasharray="4 4"
             />
           ))}
-          <path
+          {points.length > 1 && <path
             d={pathData}
             fill="none"
             stroke="rgb(var(--accent-500))"
@@ -812,7 +813,7 @@ const VolumeChart = ({ history, t, selectedMuscle, onMuscleChange, language }: {
             strokeLinecap="round"
             strokeLinejoin="round"
             className="animate-in fade-in duration-1000"
-          />
+          />}
           {points.map((p, i) => (
             <circle
               key={i}
@@ -825,8 +826,8 @@ const VolumeChart = ({ history, t, selectedMuscle, onMuscleChange, language }: {
           ))}
         </svg>
         <div className="flex justify-between mt-6 text-[10px] text-zinc-300 font-black uppercase tracking-widest opacity-70">
-          <span>{data[0].date}</span>
-          <span>{data[data.length - 1].date}</span>
+          <span>{data[0] && new Date(data[0].date).toLocaleDateString(language)}</span>
+          <span>{data.length > 1 && new Date(data[data.length - 1].date).toLocaleDateString(language)}</span>
         </div>
       </div>
     </Card>

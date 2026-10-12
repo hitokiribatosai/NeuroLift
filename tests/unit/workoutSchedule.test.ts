@@ -30,4 +30,5 @@ test('moves past a scheduled template after it has been completed today', () => 
   expect(findNextScheduledWorkout(templates, { '1': 'push', '3': 'legs' }, monday, completed)).toMatchObject({
     template: { id: 'legs' }, daysUntil: 2
   });
+  expect(findNextScheduledWorkout(templates, { '1': 'push' }, monday, completed)?.daysUntil).toBe(7);
 });

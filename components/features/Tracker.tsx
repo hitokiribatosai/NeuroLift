@@ -1,4 +1,5 @@
 import { usesModernInterface } from '../../utils/interfacePlatform';
+import { hasSetEffort } from '../../utils/workoutValidation';
 import { WorkoutGuide } from '../web/GuidedTour';
 import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -75,6 +76,7 @@ export const Tracker: React.FC = () => {
     safeStorage.getParsed<WorkoutTemplate | null>('neuroLift_tracker_selected_template', null)
   );
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>(() => safeStorage.getItem('neuroLift_tracker_active_template'));
+  const [activeTemplateName, setActiveTemplateName] = useState<string | null>(() => safeStorage.getItem('neuroLift_tracker_active_template_name'));
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
   const [showLoadTemplateModal, setShowLoadTemplateModal] = useState(false);
   const [showEditTemplateModal, setShowEditTemplateModal] = useState(false);
@@ -259,6 +261,10 @@ export const Tracker: React.FC = () => {
     if (activeTemplateId) safeStorage.setItem('neuroLift_tracker_active_template', activeTemplateId);
     else safeStorage.removeItem('neuroLift_tracker_active_template');
   }, [activeTemplateId]);
+  useEffect(() => {
+    if (activeTemplateName) safeStorage.setItem('neuroLift_tracker_active_template_name', activeTemplateName);
+    else safeStorage.removeItem('neuroLift_tracker_active_template_name');
+  }, [activeTemplateName]);
 
   const nextScheduledWorkout = findNextScheduledWorkout(
     templates,
@@ -411,6 +417,7 @@ export const Tracker: React.FC = () => {
 
     setActiveExercises(newActiveExercises);
     setActiveTemplateId(selectedTemplate?.id || activeTemplateId);
+    setActiveTemplateName(selectedTemplate?.name || activeTemplateName);
     setSelectedTemplate(null);
 
     // Only reset/start timer if this is a fresh start (duration is 0)
@@ -467,6 +474,7 @@ export const Tracker: React.FC = () => {
     const parsed = parseFloat(val);
     const value = Number.isFinite(parsed) ? Math.max(0, field === 'reps' ? Math.floor(parsed) : parsed) : 0;
     (newExs[exIdx].sets[setIdx] as any)[field] = value;
+    if (!hasSetEffort(newExs[exIdx].sets[setIdx])) newExs[exIdx].sets[setIdx].completed = false;
     setActiveExercises(newExs);
   };
 
@@ -474,6 +482,7 @@ export const Tracker: React.FC = () => {
     if (!activeExercises[exIdx]?.sets[setIdx]) return;
     const newExs = [...activeExercises];
     const isNowCompleted = !newExs[exIdx].sets[setIdx].completed;
+    if (isNowCompleted && !hasSetEffort(newExs[exIdx].sets[setIdx])) return;
     newExs[exIdx].sets[setIdx].completed = isNowCompleted;
     setActiveExercises(newExs);
 
@@ -486,6 +495,7 @@ export const Tracker: React.FC = () => {
   };
 
   const finishWorkout = async () => {
+    if (!activeExercises.some(ex => ex.sets.some(set => set.completed && hasSetEffort(set)))) return;
     hapticFeedback.success();
     setTimerActive(false);
     stopRestTimer();
@@ -494,9 +504,9 @@ export const Tracker: React.FC = () => {
     }, 0);
 
     const muscleNames = selectedMuscles.map(m => getLocalizedMuscleName(m, language));
-    const sessionName = muscleNames.length > 0
+    const sessionName = activeTemplateName || templates.find(template => template.id === activeTemplateId)?.name || (muscleNames.length > 0
       ? muscleNames.join(' & ')
-      : t('tracker_summary');
+      : t('tracker_summary'));
 
     const record: CompletedWorkout = {
       id: generateId(),
@@ -521,6 +531,7 @@ export const Tracker: React.FC = () => {
     safeStorage.removeItem('neuroLift_tracker_active_template');
     setSelectedTemplate(null);
     setActiveTemplateId(null);
+    setActiveTemplateName(null);
     resetClock();
   };
 
@@ -541,6 +552,7 @@ export const Tracker: React.FC = () => {
     safeStorage.removeItem('neuroLift_tracker_active_template');
     setSelectedTemplate(null);
     setActiveTemplateId(null);
+    setActiveTemplateName(null);
     resetClock();
     setShowResetSessionConfirm(false);
     hapticFeedback.medium();
@@ -1350,7 +1362,7 @@ export const Tracker: React.FC = () => {
             deleteExercise={index => setExerciseToDelete({ name: activeExercises[index].name, index })}
             quickLoad={handleQuickLoad} plates={(exIdx, setIdx) => setActiveSetInfo({ exIdx, setIdx })}
             edit={() => setPhase('selection')} reorder={() => { setTempReorderList([...activeExercises]); setShowReorderModal(true); }}
-            finish={finishWorkout} reset={() => setShowResetConfirm(true)} />}
+            finish={finishWorkout} reset={() => setShowResetSessionConfirm(true)} />}
           {phase === 'active' && !usesModernInterface() && (
             <div className="mx-auto max-w-4xl px-4 md:px-6 py-6">
               <div className="text-center mb-12">
