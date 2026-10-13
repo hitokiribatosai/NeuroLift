@@ -29,6 +29,7 @@ import { ExerciseGroupSelector } from '../ui/ExerciseGroupSelector';
 import { WebSession } from '../web/WebSession';
 import { useInterfaceState } from '../../hooks/useInterfaceState';
 import { createFreshTemplateExercises } from '../../utils/workoutTemplates';
+import { copyPreviousSets } from '../../utils/repeatWorkout';
 import { findNextScheduledWorkout, WeeklyWorkoutSchedule } from '../../utils/workoutSchedule';
 
 export const Tracker: React.FC = () => {
@@ -481,23 +482,14 @@ export const Tracker: React.FC = () => {
     }
   };
 
-  const handleQuickLoad = async (exerciseIndex: number, exerciseName: string) => {
-    const suggestion = await exerciseHistoryService.getProgressiveOverloadSuggestion(exerciseName);
-
-    if (suggestion) {
-      const newActiveExercises = [...activeExercises];
-      // Ensure sets have unique IDs
-      const uniqueSets = suggestion.suggestedSets.map((s: any, i: number) => ({
-        ...s,
-        id: generateId(),
-        completed: false
-      }));
-
-      newActiveExercises[exerciseIndex].sets = uniqueSets;
-      setActiveExercises(newActiveExercises);
-
-      hapticFeedback.success(); // Feedback
-    }
+  const handleQuickLoad = (exerciseIndex: number, exerciseName: string, setIndex?: number) => {
+    const previous = exerciseHistory.get(exerciseName);
+    if (!previous) return;
+    setActiveExercises(current => current.map((exercise, index) =>
+      index === exerciseIndex && exercise.name === exerciseName
+        ? { ...exercise, sets: copyPreviousSets(exercise.sets, previous.lastSets, setIndex) }
+        : exercise));
+    hapticFeedback.success();
   };
 
   const removeSet = (exerciseIndex: number, setIndex: number) => {

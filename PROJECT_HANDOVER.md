@@ -2,6 +2,12 @@
 
 Last reviewed: **2026-10-13**. Read `AGENTS.md` first on recovery.
 
+### Repeat-workout refinement — 2026-10-13
+
+Owner requested smoother repeat workouts followed by an updated iOS build; live account/sync tests remain the owner's task. Shared web/Android/iOS session editor now shows the previous session date and a reference beside each set. New routines still start blank. Optional per-set or whole-exercise copying fills only empty rows, preserves planned set count/IDs and never marks sets complete or overwrites entered values. Missing historical rows are explicit; timed references are displayed but not copied into rep fields. Existing edit/reorder/next-previous controls remain available.
+
+Verification: `npm run check` passed (32 unit tests, types/lint/build). Isolated-port browser run passed 100/101; the sole failure was an ambiguous “All exercises” test locator in newly included mobile WebKit exercise-picker coverage. Corrected to exact matching, then all 7 WebKit picker tests passed. Thus all 74 Chromium and 27 selected mobile WebKit cases passed across the original run and targeted rerun, including three-platform fresh-template/per-set-copy/reload tests. This is browser-mode coverage, not a physical-device claim. Source checkpoint: `checkpoint-2026-10-13-repeat-workouts`. Android Build 17 and iOS Build 14 do not yet include this change; iOS rebuild is the next requested step.
+
 ### Standing publishing policy and Build 17 source checkpoint
 
 The owner now requests a commit, push and recovery stamp after each meaningful completed, verified change. `AGENTS.md` records this standing workflow. This synchronization's annotated source checkpoint is `checkpoint-2026-10-13-android-build17`: lazy-loaded destinations, Android 1.3.13/build 17 versioning, build/lint exclusions, updated platform/preview documentation and continuity instructions. Verify the remote branch and tag when recovering; a local tag alone is not proof of a successful push. Publish only the intended branch and new checkpoint, never the local backup branch described below. APKs remain local ignored artifacts, not files in GitHub source history.

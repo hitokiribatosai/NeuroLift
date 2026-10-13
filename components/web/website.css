@@ -85,6 +85,8 @@ body .website-redesign.web-modal-theme [class] { -webkit-text-fill-color: curren
 .website-redesign .web-set-labels, .website-redesign .web-set-row { display: grid; grid-template-columns: 36px minmax(50px,1fr) minmax(50px,1fr) 64px 44px; gap: 12px; align-items: center; text-align: center; }
 .website-redesign .web-set-labels { font-size: .7rem; margin-bottom: 10px; }
 .website-redesign .web-set-row { padding-block: 10px; border-top: 1px solid var(--web-line); }
+.website-redesign .web-set-reference { grid-column: 2 / -1; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; text-align: start; font-size: .78rem; color: var(--web-muted); }
+.website-redesign .web-set-reference .web-text-button { min-height: 44px; padding: 6px 0; font-size: inherit; }
 .website-redesign .web-set-row input { width: 100%; min-height: 48px; text-align: center; }
 .website-redesign .web-set-row button[aria-pressed] { font-size: 1.6rem; border: 1px solid var(--web-line); border-radius: 8px; }
 .website-redesign .web-set-row[data-completed="true"] { background: var(--web-soft); }

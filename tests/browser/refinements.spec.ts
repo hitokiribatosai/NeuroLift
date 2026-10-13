@@ -3,6 +3,48 @@ const base = { neuroLift_hasCompletedOnboarding: 'true', neuroLift_userGoal: 'st
 const exercises = [{ name: 'Incline Dumbbell Press', sets: [{ id: 's1', weight: 0, reps: 0, completed: false }, { id: 's2', weight: 0, reps: 0, completed: false }] }];
 const active = { ...base, neuroLift_tracker_phase: 'active', neuroLift_tracker_selected_exercises: JSON.stringify(exercises.map(e => e.name)), neuroLift_tracker_muscles: '["Chest"]', neuroLift_tracker_active_exercises: JSON.stringify(exercises) };
 test.use({ serviceWorkers: 'block' });
+for (const platform of ['web', 'android', 'ios']) {
+  test(`${platform}: repeat routine keeps blank planned sets and offers safe per-set references`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.addInitScript(({ platform, base }) => {
+      if (platform === 'android') Object.assign(window, { androidBridge: {} });
+      if (platform === 'ios') Object.assign(window, { webkit: { messageHandlers: { bridge: {} } } });
+      if (localStorage.getItem('neuroLift_workspace_guest')) return;
+      localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({ version: 0, dirty: false, data: {
+        ...base, neuroLift_tracker_phase: 'selection', neuroLift_tracker_muscles: '["Chest"]',
+        neuroLift_tracker_selected_exercises: '[]',
+        neuroLift_templates: JSON.stringify([{ id: 'repeat', name: 'Sunday strength', createdAt: '2026-01-01T00:00:00Z', exercises: [{ name: 'Incline Dumbbell Press', targetSets: 3, targetReps: '8-10' }] }]),
+        neuroLift_history: JSON.stringify([{ id: 'last', name: 'Sunday strength', date: '2026-10-01T12:00:00Z', duration: 600, totalVolume: 450, exercises: [{ name: 'Incline Dumbbell Press', sets: [
+          { id: 'old1', weight: 25, reps: 10, completed: true },
+          { id: 'old2', weight: 25, reps: 8, completed: true },
+        ] }] }]),
+      } }));
+    }, { platform, base });
+    await page.goto('/#tracker');
+    await page.getByRole('button', { name: 'Load Template', exact: true }).click();
+    await page.getByRole('dialog').getByRole('button').filter({ hasText: 'Sunday strength' }).first().click();
+    await page.getByRole('button', { name: 'Start Session', exact: true }).click();
+    await expect(page.locator('.web-set-row')).toHaveCount(3);
+    await expect(page.locator('.web-set-reference').first()).toContainText('25 kg × 10');
+    await expect(page.locator('.web-set-reference').nth(1)).toContainText('25 kg × 8');
+    await expect(page.locator('.web-set-reference').nth(2)).toContainText('No matching set');
+    for (let i = 1; i <= 3; i++) {
+      await expect(page.getByLabel(`KG — SET ${i}`, { exact: true })).toHaveValue('');
+      await expect(page.getByLabel(`REPS — SET ${i}`, { exact: true })).toHaveValue('');
+    }
+    await page.getByRole('button', { name: 'Use previous values for set 2', exact: true }).click();
+    await expect(page.getByLabel('KG — SET 2', { exact: true })).toHaveValue('25');
+    await expect(page.getByLabel('REPS — SET 2', { exact: true })).toHaveValue('8');
+    await expect(page.getByRole('button', { name: 'Done — SET 2', exact: true })).toHaveAttribute('aria-pressed', 'false');
+    await page.getByLabel('KG — SET 1', { exact: true }).fill('27.5');
+    await expect(page.getByRole('button', { name: 'Use previous values for set 1', exact: true })).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByLabel('KG — SET 1', { exact: true })).toHaveValue('27.5');
+    await expect(page.getByLabel('REPS — SET 2', { exact: true })).toHaveValue('8');
+    await expect(page.locator('.web-set-row')).toHaveCount(3);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  });
+}
 test('Android screen back returns through workout selection without discarding sets', async ({ page }) => {
   await page.addInitScript(data => {
     Object.assign(window, { androidBridge: {} });

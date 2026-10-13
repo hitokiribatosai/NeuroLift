@@ -20,7 +20,7 @@ interface Props {
   remove: (exercise: number, set: number) => void;
   demo: (name: string) => void;
   deleteExercise: (index: number) => void;
-  quickLoad: (index: number, name: string) => void;
+  quickLoad: (index: number, name: string, setIndex?: number) => void;
   plates: (exercise: number, set: number) => void;
   edit: () => void;
   reorder: () => void;
@@ -94,7 +94,7 @@ export function WebSession(p: Props) {
           }}>
           {exerciseNavigation}
           <div className="web-section-heading"><div><h2>{getExerciseTranslation(exercise.name, language)}</h2>{exercise.targetReps && <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{t('tracker_target_reps')}: {exercise.targetReps}</p>}</div><button className="web-secondary" onClick={() => p.demo(exercise.name)}>{t('library_view_details')}</button></div>
-          <div className="web-previous"><div><strong>{t('tracker_last_session')}</strong><p>{previous ? previous.lastSets.map(s => `${s.weight} kg × ${s.reps}`).join(' · ') : c('No previous completed sets for this exercise.', 'Aucune série terminée pour cet exercice.', 'لا توجد مجموعات مكتملة سابقة لهذا التمرين.')}</p></div>{previous && exercise.sets.every(s => !s.weight && !s.reps && !s.completed) && <button className="web-secondary" onClick={() => p.quickLoad(index, exercise.name)}>{t('tracker_quick_load')}</button>}</div>
+          <div className="web-previous"><div><strong>{t('tracker_last_session')}</strong>{previous ? <><p><time dateTime={previous.lastPerformed}>{new Date(previous.lastPerformed).toLocaleDateString(language, { day: 'numeric', month: 'short', year: 'numeric' })}</time></p><p>{c('Reference only. Today’s sets start empty; copy values only if you want to.', 'À titre indicatif. Les séries du jour sont vides ; copiez les valeurs si vous le souhaitez.', 'للمرجع فقط. مجموعات اليوم فارغة؛ انسخ القيم إن أردت.')}</p></> : <p>{c('No previous completed sets for this exercise.', 'Aucune série terminée pour cet exercice.', 'لا توجد مجموعات مكتملة سابقة لهذا التمرين.')}</p>}</div>{previous?.lastSets.some(s => s.reps > 0 && !s.durationSeconds) && exercise.sets.every(s => !s.weight && !s.reps && !s.completed) && <button className="web-secondary" onClick={() => p.quickLoad(index, exercise.name)}>{c('Use previous values', 'Utiliser les valeurs précédentes', 'استخدم القيم السابقة')}</button>}</div>
           <p className="web-small">{c('Enter reps, then mark the set done. Weight is optional for bodyweight exercises.', 'Saisissez les répétitions, puis validez la série. La charge est facultative au poids du corps.', 'أدخل التكرارات ثم أكمل المجموعة. الوزن اختياري لتمارين وزن الجسم.')}</p>
           <div className="web-set-labels" aria-hidden="true"><span>{t('tracker_header_set')}</span><span>{t('tracker_header_kg')}</span><span>{t('tracker_header_reps')}</span><span>{t('tracker_header_check')}</span><span /></div>
           {exercise.sets.map((set, i) => <div className="web-set-row" data-completed={set.completed} key={set.id}>
@@ -105,6 +105,10 @@ export function WebSession(p: Props) {
             <details className="web-set-menu"><summary onClick={event => {
               sessionRef.current?.querySelectorAll('details[open]').forEach(menu => { if (menu !== event.currentTarget.parentElement) menu.removeAttribute('open'); });
             }} aria-label={c(`Set ${i + 1} options`, `Options série ${i + 1}`, `خيارات المجموعة ${i + 1}`)}>⋯</summary><div onClick={closeMenus}><button onClick={() => p.plates(index, i)}>{t('tracker_plate_calc_title')}</button><button onClick={() => p.remove(index, i)}>{c('Remove set', 'Supprimer la série', 'احذف المجموعة')}</button></div></details>
+            {previous && <div className="web-set-reference">
+              <span>{c('Previous', 'Précédent', 'السابق')}: {previous.lastSets[i] ? (previous.lastSets[i].durationSeconds ? `${previous.lastSets[i].durationSeconds}s` : `${previous.lastSets[i].weight} kg × ${previous.lastSets[i].reps}`) : c('No matching set', 'Aucune série correspondante', 'لا توجد مجموعة مطابقة')}</span>
+              {previous.lastSets[i]?.reps > 0 && !previous.lastSets[i]?.durationSeconds && !set.completed && !set.weight && !set.reps && <button type="button" className="web-text-button" aria-label={c(`Use previous values for set ${i + 1}`, `Utiliser les valeurs précédentes pour la série ${i + 1}`, `استخدم القيم السابقة للمجموعة ${i + 1}`)} onClick={() => p.quickLoad(index, exercise.name, i)}>{c('Use previous', 'Utiliser', 'استخدم السابق')}</button>}
+            </div>}
           </div>)}
           <button className="web-text-button" onClick={() => p.add(index)}>+ {t('tracker_add_set')}</button>
           <button className="web-remove-exercise" onClick={() => p.deleteExercise(index)}>{t('tracker_delete_exercise')}</button>
