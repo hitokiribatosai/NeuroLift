@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { playNotificationSound } from '../utils/audio';
+import { playNotificationSound, primeNotificationAudio } from '../utils/audio';
 import { safeStorage } from '../utils/storage';
 
 type ClockMode = 'stopwatch' | 'timer';
@@ -41,6 +41,11 @@ interface ClockContextType {
 const ClockContext = createContext<ClockContextType | undefined>(undefined);
 
 export const ClockProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+    useEffect(() => {
+        document.addEventListener('pointerdown', primeNotificationAudio);
+        document.addEventListener('keydown', primeNotificationAudio);
+        return () => { document.removeEventListener('pointerdown', primeNotificationAudio); document.removeEventListener('keydown', primeNotificationAudio); };
+    }, []);
     // --- WORKOUT TIMER STATE (Tracker) ---
     const [workoutStartTime, setWorkoutStartTime] = useState<number | null>(() => {
         const saved = safeStorage.getItem('neuroLift_workout_start_time');
@@ -188,7 +193,7 @@ export const ClockProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                     } else {
                         setRestRemaining(null);
                         setRestEndTime(null);
-                        playNotificationSound();
+                        playNotificationSound(true);
                     }
                 }
             }, 1000);

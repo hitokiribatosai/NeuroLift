@@ -4,9 +4,9 @@ Android-only Capacitor plugin `WorkoutNotification`; no iOS implementation or se
 
 ## User behavior
 
-- The first Start Session offers Android notification permission. Existing sessions have an Enable workout notification button.
+- The first Start Session offers Android notification permission. Optional enable/disable/retry controls are in Settings, not at the top of Workout.
 - A quiet, expandable card shows the selected exercise, muscle group and next unfinished set. Completed exercises say all sets logged.
-- Completing a set starts Android's system-rendered countdown, based on the same absolute deadline as the in-app rest timer.
+- Completing a set starts an explicit large system-rendered Chronometer in the collapsed and expanded rest card, based on the same absolute deadline as the in-app rest timer. It does not depend on JavaScript ticking.
 - Adding rest time replaces the scheduled alarm. Skipping rest cancels it. Finishing/resetting a session or turning notifications off clears the card and pending alert.
 - Tapping the card opens Workout. The setting remains on the device; it is not synced to other devices.
 - The card works across app-section navigation. Workspace/account changes reconcile it to the current draft.
@@ -14,6 +14,8 @@ Android-only Capacitor plugin `WorkoutNotification`; no iOS implementation or se
 ## Timing and privacy
 
 The ongoing channel is silent; the separate rest-complete channel can alert once when the app is in the background. Foreground rest sound remains handled by the existing app timer. There is no per-second bridge polling, foreground service, wake lock or remote push service for this feature.
+
+Version 1.3.12 uses three short beeps both in the foreground and in the bundled background alert WAV. The new `workout_rest_v2` channel migrates the sound without overriding a prior mute. Notification volume/channel settings still govern audibility. Regenerate the original audio assets with `node scripts/generate-rest-sound.mjs`.
 
 On Android 12+, exact background alarms require the user to allow **Alarms & reminders**. Without that access, the countdown still renders, but Android may delay the rest-finished alert in sleep/battery-saving modes. The app offers a settings shortcut, checks permission before scheduling and falls back safely if it is revoked. Force-stopping the app prevents scheduled alerts; restarting the device removes notifications/alarms until the app is reopened. System notification/channel settings always take precedence.
 

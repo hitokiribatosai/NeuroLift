@@ -16,7 +16,7 @@ test('schedules absolute deadline, deduplicates and extends using same ID', asyn
   const sync = createIOSRestScheduler();
   await sync(notice); await sync(notice);
   expect(LocalNotifications.schedule).toHaveBeenCalledTimes(1);
-  expect(LocalNotifications.schedule).toHaveBeenCalledWith({ notifications: [expect.objectContaining({ id: IOS_REST_ID, schedule: { at: new Date(20000) }, silent: true, sound: 'default' })] });
+  expect(LocalNotifications.schedule).toHaveBeenCalledWith({ notifications: [expect.objectContaining({ id: IOS_REST_ID, schedule: { at: new Date(20000) }, silent: true, sound: 'neurolift_rest_beeps.wav' })] });
   await sync({ ...notice, restEnd: 30000 });
   expect(LocalNotifications.schedule).toHaveBeenCalledTimes(2);
 });

@@ -8,6 +8,8 @@ import { DataManager } from '../utils/dataManager';
 import { Language } from '../types';
 import { registerOverlay } from '../utils/overlays';
 import { usesModernInterface } from '../utils/interfacePlatform';
+import { AndroidWorkoutNotificationControl } from './web/AndroidWorkoutNotificationControl';
+import { IOSRestNotificationControl } from './web/IOSRestNotificationControl';
 interface NavbarProps {
   currentView: string;
   setCurrentView: (view: string) => void;
@@ -175,6 +177,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
               setCurrentView(mode === 'workout' ? 'tracker' : 'home');
             }}>{mode === 'overview' ? (language === 'fr' ? 'Visite de l’application' : language === 'ar' ? 'جولة التطبيق' : 'App overview') : (language === 'fr' ? 'Guide de séance' : language === 'ar' ? 'دليل الحصة' : 'Workout walkthrough')}</button>)}
           </div>}
+          <AndroidWorkoutNotificationControl />
+          <IOSRestNotificationControl />
           <div className="mb-6">
             <h3 className="text-[0.625rem] font-black text-zinc-500 uppercase tracking-widest mb-3 px-2 flex items-center gap-2">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>

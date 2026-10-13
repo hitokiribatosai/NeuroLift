@@ -59,6 +59,14 @@ public class WorkoutNotificationsTest {
         assertTrue(rest.extras.getBoolean(Notification.EXTRA_SHOW_CHRONOMETER));
         assertTrue(rest.extras.getBoolean(Notification.EXTRA_CHRONOMETER_COUNT_DOWN));
         assertEquals(Notification.VISIBILITY_PRIVATE, rest.visibility);
+        assertNotNull(rest.contentView);
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            android.view.View view = rest.contentView.apply(context, null);
+            android.widget.Chronometer timer = view.findViewById(R.id.rest_countdown);
+            assertNotNull(timer);
+            assertTrue(timer.isCountDown());
+            assertTrue(Math.abs(timer.getBase() - android.os.SystemClock.elapsedRealtime() - 120000) < 5000);
+        });
         WorkoutNotifications.update(context, payload(end + 30000));
         WorkoutNotifications.restFinished(context, end); // Old alarm must not finish extended rest.
         assertEquals(end + 30000, context.getSharedPreferences("workout_notification", 0).getLong("end", 0));
@@ -72,6 +80,7 @@ public class WorkoutNotificationsTest {
         WorkoutNotifications.update(context, payload(end));
         WorkoutNotifications.restFinished(context, end);
         assertEquals("Rest finished", notification(6102).extras.getString(Notification.EXTRA_TITLE));
+        assertTrue(context.getSystemService(NotificationManager.class).getNotificationChannel("workout_rest_v2").getSound().toString().endsWith("/raw/neurolift_rest_beeps"));
         assertEquals(0, context.getSharedPreferences("workout_notification", 0).getLong("end", -1));
         WorkoutNotifications.restFinished(context, end);
         WorkoutNotifications.update(context, payload(System.currentTimeMillis() - 1));
@@ -106,9 +115,18 @@ public class WorkoutNotificationsTest {
             for (int i = 0; i < 100 && !"\"#tracker\"".equals(js(activity, "location.hash")); i++) Thread.sleep(100);
             assertEquals("\"#tracker\"", js(activity, "location.hash"));
             for (int i = 0; i < 100 && !"true".equals(js(activity, "!!document.querySelector('[aria-label=\"Done — SET 1\"]')")); i++) Thread.sleep(100);
+            js(activity, "Array.from(document.querySelectorAll('button')).find(b=>b.textContent.trim()==='View details').click()");
+            for (int i = 0; i < 100 && !"1".equals(js(activity, "document.querySelectorAll('[role=\"dialog\"]').length")); i++) Thread.sleep(100);
+            assertEquals("1", js(activity, "document.querySelectorAll('[role=\"dialog\"]').length"));
+            js(activity, "Array.from(document.querySelectorAll('[role=\"dialog\"] button')).find(b=>b.textContent.trim().toLowerCase()==='close').click()");
+            for (int i = 0; i < 100 && !"0".equals(js(activity, "document.querySelectorAll('[role=\"dialog\"]').length")); i++) Thread.sleep(100);
             js(activity, "document.querySelector('[aria-label=\"Done — SET 1\"]').click()");
             for (int i = 0; i < 100 && !notification(6101).extras.getBoolean(Notification.EXTRA_SHOW_CHRONOMETER); i++) Thread.sleep(100);
             assertTrue(notification(6101).extras.getBoolean(Notification.EXTRA_CHRONOMETER_COUNT_DOWN));
+            assertEquals("0", js(activity, "document.querySelectorAll('[aria-label=\"Workout notification\"]').length"));
+            js(activity, "window.dispatchEvent(new Event('neurolift-open-settings'))");
+            for (int i = 0; i < 100 && !"true".equals(js(activity, "document.querySelector('[aria-label=\"Workout notification\"] button')?.getAttribute('aria-pressed')==='true'")); i++) Thread.sleep(100);
+            assertEquals("true", js(activity, "document.querySelector('[aria-label=\"Workout notification\"] button')?.getAttribute('aria-pressed')==='true'"));
             js(activity, "document.querySelector('[aria-label=\"Workout notification\"] button').click()");
             for (int i = 0; i < 100 && context.getSystemService(NotificationManager.class).getActiveNotifications().length > 0; i++) Thread.sleep(100);
             assertEquals(0, context.getSystemService(NotificationManager.class).getActiveNotifications().length);

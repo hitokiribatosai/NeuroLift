@@ -48,7 +48,7 @@ export function createIOSRestScheduler() {
           title: notice.readyTitle,
           body: `${notice.title} · ${notice.body}`,
           schedule: { at: new Date(notice.restEnd) },
-          sound: 'default',
+          sound: 'neurolift_rest_beeps.wav',
           // Suppress native foreground presentation; the existing in-app timer sounds.
           silent: true,
           extra: { kind: 'workout-rest' },

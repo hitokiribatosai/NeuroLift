@@ -1305,7 +1305,10 @@ export const Tracker: React.FC = () => {
               <Modal isOpen={reviewOpen} onClose={() => setReviewOpen(false)} label={t('picker_selected_count')} sheet><div className="web-more-panel"><div className="web-section-heading"><h2>{t('picker_selected_count')}: {selectedExercises.length}</h2><button className="web-secondary" onClick={() => setReviewOpen(false)}>{t('modal_close')}</button></div><ul className="web-selection-list">{selectedExercises.map(name => <li key={name}><span>{getExerciseTranslation(name, language)}</span><button aria-label={`${t('tracker_delete_exercise')}: ${name}`} onClick={() => toggleExercise(name)}>×</button></li>)}</ul><button className="web-primary" disabled={!selectedExercises.length} onClick={() => { setReviewOpen(false); handleStartWorkout(); }}>{activeExercises.length ? t('tracker_resume') : t('tracker_start')}</button></div></Modal>
               <Modal isOpen={pickerOpen} onClose={() => setPickerOpen(false)} label={t('picker_muscle_group')} sheet><div className="web-more-panel"><h2>{t('picker_muscle_group')}</h2><ExerciseGroupSelector database={exercisesByMuscle} stacked muscle={currentPickerMuscle} subgroup={currentPickerSubgroup} onMuscleChange={value => { setPickerMuscle(value); setPickerSubgroup(Object.keys(exercisesByMuscle[value])[0]); setSearchQuery(''); }} onSubgroupChange={value => { setPickerSubgroup(value); setSearchQuery(''); }} /><button className="web-primary" onClick={() => setPickerOpen(false)}>{t('modal_close')}</button></div></Modal>
 
-              {/* Tutorial Modal */}
+            </div>
+          )}
+
+              {/* Shared by selection and the active workout. */}
               <Modal isOpen={!!tutorialExercise} onClose={() => setTutorialExercise(null)}>
                 {tutorialExercise && (
                   <div className="relative w-full rounded-[3rem] border border-zinc-800 bg-zinc-950 p-6 md:p-10 shadow-3xl overflow-hidden">
@@ -1348,9 +1351,6 @@ export const Tracker: React.FC = () => {
                   </div>
                 )}
               </Modal>
-            </div>
-          )}
-
           {activeSetInfo && (
             <Modal isOpen={true} onClose={() => setActiveSetInfo(null)}>
               <div className="relative w-full rounded-[3rem] border border-zinc-800 bg-zinc-950 p-8 shadow-3xl overflow-hidden">

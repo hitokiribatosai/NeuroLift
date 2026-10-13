@@ -2,6 +2,33 @@
 
 Last reviewed: **2026-10-13**. Read `AGENTS.md` first on recovery.
 
+### Latest implementation — workout dialogs and notification polish
+
+Owner authorized fixing the two audit findings plus notification/timer polish and pushing. This section supersedes the unresolved/local-only audit notes below.
+
+- Shared Tracker tutorial is mounted outside the selection branch: active View details now opens the demo without changing logged sets.
+- Shared Modal follows visual viewport height and offset, constraining its scrollable panel above software keyboards rather than relying only on layout viewport/dvh.
+- Removed Android/iOS notification panels from Workout. First-session permission offer remains; optional enable/disable/retry controls now live in Settings. Website does not expose unavailable native controls.
+- Android rest card has an explicit, larger RemoteViews Chronometer in collapsed/expanded notification content. Android renders ticks while the WebView sleeps; existing deadline, extension, cancellation, private visibility and alarm guards remain.
+- Foreground timer sound is three short tones, with audio context primed by user interaction. Background Android/iOS rest alerts use an original bundled three-tone WAV. Android sound uses a new immutable channel version and preserves prior mute. System volume, Focus, notification settings and battery/alarm restrictions still apply.
+
+Verification: typecheck/lint/build passed; 29 unit tests, 71 Chromium regressions and 49 mobile WebKit regressions passed. The new regressions exercise active details and visual-only keyboard shrink/offset on all platform modes. Android native build/asset checks passed; instrumentation checks cover the actual custom countdown, notification sound channel, bridge/set completion, tap routing, Settings toggle and active details (final run recorded in the session result). iOS Debug simulator build/asset checks passed; custom WAV is present in the compiled bundle, rebuilt app installed and native Settings shows Rest alerts. Browser keyboard geometry is not proof of physical-device keyboard behavior. Simulator input automation remains limited; audible native three-beep playback, physical Samsung rendering/battery behavior and physical iPhone acceptance remain owner tests. iOS still has ordinary rest-finished alerts, not a persistent countdown/Live Activity.
+
+New local test APK: `/Users/rahalabdelilah/Documents/Codex/2026-10-01/fet/outputs/NeuroLift-1.3.12-build16-android-test.apk`. iOS version 1.3.12/build 14. Native builds bundle the HTTPS preview API. Source/tests/docs are prepared for the owner-requested GitHub push; generated products and personal iOS signing overrides remain excluded. Installed phones must receive the rebuilt binary; pushing source does not update them.
+
+Final Android emulator run: **4/4 native tests passed**, including active View details, large countdown view, background sound channel, notification tap and turning the feature off from Settings. The first Settings test clicked before async permission status arrived; it now waits for the granted state.
+
+### Latest inspection — iOS simulator audit
+
+Owner requested inspecting iOS and comparing issues with Android/website. Audit of pushed baseline `8417fb7` found two unresolved issues; see `docs/IOS-AUDIT-2026-10-13.md` for reproducible steps and evidence limits. No application fix or push was authorized/performed in this audit.
+
+1. Active-workout View details opens no dialog. Confirmed manually in native iOS/local web, all browser platform modes and a temporary native Android instrumented test. Tutorial Modal is mounted only in Tracker's selection branch. Fix shared rendering before another release.
+2. iOS template dialog Save/Cancel are crowded/obscured by the software keyboard. Shared portal lacks visual-viewport sizing. Visual-only keyboard models fail across modes; layout-resize models pass. Android uses adjustResize, so an equivalent native Android keyboard defect is not established; mobile Safari remains susceptible and needs device confirmation.
+
+Positive native iOS observations: guest onboarding/selection; logging a real 20 kg × 8 set; scheduled background rest banner and Lock Screen delivery; restart preserved the workout; finishing produced 160 kg volume; Save as Template succeeded after keyboard dismissal. A sample workout and Audit template remain locally. Original Medium text size restored. Native swipe automation and notification tap routing remain inconclusive; don't misreport them as passes or app failures.
+
+Current inspection results: existing suites 65 Chromium + 43 WebKit passes; 6 added session passes + 6 intentional details failures; keyboard model 6 passes + 6 intentional visual-only failures; one native Android diagnostic failure (expected dialog 1, actual 0). Temporary test source removed after checking; generated diagnostics retained under untracked `work/`. This handover/audit documentation is local pending a later requested push.
+
 ### GitHub synchronization — 2026-10-13
 
 Owner requested pushing all recent application work. The synchronization commit includes the gym-session fixes, Android notification plugin/tests, iOS stage-one rest alerts, Android Back fix, reorder feedback, cleaned dialogs, documentation and native version numbers (Android 1.3.11 / 15; iOS 1.3.11 / 13). Historical “local/unpushed” notes below describe the state before this commit; these source files are now included in the handover commit. Confirm successful publication from remote branch equality and the session's push result.

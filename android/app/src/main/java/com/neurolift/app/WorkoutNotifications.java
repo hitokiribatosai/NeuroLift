@@ -9,6 +9,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
+import android.os.SystemClock;
+import android.media.AudioAttributes;
+import android.net.Uri;
+import android.widget.RemoteViews;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import org.json.JSONObject;
@@ -16,7 +20,8 @@ import org.json.JSONObject;
 final class WorkoutNotifications {
     static boolean foreground = false;
     private static final int WORKOUT = 6101, REST = 6102;
-    private static final String ONGOING = "workout_session_v1", ALERT = "workout_rest_v1";
+    private static final String ONGOING = "workout_session_v1", ALERT = "workout_rest_v2";
+    private static Uri sound(Context c) { return Uri.parse("android.resource://" + c.getPackageName() + "/raw/neurolift_rest_beeps"); }
     private static SharedPreferences prefs(Context c) { return c.getSharedPreferences("workout_notification", Context.MODE_PRIVATE); }
     private static AlarmManager alarms(Context c) { return (AlarmManager)c.getSystemService(Context.ALARM_SERVICE); }
     private static PendingIntent alarmIntent(Context c, long end) {
@@ -31,7 +36,14 @@ final class WorkoutNotifications {
         if (Build.VERSION.SDK_INT >= 26) {
             NotificationManager manager = c.getSystemService(NotificationManager.class);
             manager.createNotificationChannel(new NotificationChannel(ONGOING, "Workout session", NotificationManager.IMPORTANCE_LOW));
-            manager.createNotificationChannel(new NotificationChannel(ALERT, "Rest finished", NotificationManager.IMPORTANCE_DEFAULT));
+            // Channel sounds are immutable. Migrate without overriding an existing mute.
+            NotificationChannel old = manager.getNotificationChannel("workout_rest_v1");
+            NotificationChannel alert = new NotificationChannel(ALERT, "Rest finished",
+                old == null ? NotificationManager.IMPORTANCE_DEFAULT : old.getImportance());
+            alert.setSound(old != null && old.getSound() == null ? null : sound(c),
+                new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_NOTIFICATION).build());
+            alert.enableVibration(old == null || old.shouldVibrate());
+            manager.createNotificationChannel(alert);
         }
     }
     private static NotificationCompat.Builder builder(Context c, String channel) {
@@ -52,7 +64,17 @@ final class WorkoutNotifications {
             .setContentText(data.optString("body")).setStyle(new NotificationCompat.BigTextStyle().bigText(data.optString("body")))
             .setOngoing(true).setOnlyAlertOnce(true).setSilent(true).setShowWhen(resting)
             .setCategory(NotificationCompat.CATEGORY_PROGRESS);
-        if (resting) b.setWhen(end).setUsesChronometer(true).setChronometerCountDown(true);
+        if (resting) {
+            b.setWhen(end).setUsesChronometer(true).setChronometerCountDown(true);
+            RemoteViews view = new RemoteViews(c.getPackageName(), R.layout.workout_rest_notification);
+            view.setTextViewText(R.id.rest_title, title);
+            view.setTextViewText(R.id.rest_body, data.optString("body"));
+            // Android renders the ticking clock even with the WebView suspended.
+            view.setChronometer(R.id.rest_countdown, SystemClock.elapsedRealtime() + end - System.currentTimeMillis(), null, true);
+            view.setBoolean(R.id.rest_countdown, "setCountDown", true);
+            b.setStyle(new NotificationCompat.DecoratedCustomViewStyle())
+                .setCustomContentView(view).setCustomBigContentView(view);
+        }
         NotificationManagerCompat.from(c).notify(WORKOUT, b.build());
     }
     static synchronized void update(Context c, JSONObject data) throws Exception {
@@ -88,7 +110,8 @@ final class WorkoutNotifications {
             show(c, data);
             if (!foreground && NotificationManagerCompat.from(c).areNotificationsEnabled()) {
                 Notification notification = builder(c, ALERT).setContentTitle(data.optString("readyTitle"))
-                    .setContentText(data.optString("body")).setAutoCancel(true).setDefaults(Notification.DEFAULT_ALL).build();
+                    .setContentText(data.optString("body")).setAutoCancel(true)
+                    .setSound(sound(c)).setDefaults(Notification.DEFAULT_VIBRATE).build();
                 NotificationManagerCompat.from(c).notify(REST, notification);
             }
         } catch (Exception ignored) { clear(c); }

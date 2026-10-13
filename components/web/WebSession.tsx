@@ -1,6 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AndroidWorkoutNotificationControl } from './AndroidWorkoutNotificationControl';
-import { IOSRestNotificationControl } from './IOSRestNotificationControl';
 import { hasSetEffort } from '../../utils/workoutValidation';
 import { ActiveExercise, ExerciseHistory } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -65,8 +63,6 @@ export function WebSession(p: Props) {
     <button className="web-secondary" disabled={index === p.exercises.length - 1} onClick={() => switchExercise(index + 1)}>{c('Next', 'Suivant', 'التالي')}</button>
   </div>;
   return <section className="web-session" ref={sessionRef}>
-    <AndroidWorkoutNotificationControl />
-    <IOSRestNotificationControl />
     <header className="web-session-header"><div><p className="web-eyebrow">{c('SESSION IN PROGRESS', 'SÉANCE EN COURS', 'الحصة جارية')}</p><h1>{t('nav_workout')}</h1><p role="status">{completed} / {total} {c('sets completed', 'séries terminées', 'مجموعات مكتملة')}</p></div><div className="web-session-clock"><strong>{p.duration}</strong><button className="web-secondary" onClick={p.pause}>{p.running ? c('Pause timer', 'Pause chrono', 'أوقف المؤقت مؤقتاً') : c('Resume timer', 'Reprendre le chrono', 'استأنف المؤقت')}</button></div></header>
     <progress max={Math.max(total, 1)} value={completed} aria-label={c('Session progress', 'Progression de la séance', 'تقدم الحصة')} />
     <div className="web-session-layout">
