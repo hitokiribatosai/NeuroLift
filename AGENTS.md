@@ -1,5 +1,9 @@
 # NeuroLift continuity instructions
 
+## Working checkout
+
+The owner designated `/Users/rahalabdelilah/Desktop/NeuroLift` as the active project location on this Mac. Use this checkout for development and builds; older copies under Documents are historical. On another machine, use the newly cloned checkout rather than assuming this absolute path exists.
+
 ## Start every session
 
 1. Read `PROJECT_HANDOVER.md` before development.
@@ -13,7 +17,19 @@
 - Keep it navigable and project-specific. Distinguish implementation, tests, device validation, commits, pushes and deployments. Never invent results or completion.
 - Never record passwords, tokens, API keys, database connection strings, certificates or other private credentials. Public service URLs and configuration variable names are sufficient.
 - Preserve user changes; avoid unnecessary edits to working code. Do not stage everything blindly: `work/` can contain generated native builds and dependencies.
-- Documentation updates do not by themselves authorize publishing application changes. Follow the user's requested scope.
+- Local builds go in the git-ignored `builds/android/` and `builds/ios/` folders. Keep only the latest build per platform: after producing a new build, delete the previous one and update the build paths/hash in `PROJECT_HANDOVER.md`.
+- Follow the user's requested scope and the standing publishing instruction below; do not include unrelated changes merely because documentation changed.
+
+## Standing commit, push and checkpoint policy
+
+The owner requested on 2026-10-13: commit and push every completed change while leaving a recovery stamp. After each meaningful, completed and appropriately verified change within the requested work:
+
+1. Update the handover and review the diff; stage appropriate files explicitly. Exclude secrets, generated builds, unrelated edits and personal signing configuration.
+2. Commit the change on the intended branch. Create a unique annotated Git tag such as `checkpoint-YYYY-MM-DD-short-description` for that completed state. Never overwrite an existing checkpoint.
+3. Push the intended branch and that new tag to the configured remote, then verify both remote references. Do not push all branches/tags: local backup branches may contain obsolete credentials.
+4. Report the commit, checkpoint tag and actual push result. If blocked, preserve the local commit/tag and explain the blocker; never claim synchronization without verification or force-push to bypass divergence.
+
+This is standing authorization; no repeated confirmation is needed for in-scope commits and pushes. Later user restrictions override it. Read-only inspections and incomplete edits do not require empty or per-keystroke commits. Git checkpoints preserve committed source, not ignored APKs or secrets.
 
 ## When the user says “Prepare handover”
 

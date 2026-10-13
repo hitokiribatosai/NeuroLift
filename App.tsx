@@ -4,11 +4,14 @@ import { useIOSRestNotification } from './hooks/useIOSRestNotification';
 import { Navbar } from './components/Navbar';
 import { Home } from './components/Home';
 import { Tracker } from './components/features/Tracker';
-import { ProgramPlanner } from './components/features/ProgramPlanner';
-import { Nutrition } from './components/features/Nutrition';
-import { Journal } from './components/features/Journal';
-import { Clock } from './components/features/Clock';
-import { Privacy } from './components/features/Privacy';
+// Secondary destinations are split into their own chunks to keep the startup
+// bundle smaller. The service worker precaches every built file, and native
+// builds bundle them locally, so these remain available offline.
+const ProgramPlanner = React.lazy(() => import('./components/features/ProgramPlanner').then(m => ({ default: m.ProgramPlanner })));
+const Nutrition = React.lazy(() => import('./components/features/Nutrition').then(m => ({ default: m.Nutrition })));
+const Journal = React.lazy(() => import('./components/features/Journal').then(m => ({ default: m.Journal })));
+const Clock = React.lazy(() => import('./components/features/Clock').then(m => ({ default: m.Clock })));
+const Privacy = React.lazy(() => import('./components/features/Privacy').then(m => ({ default: m.Privacy })));
 import { LanguageProvider } from './contexts/LanguageContext';
 import { ClockProvider } from './contexts/ClockContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
@@ -19,7 +22,7 @@ import { OfflineIndicator } from './components/ui/OfflineIndicator';
 import Onboarding from './components/features/Onboarding';
 import { GoalSetting } from './components/features/GoalSetting';
 import { safeStorage } from './utils/storage';
-import { Account } from './components/features/Account';
+const Account = React.lazy(() => import('./components/features/Account').then(m => ({ default: m.Account })));
 import { startSync } from './utils/sync';
 import { SyncIndicator } from './components/ui/SyncIndicator';
 import { PwaStatus } from './components/ui/PwaStatus';
@@ -124,8 +127,13 @@ function AppInner() {
         default: return <Home setCurrentView={handleSetView} />;
       }
     })();
+    const content = (
+      <React.Suspense fallback={<div className="min-h-[50vh]" aria-busy="true" />}>
+        {viewContent}
+      </React.Suspense>
+    );
 
-    if (isWebsite) return <div key={currentView} className="web-view">{viewContent}</div>;
+    if (isWebsite) return <div key={currentView} className="web-view">{content}</div>;
     return (
       <motion.div
         key={currentView}
@@ -135,7 +143,7 @@ function AppInner() {
         transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
         className="w-full h-full"
       >
-        {viewContent}
+        {content}
       </motion.div>
     );
   };

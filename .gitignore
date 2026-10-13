@@ -27,6 +27,9 @@ test-results/
 dist
 dist-ssr
 *.local
+# Local native builds (keep only the latest; see PROJECT_HANDOVER.md) and generated work products
+builds/
+work/
 
 # Editor directories and files
 .vscode/*

@@ -2,8 +2,13 @@
 
 Website: https://myneurolift.vercel.app
 
-Nothing has been provisioned or connected yet. The repository's Render blueprint
-now includes this website's exact frontend URL and browser/native CORS origins.
+**Status 2026-10-13:** provisioned. Preview API: https://neurolift-api-preview.onrender.com/api
+(Vercel proxies `/api/*` to it via `vercel.json`). Read-only checks on 2026-10-13:
+website 200 serving the `ea85753` bundle, `/api/health/` ok (~42 s cold start),
+unauthenticated `/api/auth/me/` and `/api/snapshot/` return 401, CORS allows
+`capacitor://localhost`. Signup/email/sync were not exercised by that check.
+The original setup instructions below are kept for re-provisioning. The Render blueprint
+includes this website's exact frontend URL and browser/native CORS origins.
 Do not add card details, upgrade plans, or accept paid resources for this preview.
 Stop if a provider requires billing and review an alternative.
 
@@ -48,8 +53,9 @@ separately reviewed provider that permits your sender arrangement.
 - Test with a disposable account matching the Resend account address: signup,
   inbox verification, web and Android login, two-device sync, reset, logout, deletion.
 
-Render Free sleeps after inactivity, so cold starts can be slow. The current
-client's 20-second request timeout can expire during wake-up; wait and retry.
+Render Free sleeps after inactivity, so cold starts can be slow (~42 s observed
+2026-10-13). The client's request timeout is 90 seconds (`utils/authService.ts`);
+if wake-up still exceeds it, wait and retry.
 Do not blindly auto-retry mutating account requests. No production uptime or
 durability guarantee is claimed. Stay within each Free plan's quotas.
 

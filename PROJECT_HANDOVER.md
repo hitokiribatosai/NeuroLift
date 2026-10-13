@@ -2,6 +2,53 @@
 
 Last reviewed: **2026-10-13**. Read `AGENTS.md` first on recovery.
 
+### Standing publishing policy and Build 17 source checkpoint
+
+The owner now requests a commit, push and recovery stamp after each meaningful completed, verified change. `AGENTS.md` records this standing workflow. This synchronization's annotated source checkpoint is `checkpoint-2026-10-13-android-build17`: lazy-loaded destinations, Android 1.3.13/build 17 versioning, build/lint exclusions, updated platform/preview documentation and continuity instructions. Verify the remote branch and tag when recovering; a local tag alone is not proof of a successful push. Publish only the intended branch and new checkpoint, never the local backup branch described below. APKs remain local ignored artifacts, not files in GitHub source history.
+
+### Android Build 17 — 2026-10-13
+
+The owner confirmed `/Users/rahalabdelilah/Desktop/NeuroLift` as the permanent working checkout on this Mac; AGENTS.md now records this. Rebuilt Android from this checkout, including the React.lazy/Suspense bundle changes in App.tsx included in the source checkpoint above. Android is now **1.3.13 / versionCode 17**. iOS remains **1.3.12 / build 14** and was not rebuilt in this session.
+
+Build 17 includes all six split destinations (Account, Clock, Journal, Nutrition, Privacy, ProgramPlanner). Main JS bundle is 536.87 kB (158.87 kB gzip), and all 338 packaged web files were compared byte-for-byte with the freshly synchronized Android assets. HTTPS preview API and release asset checks passed. APK signing verification passed and its certificate matches Build 16, allowing an in-place update.
+
+Fresh verification in the Desktop checkout: TypeScript, lint, 29 unit tests, 71 Chromium browser tests on a dedicated preview port, Android compilation, and all 4 native instrumentation tests on API 36 passed. Native tests cover the existing workout/notification bridge; physical Samsung acceptance and audible playback are still owner checks. Fixed the tooling exclusion for `builds/**`: lint had been scanning the copied, compiled iOS app. First native attempt lacked synchronized Capacitor files; the next compiled successfully but had no emulator connected. After asset preparation and starting the existing emulator, the final native run passed.
+
+Latest APK: `builds/android/NeuroLift-1.3.13-build17-android-test.apk`; SHA-256 `7c344e492e5cbfa8b6741db391ca215e695e71cd73d1a3fc67274bc16123e883`. Previous Build 16 was moved out of the builds folder to temporary recovery storage `/private/tmp/neurolift-build16.6ajEYe/NeuroLift-1.3.12-build16-android-test.apk`; temporary storage is not a durable backup. Only Build 17 remains in `builds/android/`.
+
+The rebuild initially left its source/documentation changes uncommitted; the owner's subsequent standing publishing request includes them in the source checkpoint above. The older evening-session statement below that no new APK includes lazy loading is historical and superseded by this section.
+
+### Session — 2026-10-13 evening (Antigravity IDE, new account)
+
+**Checkout consolidation.** Working checkout is now `/Users/rahalabdelilah/Desktop/NeuroLift` (IDE workspace). It was stale (2 local iOS commits + 1 uncommitted `Package.swift` edit, 23 commits behind). Preserved as branch `backup/desktop-local-2026-10-13` (`5559d9d`) and `git stash` entry `desktop-local-Package.swift-2026-10-13`; `main` was then reset to `origin/main` (`ea85753`). Those old iOS overscroll/Dynamic-Island changes predate and are superseded by later iOS work; review before reusing. The legacy root `.env` (old Firebase `VITE_*` names, no longer used; removed upstream in `f9a0e45`) exists only in that backup branch. Other copies left untouched: `~/Documents/NeuroLift` (stale at `620816e`, 9 uncommitted files) and the Codex checkout `~/Documents/Codex/2026-10-01/fet/work/NeuroLift` (at `ea85753` with this file's recheck note below and personal iOS signing overrides; its recheck note was carried over here). A local `backend/.env` was created from `.env.example` for tests (gitignored).
+
+**Live preview check (read-only, no accounts created, no email sent).** Website https://myneurolift.vercel.app returns 200 and serves the exact `ea85753` bundle (`index-BOxbo6fy.js`, matching a local build). `/api/health/` via Vercel proxy → `{"status":"ok"}` after a ~42 s Render cold start; direct Render health 200. Unauthenticated `/api/auth/me/` and `/api/snapshot/` → 401. CORS allows `capacitor://localhost`. Client timeout is 90 s (`utils/authService.ts`), so the observed cold start is within it. Signup, verification/reset email delivery and two-device sync were **not** exercised live — owner test with a disposable account matching the Resend account address.
+
+**Implemented (local, not committed/pushed at time of writing).**
+- `App.tsx`: `React.lazy` + `Suspense` for ProgramPlanner, Nutrition, Journal, Clock, Account, Privacy (Home and Tracker stay eager). Main chunk 606 kB → 537 kB (gzip 176 → 159 kB). Service worker precache 328 → 334 files, so split chunks remain offline; native builds bundle them locally. Still above Vite's 500 kB advisory: remaining weight is Tracker (~118 kB source), `exerciseMedia.json`, `translations.ts` — core, not split.
+- Stale docs corrected selectively: `docs/PLATFORM-LAYOUT.md` (modern UI now includes iOS; tag published; Android-only Back dispatch), `docs/PREVIEW-SETUP.md` (provisioned status, 90 s timeout), `docs/MOBILE.md` (versions 1.3.12 / 16 Android, 14 iOS).
+
+**Verification this session (Desktop checkout, Node 24.17, Python 3.14.6).** `npm run check` passed (typecheck, lint, 29 unit tests, build) before and after the change; `npm run test:browser` 71/71 Chromium and WebKit config 49/49 passed before and after; `backend/manage.py test api` 8/8 passed. Not done: Android/iOS native rebuild, instrumentation or asset verification for the lazy-loading change; no new APK; physical devices untested.
+
+**Next steps.** (1) Owner physical tests of build16 (Samsung countdown/sound/battery, iPhone keyboard/alert tap). (2) Owner live account test: signup → verification email → web + Android login → two-device sync/conflict → reset → deletion. (3) Rebuild native assets/APK including lazy-loading before the next device build. (4) iOS Live Activity only after design approval. (5) Further bundle work optional (e.g. lazy-load `exerciseMedia.json`), low priority.
+
+### Local builds — location and retention policy (2026-10-13)
+
+All local builds now live in the git-ignored `builds/` folder of the working checkout. **Keep only the latest build per platform:** when a new build is produced, delete the previous one in the same folder and update this section. Builds are not in Git or a GitHub Release; transfer them separately if migrating machines.
+
+| Platform | Current build | Path | Notes |
+| --- | --- | --- | --- |
+| Android | 1.3.13 / 17 (debug-signed test APK, HTTPS preview API) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/android/NeuroLift-1.3.13-build17-android-test.apk` | SHA-256 `7c344e492e5cbfa8b6741db391ca215e695e71cd73d1a3fc67274bc16123e883`. Source checkpoint `checkpoint-2026-10-13-android-build17`; includes lazy loading. |
+| iOS | 1.3.12 / 14 (unsigned Debug **simulator** app) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/ios/NeuroLift-1.3.12-build14-ios-simulator.app` | Simulator only; not installable on a physical iPhone. Use Xcode with your own team for devices. |
+
+Cleanup done 2026-10-13: deleted 13 older APKs from the old Codex `outputs/` folder and the Xcode derived-data folders `work/ios-rest-build` and `work/ios-tour-build` (~1.5 GB). APK paths in older sections below are historical and those files no longer exist. Use an Xcode derived-data path under `builds/` (or the default DerivedData) for future iOS builds, then copy only the final `.app` into `builds/ios/`.
+
+### Verification recheck — 2026-10-13
+
+Rechecked committed fix `ea85753` (previous turn verified pushed to GitHub). No new application changes were needed by the checks run. Fresh results: TypeScript passed; 29 unit tests passed; 17 Chromium dialog/workout regressions passed; 10 WebKit dialog/phone regressions passed; all 4 Android native instrumentation tests passed on API 36. Native asset checks passed for both platforms. The supplied 1.3.12/build16 APK exactly matches the tested APK (SHA-256 `e3e32266832c500526ce266af1e41f7b1295065136a9f5973c28321cabb285d4`).
+
+Native iOS launch/navigation and Rest alerts in Settings were visually rechecked. Automated simulator drag/key navigation did not reliably reach the template form, so this recheck does not certify the native software-keyboard fix; the visual-viewport regression passed in WebKit. Physical Samsung countdown presentation, audible three-tone playback and physical iPhone keyboard acceptance remain unverified. Temporary muscle-selection changes were restored. This recheck note is local; no new application commit/push was made.
+
 ### Latest implementation — workout dialogs and notification polish
 
 Owner authorized fixing the two audit findings plus notification/timer polish and pushing. This section supersedes the unresolved/local-only audit notes below.
@@ -14,7 +61,7 @@ Owner authorized fixing the two audit findings plus notification/timer polish an
 
 Verification: typecheck/lint/build passed; 29 unit tests, 71 Chromium regressions and 49 mobile WebKit regressions passed. The new regressions exercise active details and visual-only keyboard shrink/offset on all platform modes. Android native build/asset checks passed; instrumentation checks cover the actual custom countdown, notification sound channel, bridge/set completion, tap routing, Settings toggle and active details (final run recorded in the session result). iOS Debug simulator build/asset checks passed; custom WAV is present in the compiled bundle, rebuilt app installed and native Settings shows Rest alerts. Browser keyboard geometry is not proof of physical-device keyboard behavior. Simulator input automation remains limited; audible native three-beep playback, physical Samsung rendering/battery behavior and physical iPhone acceptance remain owner tests. iOS still has ordinary rest-finished alerts, not a persistent countdown/Live Activity.
 
-New local test APK: `/Users/rahalabdelilah/Documents/Codex/2026-10-01/fet/outputs/NeuroLift-1.3.12-build16-android-test.apk`. iOS version 1.3.12/build 14. Native builds bundle the HTTPS preview API. Source/tests/docs are prepared for the owner-requested GitHub push; generated products and personal iOS signing overrides remain excluded. Installed phones must receive the rebuilt binary; pushing source does not update them.
+New local test APK (moved 2026-10-13; see Local builds section): `/Users/rahalabdelilah/Desktop/NeuroLift/builds/android/NeuroLift-1.3.12-build16-android-test.apk`. iOS version 1.3.12/build 14. Native builds bundle the HTTPS preview API. Source/tests/docs are prepared for the owner-requested GitHub push; generated products and personal iOS signing overrides remain excluded. Installed phones must receive the rebuilt binary; pushing source does not update them.
 
 Final Android emulator run: **4/4 native tests passed**, including active View details, large countdown view, background sound channel, notification tap and turning the feature off from Settings. The first Settings test clicked before async permission status arrived; it now waits for the granted state.
 
@@ -33,7 +80,7 @@ Current inspection results: existing suites 65 Chromium + 43 WebKit passes; 6 ad
 
 Owner requested pushing all recent application work. The synchronization commit includes the gym-session fixes, Android notification plugin/tests, iOS stage-one rest alerts, Android Back fix, reorder feedback, cleaned dialogs, documentation and native version numbers (Android 1.3.11 / 15; iOS 1.3.11 / 13). Historical “local/unpushed” notes below describe the state before this commit; these source files are now included in the handover commit. Confirm successful publication from remote branch equality and the session's push result.
 
-Excluded: generated `work/` products and the owner's local iOS Debug signing overrides (personal development team and Debug bundle ID). These overrides remain in the original checkout; GitHub uses the existing generic `com.neurolift.app` identity with no personal team. On another Mac, select your own team for physical-device builds. Existing APKs remain in the machine's `outputs/` directory, not in Git or a GitHub Release; rebuild from source or transfer the APK separately.
+Excluded: generated `work/` products and the owner's local iOS Debug signing overrides (personal development team and Debug bundle ID). These overrides remain in the original checkout; GitHub uses the existing generic `com.neurolift.app` identity with no personal team. On another Mac, select your own team for physical-device builds. Existing APKs remain in the machine's `outputs/` directory, not in Git or a GitHub Release; rebuild from source or transfer the APK separately. (Superseded 2026-10-13: only the latest APK is kept, in `builds/android/`.)
 
 Verification immediately before this synchronization is recorded in the dialog section below (27 unit tests, 19 related browser regressions, visual checks, Android/iOS compile and asset passes). No new source changes were made during the synchronization. Remaining priorities: physical Samsung acceptance, actual iOS background-alert/tap testing, stage-two Live Activity, and live service/email/CI verification.
 
@@ -125,10 +172,9 @@ At the initial documentation-only setup, these were uncommitted. The 2026-10-13 
 3. `ios/App/App.xcodeproj/project.pbxproj` has pre-existing local signing/Xcode formatting and version changes (**1.3.7 / build 11**, personal development team/debug bundle). Preserve and review separately; do not blindly publish personal signing configuration. No iOS notification feature added.
 4. Untracked `work/` contains generated native build products/dependency checkouts. **Do not `git add .` or publish it.**
 
-Current-machine paths (not portable):
-- Checkout: `/Users/rahalabdelilah/Documents/Codex/2026-10-01/fet/work/NeuroLift`
-- APK: `/Users/rahalabdelilah/Documents/Codex/2026-10-01/fet/outputs/NeuroLift-1.3.8-build12-android-test.apk`
-- APK SHA-256: `47875c677c6d6f682e5e9ac4b13b692d027d8b2d15b5db09deb31a037bdf0cfb`
+Current-machine paths (not portable; updated 2026-10-13):
+- Checkout: `/Users/rahalabdelilah/Desktop/NeuroLift` (previous Codex checkout `/Users/rahalabdelilah/Documents/Codex/2026-10-01/fet/work/NeuroLift` is no longer the working copy)
+- Builds: see **Local builds** section near the top (`builds/android/`, `builds/ios/`). The build12 APK previously listed here was deleted.
 
 ## 6. Verification ledger
 
@@ -203,7 +249,7 @@ Config names only: frontend `VITE_API_URL` is public; backend `DJANGO_SECRET_KEY
 ## 9. Prioritized next steps
 
 1. Before account migration, verify current remote commit IDs and read the synchronization notes; preserve local APKs and configure signing on the next Mac. Use “Prepare handover” after subsequent work. Keep generated builds and credentials out of Git.
-2. Owner tests build12 on Samsung: notification permission denied/allowed, background/lock screen countdown, rest extension/skip/end/reset, tap navigation and battery saver; reproduce and fix actual failures.
+2. Owner tests Build 17 on Samsung: notification permission denied/allowed, background/lock screen countdown, rest extension/skip/end/reset, tap navigation, offline secondary pages and battery saver; reproduce and fix actual failures.
 3. Verify the three gym fixes on physical device and preserve workout history/templates across upgrade; export a backup first. Don't uninstall to troubleshoot casually.
 4. Rebuild/test iOS shared fixes when requested; add an iOS live-workout notification only after separate design/authorization. No Dynamic Island capability is currently claimed.
 5. Recheck live website/backend, verification/reset and two-device sync/conflict/offline recovery. Resolve verified sender/domain and production gates before public launch.

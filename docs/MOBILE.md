@@ -57,7 +57,10 @@ Choose your Apple development team in Xcode and manage distribution signing
 through your Apple account. The repository does not include signing credentials.
 Existing app ID com.neurolift.app is preserved; confirm ownership before launch.
 
-App version is 1.3.0/build 4 on both platforms. Increase build numbers for uploads.
+App version (2026-10-13): Android 1.3.13 / versionCode 17 (`android/app/build.gradle`),
+iOS 1.3.12 / build 14 (`project.pbxproj`). Increase build numbers for uploads.
+Workout notifications: see `docs/android-workout-notifications.md` and
+`docs/IOS-REST-NOTIFICATIONS.md`.
 The privacy manifest includes filesystem timestamp access for backup export.
 Review all declared data types and store disclosures against the final behavior.
 

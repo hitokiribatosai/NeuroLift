@@ -2,7 +2,7 @@
 
 ## Scope and rollback
 
-The modern interface is enabled for web and Android only. Native iOS retains its legacy interface. The local annotated tag `layout-before-platform-refinements-2026-10-03` points to `2bcb593`, the pre-refinement baseline. This tag and these changes must not be described as published until a GitHub push is verified.
+The modern interface is enabled for web, Android and native iOS (`utils/interfacePlatform.ts`, updated 2026-10-13; an earlier revision of this guide kept iOS on the legacy interface). The annotated tag `layout-before-platform-refinements-2026-10-03` points to `2bcb593`, the pre-refinement baseline, and is published on GitHub.
 
 ## Layout rules
 
@@ -22,7 +22,7 @@ Width, not user-agent detection, decides layout. Android platform detection is u
 - Existing saved workout sets, selections and clock state remain authoritative. Changing tabs does not rewind the workout phase.
 - A Resume workout strip appears outside an active workout.
 - Modern Android has one hardware Back owner. It dismisses the top overlay, traverses in-app navigation, returns to Home, then minimizes the app at the root. It never discards a session.
-- Native iOS retains the existing Tracker phase-navigation behavior.
+- The Android-only Back dispatch (`neurolift-screen-back`) lets Tracker step back through active → selection → setup before destination history. Website browser Back and native iOS navigation do not use this dispatch.
 - The visual viewport and input focus detect keyboard opening. Phone tabs temporarily hide, fixed action bars return to document flow, and the edited input remains reachable.
 - Modern page transitions avoid transformed ancestors, which otherwise trap fixed-position action bars inside scrolling content.
 
@@ -30,6 +30,6 @@ Width, not user-agent detection, decides layout. Android platform detection is u
 
 Run `npm run check` and `npm run test:browser`. If portable browsers are not installed, use `npx playwright install chromium webkit`; `PLAYWRIGHT_CHANNEL=chrome npm run test:browser` uses an installed Chrome. Run `npx playwright test --config playwright.webkit.config.ts` for WebKit with iPhone browser settings.
 
-The regression suite covers five viewport widths, persistent tabs, saved filters and scroll, browser history, selection review, workout resumption, RTL/large text, PWA offline behavior, and unchanged native-iOS interface selection. Native emulator checks additionally cover hardware Back and the real soft keyboard.
+The regression suite covers five viewport widths, persistent tabs, saved filters and scroll, browser history, selection review, workout resumption, RTL/large text, PWA offline behavior, and native interface selection. Native emulator checks additionally cover hardware Back and the real soft keyboard.
 
-Physical iPhone/Safari and physical Android acceptance testing remain recommended before release. WebKit device emulation is not a physical-device test. The Android APK uses the existing local Django debug endpoint and is not a signed store release.
+Physical iPhone/Safari and physical Android acceptance testing remain recommended before release. WebKit device emulation is not a physical-device test. Test APKs/iOS builds now bundle the HTTPS preview API (see `PROJECT_HANDOVER.md`); they are debug-signed and not store releases.
