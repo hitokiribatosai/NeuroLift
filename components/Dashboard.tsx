@@ -438,7 +438,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentView }) => {
                 {/* Info Modals */}
                 <Modal isOpen={showStreakInfo} onClose={() => setShowStreakInfo(false)}>
                     <div className="p-10 bg-zinc-950 border border-zinc-900 rounded-[3rem] text-center space-y-6 relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-500 to-rose-500"></div>
                         <div className="w-16 h-16 bg-orange-500/10 rounded-full flex items-center justify-center mx-auto text-orange-500 mb-4">
                             <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1014 0c0-1.187-.268-2.312-.733-3.32a1 1 0 00-.671-.563 1 1 0 00-1.207.306 4.415 4.415 0 01-.584.548c-.015.011-.03.023-.044.034a10.02 10.02 0 00-1.39-2.912c-.272-.397-.599-.79-.944-1.14a1 1 0 00-.032-1.402z" clipRule="evenodd" />

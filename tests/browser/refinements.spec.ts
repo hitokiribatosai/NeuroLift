@@ -3,6 +3,90 @@ const base = { neuroLift_hasCompletedOnboarding: 'true', neuroLift_userGoal: 'st
 const exercises = [{ name: 'Incline Dumbbell Press', sets: [{ id: 's1', weight: 0, reps: 0, completed: false }, { id: 's2', weight: 0, reps: 0, completed: false }] }];
 const active = { ...base, neuroLift_tracker_phase: 'active', neuroLift_tracker_selected_exercises: JSON.stringify(exercises.map(e => e.name)), neuroLift_tracker_muscles: '["Chest"]', neuroLift_tracker_active_exercises: JSON.stringify(exercises) };
 test.use({ serviceWorkers: 'block' });
+test('Android screen back returns through workout selection without discarding sets', async ({ page }) => {
+  await page.addInitScript(data => {
+    Object.assign(window, { androidBridge: {} });
+    localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({ version: 0, dirty: false, data }));
+  }, active);
+  await page.goto('/#tracker');
+  await expect(page.getByLabel('REPS — SET 1', { exact: true })).toBeVisible();
+  await page.getByLabel('REPS — SET 1', { exact: true }).fill('8');
+  await page.getByRole('button', { name: 'Done — SET 1', exact: true }).click();
+  expect(await page.evaluate(() => window.dispatchEvent(new Event('neurolift-screen-back', { cancelable: true })))).toBe(false);
+  await expect(page.locator('.web-workout-picker')).toBeVisible();
+  expect(new URL(page.url()).hash).toBe('#tracker');
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('neuroLift_workspace_guest')!).data);
+  expect(JSON.parse(saved.neuroLift_tracker_active_exercises)[0].sets[0]).toMatchObject({ reps: 8, completed: true });
+  expect(await page.evaluate(() => window.dispatchEvent(new Event('neurolift-screen-back', { cancelable: true })))).toBe(false);
+  await expect(page.getByRole('button', { name: /Select Exercises/ })).toBeVisible();
+  expect(await page.evaluate(() => window.dispatchEvent(new Event('neurolift-screen-back', { cancelable: true })))).toBe(true);
+});
+test('old completed-session drafts are discarded on upgrade', async ({ page }) => {
+  await page.addInitScript(data => localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({ version: 0, dirty: false, data })), {
+    ...active, neuroLift_tracker_phase: 'summary', ui_picker_search: '"Back"', ui_picker_muscle: '"Back"',
+  });
+  await page.goto('/#tracker');
+  await expect(page.getByRole('button', { name: 'Chest', exact: true })).toHaveAttribute('aria-pressed', 'false');
+  const data = await page.evaluate(() => JSON.parse(localStorage.getItem('neuroLift_workspace_guest')!).data);
+  expect(JSON.parse(data.neuroLift_tracker_active_exercises)).toEqual([]);
+  expect(JSON.parse(data.ui_picker_search)).toBe('');
+});
+test('finish then reopen tomorrow starts a clean muscle selection without losing history', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(data => {
+    if (!localStorage.getItem('neuroLift_workspace_guest')) localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({ version: 0, dirty: false, data }));
+  }, { ...active, ui_picker_search: '"Pull"', ui_picker_muscle: '"Back"' });
+  await page.goto('/#tracker');
+  await page.getByLabel('REPS — SET 1', { exact: true }).fill('8');
+  await page.getByRole('button', { name: 'Done — SET 1', exact: true }).click();
+  await page.getByRole('button', { name: /Finish Workout/ }).click();
+  await page.getByRole('button', { name: 'Finish Workout', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Start New Workout', exact: true })).toBeVisible();
+  // Do not press Start New Workout: this is the real-world path the weekly test missed.
+  await page.reload();
+  await page.getByRole('button', { name: 'Chest', exact: true }).click();
+  await page.getByRole('button', { name: /Select Exercises/ }).click();
+  await expect(page.locator('.web-workout-picker input').first()).toHaveValue('');
+  await expect(page.locator('.web-mobile-filters')).toContainText('Chest');
+  const data = await page.evaluate(() => JSON.parse(localStorage.getItem('neuroLift_workspace_guest')!).data);
+  expect(JSON.parse(data.neuroLift_tracker_selected_exercises)).toEqual([]);
+  expect(JSON.parse(data.neuroLift_history)).toHaveLength(1);
+});
+
+test('exercise card buttons and swipes preserve sets and dismiss menus', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(data => localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({ version: 0, dirty: false, data })), {
+    ...active, neuroLift_tracker_active_exercises: JSON.stringify([...exercises, { name: 'Pull-ups', sets: [{ id: 'pull', weight: 0, reps: 0, completed: false }] }]),
+  });
+  await page.goto('/#tracker');
+  await page.getByLabel('KG — SET 1', { exact: true }).fill('25');
+  await page.getByLabel('REPS — SET 1', { exact: true }).fill('10');
+  await page.getByRole('button', { name: 'Done — SET 1', exact: true }).click();
+  const firstMenu = page.locator('.web-set-menu').first();
+  await firstMenu.locator('summary').click();
+  await expect(firstMenu).toHaveAttribute('open', '');
+  await page.locator('.web-set-editor h2').click();
+  await expect(firstMenu).not.toHaveAttribute('open', '');
+  await page.locator('.web-set-menu').nth(1).locator('summary').click();
+  await firstMenu.locator('summary').click();
+  await expect(page.locator('.web-set-menu').nth(1)).not.toHaveAttribute('open', '');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.web-set-menu[open]')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Next', exact: true }).last().click();
+  await expect(page.locator('.web-set-editor h2')).toHaveText('Pull-ups');
+  const card = page.locator('.web-set-editor');
+  await card.dispatchEvent('touchstart', { touches: [{ identifier: 0, clientX: 100, clientY: 200 }] });
+  await card.dispatchEvent('touchend', { changedTouches: [{ identifier: 0, clientX: 260, clientY: 205 }] });
+  await expect(card.locator('h2')).toHaveText('Incline Dumbbell Press');
+  await expect(page.getByLabel('KG — SET 1', { exact: true })).toHaveValue('25');
+  await expect(page.getByRole('button', { name: 'Done — SET 1', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await card.dispatchEvent('touchstart', { touches: [{ identifier: 0, clientX: 200, clientY: 300 }] });
+  await card.dispatchEvent('touchend', { changedTouches: [{ identifier: 0, clientX: 180, clientY: 100 }] });
+  await expect(card.locator('h2')).toHaveText('Incline Dumbbell Press');
+  await firstMenu.locator('summary').click();
+  await firstMenu.getByRole('button', { name: 'Remove set', exact: true }).click();
+  await expect(page.locator('.web-set-menu[open]')).toHaveCount(0);
+});
 test('untouched sets are blocked and clearing reps invalidates completion', async ({ page }) => {
   await page.addInitScript(data => localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({ version: 0, dirty: false, data })), active);
   await page.goto('/#tracker');

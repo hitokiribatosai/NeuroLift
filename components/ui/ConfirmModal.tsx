@@ -65,9 +65,6 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
                         className="relative w-full max-w-md rounded-[3rem] border border-zinc-800 bg-zinc-950 p-10 shadow-3xl overflow-hidden"
                     >
-                        {/* Top Border Accent */}
-                        <div className={`absolute top-0 left-0 w-full h-1.5 ${isDestructive ? 'bg-rose-500' : 'bg-teal-500'}`}></div>
-
                         <div className="flex items-center gap-4 mb-6">
                             <div className={`w-3 h-10 rounded-full ${isDestructive ? 'bg-rose-500' : 'bg-teal-500'}`}></div>
                             <h3 className="text-2xl font-black text-white uppercase tracking-tighter leading-tight">

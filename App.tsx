@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useAndroidWorkoutNotification } from './hooks/useAndroidWorkoutNotification';
+import { useIOSRestNotification } from './hooks/useIOSRestNotification';
 import { Navbar } from './components/Navbar';
 import { Home } from './components/Home';
 import { Tracker } from './components/features/Tracker';
@@ -29,6 +31,8 @@ import { dismissTopOverlay } from './utils/overlays';
 import { TourProvider } from './components/web/GuidedTour';
 
 function AppInner() {
+  useAndroidWorkoutNotification();
+  useIOSRestNotification();
   const { theme } = useTheme();
   const isLight = theme === 'light';
   const isWebsite = usesModernInterface();
@@ -63,6 +67,8 @@ function AppInner() {
     if (!isWebsite || Capacitor.getPlatform() !== 'android' || !Capacitor.isPluginAvailable('App')) return;
     const listener = CapApp.addListener('backButton', () => {
       if (dismissTopOverlay()) return;
+      // Give the current screen its own back step before leaving the destination.
+      if (!window.dispatchEvent(new Event('neurolift-screen-back', { cancelable: true }))) return;
       if (navigationDepth.current > 0) window.history.back();
       else if (viewRef.current !== 'home') {
         window.history.replaceState({ neuroLiftDepth: 0 }, '', '#home');

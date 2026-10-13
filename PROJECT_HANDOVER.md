@@ -1,6 +1,44 @@
 # NeuroLift project handover
 
-Last reviewed: **2026-10-12**. Read `AGENTS.md` first on recovery.
+Last reviewed: **2026-10-13**. Read `AGENTS.md` first on recovery.
+
+### GitHub synchronization — 2026-10-13
+
+Owner requested pushing all recent application work. The synchronization commit includes the gym-session fixes, Android notification plugin/tests, iOS stage-one rest alerts, Android Back fix, reorder feedback, cleaned dialogs, documentation and native version numbers (Android 1.3.11 / 15; iOS 1.3.11 / 13). Historical “local/unpushed” notes below describe the state before this commit; these source files are now included in the handover commit. Confirm successful publication from remote branch equality and the session's push result.
+
+Excluded: generated `work/` products and the owner's local iOS Debug signing overrides (personal development team and Debug bundle ID). These overrides remain in the original checkout; GitHub uses the existing generic `com.neurolift.app` identity with no personal team. On another Mac, select your own team for physical-device builds. Existing APKs remain in the machine's `outputs/` directory, not in Git or a GitHub Release; rebuild from source or transfer the APK separately.
+
+Verification immediately before this synchronization is recorded in the dialog section below (27 unit tests, 19 related browser regressions, visual checks, Android/iOS compile and asset passes). No new source changes were made during the synchronization. Remaining priorities: physical Samsung acceptance, actual iOS background-alert/tap testing, stage-two Live Activity, and live service/email/CI verification.
+
+### Latest UI fix — remove dialog top strips
+
+Owner's Samsung screenshot showed an oversized lime strip above the exercise title. Removed the horizontal top-accent elements from Tracker tutorial/set-edit/template save/load/edit/delete/reset dialogs, legacy confirmation/import/streak dialogs and PlateCalculator. Kept functional controls and small title accents. Also scoped the general `.web-surface > div > div` page-spacing rule to non-modal surfaces: its padding was inflating the otherwise thin decorative strips and disturbing dialog header layout. Shared changes apply to website, Android and iOS.
+
+`npm run check` passed (27 unit tests, typecheck, lint, build; existing large-chunk advisory). One-off browser verification reproduced Dumbbell Shoulder Press tutorial from selection on desktop light/Chromium, Android dark/Chromium and iOS dark/WebKit: no top strip, correct title and functioning close button; Android screenshot visually inspected. All 19 existing refinement/theme browser regressions passed. Android debug build and asset verification passed. New APK: `/Users/rahalabdelilah/Documents/Codex/2026-10-01/fet/outputs/NeuroLift-1.3.11-build15-android-test.apk` (1.3.11 / 15). iOS version 1.3.11 / 13; Debug simulator compilation and asset verification passed. Changes remain local and unpushed; installed physical apps need this rebuilt version.
+
+### Latest refinement — exercise reorder feedback across platforms
+
+The owner approved animating and highlighting the exercise just moved in the reorder menu on website, Android and iOS. Shared Tracker modal now uses stable exercise-name keys and Framer Motion position layout (220 ms); the moved card receives the theme's lime background/outline for 1.5 seconds. Feedback follows the exercise through repeated moves and resets when the modal closes. Reduced-motion preference disables sliding but retains the highlight. Arrow controls have localized accessible labels and a live status announces the new position. Apply/Cancel still govern saved ordering; set data is preserved.
+
+The rebuilt iOS app was installed and launched on the existing iPhone 17 simulator successfully, preserving its data. Native visual interaction on hardware remains for owner confirmation.
+
+`npm run check` passed (typecheck, lint, 27 unit tests, web build; existing bundle-size advisory). A one-off Playwright check passed for desktop web/Chromium, Android phone layout/Chromium and iOS phone layout/WebKit with reduced motion: correct moved-card highlight, repeated moves, Apply/Cancel and set preservation. This is browser-layout verification; no new physical-device pass is claimed. Android asset checks and debug compilation passed. New Android APK: `/Users/rahalabdelilah/Documents/Codex/2026-10-01/fet/outputs/NeuroLift-1.3.10-build14-android-test.apk`. Native iOS version incremented to 1.3.10 / build 12; pre-existing signing settings preserved. iOS asset verification and Debug simulator compilation passed. All recent application changes remain local and unpushed.
+
+### Latest Android gym feedback — back gesture
+
+Owner's Samsung S25 back gesture left the workout for Home. Modern App navigation handled page history but skipped Tracker's internal phases. Fixed locally: App dismisses the top overlay first, then sends a cancelable `neurolift-screen-back` event; Tracker consumes active → selection → setup without clearing exercises, logged sets or timers. At setup normal destination-history navigation resumes. Website browser Back and iOS native navigation are not changed by this Android dispatch.
+
+Typecheck/lint passed; all 11 targeted `refinements.spec.ts` browser tests passed against rebuilt assets, including preservation of a completed set through the two back steps. First run against stale dist failed; rebuilt run passed. Android asset verification and Gradle debug compilation passed. New local APK: `/Users/rahalabdelilah/Documents/Codex/2026-10-01/fet/outputs/NeuroLift-1.3.9-build13-android-test.apk` (1.3.9 / 13), superseding build12 for Samsung testing. Actual S25 gesture still needs owner confirmation; browser test dispatches the screen event, not a physical gesture. Not pushed to GitHub. Includes prior Android notification/gym work; platform-gated iOS notification source is present but inactive on Android.
+
+### Latest session update — iOS rest alerts
+
+The continuity-only commit `69ea426` was successfully pushed to `origin/main`; the application changes below remain local. After reviewing generated Android/iOS concept images, the owner authorized starting iOS notifications. Stage one is now implemented via the existing Capacitor LocalNotifications plugin, not a new Swift extension: `utils/iosRestNotification.ts`, `hooks/useIOSRestNotification.ts`, `components/web/IOSRestNotificationControl.tsx`, integrated in App/Tracker/WebSession. See `docs/IOS-REST-NOTIFICATIONS.md`.
+
+This adds opt-in EN/FR/AR rest alerts, absolute-deadline scheduling/replacement, skip/finish/disable cleanup, account-switch handling and tap-to-workout. No persistent card, Live Activity or Dynamic Island is implemented yet. Android behavior is preserved. Earlier statements below saying “no iOS notification feature” refer to the preceding Android-only snapshot and are superseded by this update.
+
+The resulting Debug app was installed over the existing app (no data erase) and launched successfully on the iPhone 17 / iOS 26.5 simulator. This is a launch smoke check only, not observed notification delivery. Next: exercise the actual permission/background-alert/tap flow, then physical-device confirmation, before proceeding to the Live Activity extension.
+
+Current-session checks: `npm run check` passed (27 unit tests, typecheck, lint, build; existing large-bundle warning); 64 Chromium browser regressions passed. iOS assets synchronized with the HTTPS preview API and `node scripts/verify-native.mjs ios` passed. Unsigned Debug simulator compilation succeeded using Xcode with `-derivedDataPath work/ios-rest-build`. Actual iOS alert delivery and physical iPhone testing remain pending; do not describe compilation as delivery verification. The iOS project still carries the owner's pre-existing development signing configuration and build 11; increment before distributing a new device build.
 
 ## 1. Snapshot and evidence boundaries
 
@@ -8,7 +46,7 @@ Last reviewed: **2026-10-12**. Read `AGENTS.md` first on recovery.
 - Application baseline at this review: `b0a87f1` (`Fix workout tracking, routine history and mobile journal layout`). This initial continuity commit adds documentation only; see **local-only work** below.
 - Owner plans to change Codex accounts around October 15–16, 2026. Maintain these files after meaningful work, not just on the final day. No scheduled automation has been created.
 - Source/configuration and Git status were inspected for this handover. Earlier test outcomes are labeled historical below; live hosting, inbox delivery and remote CI were not reverified in this documentation session.
-- A fresh clone does **not** yet contain the latest local application changes or the local APK. Before switching machines/accounts, use “Prepare handover” to review, commit and push appropriate application changes.
+- The 2026-10-13 synchronization includes latest application source. A clone does not include the local APK or personal iOS signing overrides; see synchronization notes above.
 - Initial documentation push status must be confirmed from the actual Git command result; do not infer it from this file's existence. Check `git status -sb` and remote branch equality on recovery.
 
 ## 2. Project and product intent
@@ -45,9 +83,9 @@ Data flow: UI writes the current workspace; signed-in sync exchanges a versioned
 - Prior `b0a87f1` fixes cover workout tracking, routine naming/history, mobile journal and progress issues. Inspect its diff/tests for exact behavior instead of reimplementing from chat descriptions.
 - Native build preparation, release asset checks, dependency patches and CI definitions exist. Store publication and production certification are **not** complete.
 
-## 5. Latest local-only work — important migration gap
+## 5. Earlier local-only work — historical migration gap
 
-At initial setup, these remain uncommitted and are deliberately NOT included in the documentation-only commit:
+At the initial documentation-only setup, these were uncommitted. The 2026-10-13 synchronization now includes the appropriate source changes; generated files and personal signing overrides remain excluded:
 
 1. Gym feedback fixes: clear finished-session selections/picker search before a fresh workout; swipe plus Previous/Next within the set card; outside-tap/Escape closes per-set menus. Files: `Tracker.tsx`, `WebSession.tsx`, `website.css`, `tests/browser/refinements.spec.ts`.
 2. **Android-only workout notification**, requested before any iOS equivalent:
@@ -137,7 +175,7 @@ Config names only: frontend `VITE_API_URL` is public; backend `DJANGO_SECRET_KEY
 
 ## 9. Prioritized next steps
 
-1. Before account migration, review local-only source and iOS signing diff, rerun relevant checks, then “Prepare handover” to commit/push appropriate work. Verify remote commit IDs. Keep generated builds and credentials out of Git.
+1. Before account migration, verify current remote commit IDs and read the synchronization notes; preserve local APKs and configure signing on the next Mac. Use “Prepare handover” after subsequent work. Keep generated builds and credentials out of Git.
 2. Owner tests build12 on Samsung: notification permission denied/allowed, background/lock screen countdown, rest extension/skip/end/reset, tap navigation and battery saver; reproduce and fix actual failures.
 3. Verify the three gym fixes on physical device and preserve workout history/templates across upgrade; export a backup first. Don't uninstall to troubleshoot casually.
 4. Rebuild/test iOS shared fixes when requested; add an iOS live-workout notification only after separate design/authorization. No Dynamic Island capability is currently claimed.

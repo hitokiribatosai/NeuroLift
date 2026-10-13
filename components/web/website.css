@@ -89,6 +89,10 @@ body .website-redesign.web-modal-theme [class] { -webkit-text-fill-color: curren
 .website-redesign .web-set-row button[aria-pressed] { font-size: 1.6rem; border: 1px solid var(--web-line); border-radius: 8px; }
 .website-redesign .web-set-row[data-completed="true"] { background: var(--web-soft); }
 .website-redesign .web-set-row button[aria-pressed="true"] { background: var(--web-accent); color: #17242a; }
+.website-redesign .web-set-editor { touch-action: pan-y pinch-zoom; scroll-margin-top: calc(var(--safe-top, 0px) + 90px); }
+.website-redesign .web-exercise-paging { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-block: 12px; }
+.website-redesign .web-exercise-paging button { min-height: 44px; padding: 10px 14px; }
+.website-redesign .web-exercise-paging button:disabled { opacity: .4; cursor: default; }
 .website-redesign .web-set-menu { position: relative; }
 .website-redesign .web-set-menu summary { cursor: pointer; padding-block: 12px; list-style: none; min-height: 44px; }
 .website-redesign .web-set-menu > div { position: absolute; inset-inline-end: 0; top: 100%; z-index: 5; background: var(--web-paper); border: 1px solid var(--web-line); border-radius: 8px; width: 190px; padding: 8px; box-shadow: 0 8px 24px #0002; }
@@ -198,7 +202,7 @@ html.dark .website-redesign { --web-bg:#111a20; --web-paper:#1a262d; --web-ink:#
 .website-redesign .web-sources h2 { font-size: 1.2rem; font-weight: 650; margin: 8px 0; }
 .website-redesign .web-sources a { display: flex; justify-content: space-between; gap: 15px; padding: 15px 0; font-size: .76rem; font-weight: 650; border-bottom: 1px solid var(--web-line); }
 /* Shared feature surfaces: retain the feature logic and apply the browser visual language. */
-.website-redesign .web-surface > div > div:not(.web-dashboard), .website-redesign .web-surface > div > section { padding: 12px 0 32px; max-width: 1400px; width: 100%; margin-inline: auto; }
+.website-redesign:not(.web-modal-theme) .web-surface > div > div:not(.web-dashboard), .website-redesign:not(.web-modal-theme) .web-surface > div > section { padding: 12px 0 32px; max-width: 1400px; width: 100%; margin-inline: auto; }
 .website-redesign .web-surface [class*="bg-zinc-"], .website-redesign .web-settings-nav [class*="bg-zinc-"] { background-color: var(--web-paper) !important; }
 .website-redesign .web-surface [class*="bg-black"] { background-color: var(--web-bg) !important; }
 .website-redesign .web-surface [class*="border-zinc-"], .website-redesign .web-settings-nav [class*="border-zinc-"] { border-color: var(--web-line) !important; }
@@ -432,6 +436,15 @@ html.light body .web-modal-backdrop, html.dark body .web-modal-backdrop { backgr
   .web-sheet-backdrop .web-more-panel > .web-primary { width: 100%; min-width: 0; }
 }
 @media (max-width: 380px) { .web-modal-backdrop .exercise-group-selector [role="group"] { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.website-redesign .web-reorder-item { position: relative; min-width: 0; }
+.website-redesign .web-reorder-item > span:nth-child(2) { min-width: 0; overflow-wrap: anywhere; }
+.website-redesign .web-reorder-item[data-moved="true"] {
+  background: var(--web-accent) !important;
+  border-color: var(--web-green) !important;
+  box-shadow: 0 0 0 2px var(--web-green);
+  z-index: 1;
+}
+.website-redesign .web-reorder-item[data-moved="true"] > span { color: #17242a !important; }
 @media (prefers-reduced-motion: no-preference) {
   .website-redesign .web-view { animation: web-view-enter 160ms ease-out; }
   .web-modal-backdrop > .web-modal-theme { animation: web-sheet-enter 200ms ease-out; }

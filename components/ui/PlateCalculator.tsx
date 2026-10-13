@@ -52,9 +52,6 @@ export const PlateCalculator: React.FC<PlateCalculatorProps> = ({
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
             <div className="w-full max-w-2xl bg-zinc-950 border border-zinc-800 rounded-3xl p-6 md:p-8 relative overflow-hidden">
-                {/* Background Accent */}
-                <div className="absolute top-0 left-0 w-full h-2 bg-teal-500"></div>
-
                 <div className="flex items-center justify-between mb-8">
                     <h2 className="text-2xl font-black text-white uppercase tracking-tighter flex items-center gap-3">
                         <span className="w-2 h-8 bg-teal-500 rounded-full"></span>

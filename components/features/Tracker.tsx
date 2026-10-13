@@ -1,4 +1,6 @@
 import { usesModernInterface } from '../../utils/interfacePlatform';
+import { offerWorkoutNotification } from '../../utils/androidWorkoutNotification';
+import { offerIOSRestNotifications } from '../../utils/iosRestNotification';
 import { hasSetEffort } from '../../utils/workoutValidation';
 import { WorkoutGuide } from '../web/GuidedTour';
 import React, { useState, useEffect, useRef } from 'react';
@@ -17,7 +19,7 @@ import { safeStorage } from '../../utils/storage';
 import { useTooltip } from '../../hooks/useTooltip';
 import { App as CapApp } from '@capacitor/app';
 import { Modal } from '../ui/Modal';
-import { motion, AnimatePresence, Reorder } from 'framer-motion';
+import { motion, AnimatePresence, Reorder, useReducedMotion } from 'framer-motion';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { hapticFeedback } from '../../utils/haptics';
@@ -40,6 +42,14 @@ export const Tracker: React.FC = () => {
 
   const [phase, setPhase] = useState<'setup' | 'selection' | 'active' | 'summary'>(() => {
     const saved = safeStorage.getItem('neuroLift_tracker_phase');
+    // Recover drafts left behind by older builds after a completed workout.
+    if (saved === 'summary') {
+      for (const key of ['muscles', 'selected_exercises', 'active_exercises', 'selected_template', 'active_template', 'active_template_name']) {
+        safeStorage.removeItem(`neuroLift_tracker_${key}`);
+      }
+      for (const key of ['picker_search', 'picker_muscle', 'picker_subgroup', 'session_exercise']) safeStorage.removeItem(`ui_${key}`);
+      return 'setup';
+    }
     const validPhases = ['setup', 'selection', 'active', 'summary'];
     return (saved && validPhases.includes(saved)) ? (saved as any) : 'setup';
   });
@@ -89,6 +99,23 @@ export const Tracker: React.FC = () => {
   const [showResetSessionConfirm, setShowResetSessionConfirm] = useState(false);
   const [showReorderModal, setShowReorderModal] = useState(false);
   const [tempReorderList, setTempReorderList] = useState<ActiveExercise[]>([]);
+  const reducedMotion = useReducedMotion();
+  const [reorderFeedback, setReorderFeedback] = useState<{ name: string; position: number; sequence: number } | null>(null);
+  useEffect(() => {
+    if (!showReorderModal) { setReorderFeedback(null); return; }
+    if (!reorderFeedback) return;
+    const timeout = window.setTimeout(() => setReorderFeedback(null), 1500);
+    return () => window.clearTimeout(timeout);
+  }, [showReorderModal, reorderFeedback]);
+  const moveReorderExercise = (index: number, offset: -1 | 1) => {
+    const target = index + offset;
+    if (target < 0 || target >= tempReorderList.length) return;
+    const exercise = tempReorderList[index];
+    const next = [...tempReorderList];
+    [next[index], next[target]] = [next[target], next[index]];
+    setTempReorderList(next);
+    setReorderFeedback(previous => ({ name: exercise.name, position: target + 1, sequence: (previous?.sequence ?? 0) + 1 }));
+  };
 
 
 
@@ -244,6 +271,7 @@ export const Tracker: React.FC = () => {
   }, [phase, completedWorkout]);
 
   useEffect(() => {
+    if (phase === 'summary') return;
     safeStorage.setItem('neuroLift_tracker_phase', phase);
     safeStorage.setItem('neuroLift_tracker_muscles', JSON.stringify(selectedMuscles));
     safeStorage.setItem('neuroLift_tracker_selected_exercises', JSON.stringify(selectedExercises));
@@ -295,6 +323,22 @@ export const Tracker: React.FC = () => {
     fetchTemplates();
   }, []);
 
+
+  // Modern Android has one native Back owner in App. Consume a screen-level
+  // step here without resetting the draft, timers, selected exercises or sets.
+  useEffect(() => {
+    if (!usesModernInterface()) return;
+    const back = (event: Event) => {
+      if (window.location.hash.split('?')[0] !== '#tracker') return;
+      if (phase !== 'active' && phase !== 'selection') return;
+      event.preventDefault();
+      setDirection(-1);
+      setPhase(phase === 'active' ? 'selection' : 'setup');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    window.addEventListener('neurolift-screen-back', back);
+    return () => window.removeEventListener('neurolift-screen-back', back);
+  }, [phase]);
 
   // Sync Phase with URL & Handle Back Navigation
   useEffect(() => {
@@ -363,6 +407,11 @@ export const Tracker: React.FC = () => {
   }, [phase]);
 
   const handleSetPhase = (newPhase: 'setup' | 'selection' | 'active' | 'summary') => {
+    if (newPhase === 'selection' && phase === 'setup') {
+      setSearchQuery('');
+      setPickerMuscle(selectedMuscles[0] || 'Chest');
+      setPickerSubgroup('');
+    }
     const oldIdx = phaseOrder.indexOf(phase);
     const newIdx = phaseOrder.indexOf(newPhase);
     setDirection(newIdx < oldIdx ? -1 : 1);
@@ -396,6 +445,8 @@ export const Tracker: React.FC = () => {
   };
 
   const handleStartWorkout = () => {
+    void offerWorkoutNotification();
+    void offerIOSRestNotifications();
     handleSetPhase('active');
 
     // Templates create a clean session: retain the plan, never logged weights or reps.
@@ -521,6 +572,13 @@ export const Tracker: React.FC = () => {
     await safeStorage.saveWorkout(record.id, record);
 
     setCompletedWorkout(record);
+    setSelectedMuscles([]);
+    setSelectedExercises([]);
+    setActiveExercises([]);
+    setSearchQuery('');
+    setPickerMuscle('Chest');
+    setPickerSubgroup('');
+    safeStorage.removeItem('ui_session_exercise');
     handleSetPhase('summary');
     // Clear persistence on completion
     safeStorage.removeItem('neuroLift_tracker_phase');
@@ -536,6 +594,10 @@ export const Tracker: React.FC = () => {
   };
 
   const resetSession = () => {
+    setSearchQuery('');
+    setPickerMuscle('Chest');
+    setPickerSubgroup('');
+    safeStorage.removeItem('ui_session_exercise');
     setPhase('setup');
     setSelectedMuscles([]);
     setSelectedExercises([]);
@@ -644,6 +706,9 @@ export const Tracker: React.FC = () => {
     setSelectedMuscles(Array.from(musclesToSelect));
     setShowLoadTemplateModal(false);
     handleSetPhase('selection');
+    setSearchQuery('');
+    setPickerMuscle(Array.from(musclesToSelect)[0] || 'Chest');
+    setPickerSubgroup('');
     hapticFeedback.light();
   };
 
@@ -1244,7 +1309,6 @@ export const Tracker: React.FC = () => {
               <Modal isOpen={!!tutorialExercise} onClose={() => setTutorialExercise(null)}>
                 {tutorialExercise && (
                   <div className="relative w-full rounded-[3rem] border border-zinc-800 bg-zinc-950 p-6 md:p-10 shadow-3xl overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-2 bg-teal-500"></div>
                     <button
                       onClick={() => setTutorialExercise(null)}
                       className="absolute right-6 top-6 md:right-8 md:top-8 text-zinc-400 hover:text-white transition-colors z-10"
@@ -1290,7 +1354,6 @@ export const Tracker: React.FC = () => {
           {activeSetInfo && (
             <Modal isOpen={true} onClose={() => setActiveSetInfo(null)}>
               <div className="relative w-full rounded-[3rem] border border-zinc-800 bg-zinc-950 p-8 shadow-3xl overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-2 bg-teal-500"></div>
                 <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-8 flex items-center gap-3">
                   <span className="w-2 h-6 bg-teal-500 rounded-full"></span>
                   {t('tracker_plate_calc_title')}
@@ -1727,7 +1790,6 @@ export const Tracker: React.FC = () => {
       {/* Save Template Modal */}
       <Modal isOpen={showSaveTemplateModal} onClose={() => setShowSaveTemplateModal(false)}>
         <div className="relative w-full rounded-[3rem] border border-zinc-800 bg-zinc-950 p-8 shadow-3xl overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-2 bg-teal-500"></div>
           <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-8 flex items-center gap-3">
             <span className="w-2 h-6 bg-teal-500 rounded-full"></span>
             {t('tracker_save_template')}
@@ -1764,7 +1826,6 @@ export const Tracker: React.FC = () => {
       {/* Save Completed Workout as Template Modal */}
       <Modal isOpen={showSaveCompletedModal} onClose={() => setShowSaveCompletedModal(false)}>
         <div className="relative w-full rounded-[3rem] border border-zinc-800 bg-zinc-950 p-8 shadow-3xl overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-2 bg-teal-500"></div>
           <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-8 flex items-center gap-3">
             <span className="w-2 h-6 bg-teal-500 rounded-full"></span>
             {t('tracker_save_template')}
@@ -1801,7 +1862,6 @@ export const Tracker: React.FC = () => {
       {/* Load Template Modal */}
       <Modal isOpen={showLoadTemplateModal} onClose={() => setShowLoadTemplateModal(false)}>
         <div className="relative w-full rounded-[3rem] border border-zinc-800 bg-zinc-950 p-8 shadow-3xl overflow-hidden max-h-[80vh] flex flex-col">
-          <div className="absolute top-0 left-0 w-full h-2 bg-teal-500"></div>
           <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-8 flex items-center gap-3 flex-shrink-0">
             <span className="w-2 h-6 bg-teal-500 rounded-full"></span>
             {t('tracker_templates_title')}
@@ -1867,7 +1927,6 @@ export const Tracker: React.FC = () => {
       {/* Edit Template Modal */}
       <Modal isOpen={showEditTemplateModal} onClose={() => setShowEditTemplateModal(false)}>
         <div className="relative w-full max-w-4xl rounded-[3rem] border border-zinc-800 bg-zinc-950 p-8 shadow-3xl overflow-hidden max-h-[90vh] flex flex-col">
-          <div className="absolute top-0 left-0 w-full h-2 bg-teal-500"></div>
           <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-8 flex items-center gap-3 flex-shrink-0">
             <span className="w-2 h-6 bg-teal-500 rounded-full"></span>
             {t('tracker_save_template')} - {editingTemplate?.name}
@@ -1986,7 +2045,6 @@ export const Tracker: React.FC = () => {
       {/* Template Delete Confirmation Modal */}
       <Modal isOpen={templateDeleteConfirm !== null} onClose={() => setTemplateDeleteConfirm(null)}>
         <div className="p-8 bg-zinc-950 border border-zinc-900 rounded-[3rem] text-center space-y-6 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-2 bg-rose-500"></div>
           <div className="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto text-rose-500 mb-4">
             <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -2018,7 +2076,6 @@ export const Tracker: React.FC = () => {
       {/* Reset Session Confirmation Modal */}
       <Modal isOpen={showResetSessionConfirm} onClose={() => setShowResetSessionConfirm(false)}>
         <div className="p-8 bg-zinc-950 border border-zinc-900 rounded-[3rem] text-center space-y-6 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-2 bg-rose-500"></div>
           <div className="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto text-rose-500 mb-4">
             <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -2048,7 +2105,7 @@ export const Tracker: React.FC = () => {
       </Modal>
 
       {/* Reorder Modal */}
-      <Modal isOpen={showReorderModal} onClose={() => setShowReorderModal(false)}>
+      <Modal isOpen={showReorderModal} onClose={() => setShowReorderModal(false)} label={t('tracker_reorder_title')}>
         <div className="p-8 bg-zinc-950 border border-zinc-900 rounded-[3rem] max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
           <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-6 flex items-center gap-3">
             <svg className="w-6 h-6 text-teal-500" fill="currentColor" viewBox="0 0 24 24">
@@ -2062,46 +2119,43 @@ export const Tracker: React.FC = () => {
             {t('tracker_reorder_title')}
           </h3>
 
-          <div className="flex-1 overflow-y-auto space-y-3 mb-6">
+          <motion.div layoutScroll className="flex-1 overflow-y-auto space-y-3 mb-6 p-1" data-reorder-list>
             {tempReorderList.map((ex, idx) => (
-              <div key={ex.name} className="flex items-center gap-3 p-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl">
+              <motion.div key={ex.name} layout={reducedMotion ? false : 'position'}
+                transition={{ layout: { duration: 0.22, ease: 'easeOut' } }}
+                data-exercise={ex.name} data-moved={reorderFeedback?.name === ex.name ? 'true' : undefined}
+                className="web-reorder-item flex items-center gap-3 p-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl">
                 <span className="text-2xl font-black text-teal-500 w-8">{idx + 1}</span>
                 <span className="flex-1 text-white font-bold">{getExerciseTranslation(ex.name, language)}</span>
                 <div className="flex flex-col gap-1">
                   <button
-                    onClick={() => {
-                      if (idx > 0) {
-                        const newList = [...tempReorderList];
-                        [newList[idx - 1], newList[idx]] = [newList[idx], newList[idx - 1]];
-                        setTempReorderList(newList);
-                      }
-                    }}
+                    onClick={() => moveReorderExercise(idx, -1)}
+                    aria-label={`${language === 'fr' ? 'Monter' : language === 'ar' ? 'نقل لأعلى' : 'Move up'}: ${getExerciseTranslation(ex.name, language)}`}
                     disabled={idx === 0}
-                    className="p-2 bg-zinc-800 hover:bg-teal-500 text-zinc-400 hover:text-white disabled:opacity-30 disabled:hover:bg-zinc-800 disabled:hover:text-zinc-400 rounded-lg transition-colors"
+                    className="p-3 bg-zinc-800 hover:bg-teal-500 text-zinc-400 hover:text-white disabled:opacity-30 disabled:hover:bg-zinc-800 disabled:hover:text-zinc-400 rounded-lg transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
                     </svg>
                   </button>
                   <button
-                    onClick={() => {
-                      if (idx < tempReorderList.length - 1) {
-                        const newList = [...tempReorderList];
-                        [newList[idx], newList[idx + 1]] = [newList[idx + 1], newList[idx]];
-                        setTempReorderList(newList);
-                      }
-                    }}
+                    onClick={() => moveReorderExercise(idx, 1)}
+                    aria-label={`${language === 'fr' ? 'Descendre' : language === 'ar' ? 'نقل لأسفل' : 'Move down'}: ${getExerciseTranslation(ex.name, language)}`}
                     disabled={idx === tempReorderList.length - 1}
-                    className="p-2 bg-zinc-800 hover:bg-teal-500 text-zinc-400 hover:text-white disabled:opacity-30 disabled:hover:bg-zinc-800 disabled:hover:text-zinc-400 rounded-lg transition-colors"
+                    className="p-3 bg-zinc-800 hover:bg-teal-500 text-zinc-400 hover:text-white disabled:opacity-30 disabled:hover:bg-zinc-800 disabled:hover:text-zinc-400 rounded-lg transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
+
+          <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+            {reorderFeedback && `${getExerciseTranslation(reorderFeedback.name, language)} — ${language === 'fr' ? 'position' : language === 'ar' ? 'الموضع' : 'position'} ${reorderFeedback.position} / ${tempReorderList.length}`}
+          </p>
 
           <div className="flex gap-3">
             <button
