@@ -30,6 +30,8 @@ import { WebSession } from '../web/WebSession';
 import { useInterfaceState } from '../../hooks/useInterfaceState';
 import { createFreshTemplateExercises } from '../../utils/workoutTemplates';
 import { copyPreviousSets } from '../../utils/repeatWorkout';
+import { WorkoutBreakdown } from '../web/WorkoutBreakdown';
+import { ExerciseHistory } from '../../types';
 import { findNextScheduledWorkout, WeeklyWorkoutSchedule } from '../../utils/workoutSchedule';
 
 export const Tracker: React.FC = () => {
@@ -155,6 +157,7 @@ export const Tracker: React.FC = () => {
 
   // Active Session State
   const [completedWorkout, setCompletedWorkout] = useState<CompletedWorkout | null>(null);
+  const [summaryPrevious, setSummaryPrevious] = useState<Map<string, ExerciseHistory>>(new Map());
   const [direction, setDirection] = useState(0);
 
   const phaseOrder = ['setup', 'selection', 'active', 'summary'];
@@ -561,7 +564,14 @@ export const Tracker: React.FC = () => {
       ...(activeTemplateId ? { templateId: activeTemplateId } : {})
     };
 
+    // Capture historical references before saving, so this workout never compares with itself.
+    const references = new Map<string, ExerciseHistory>();
+    for (const exercise of record.exercises) {
+      const history = await exerciseHistoryService.getExerciseHistory(exercise.name);
+      if (history) references.set(exercise.name, history);
+    }
     await safeStorage.saveWorkout(record.id, record);
+    setSummaryPrevious(references);
 
     setCompletedWorkout(record);
     setSelectedMuscles([]);
@@ -1713,6 +1723,7 @@ export const Tracker: React.FC = () => {
                   {t('tracker_quote')}
                 </p>
 
+                <WorkoutBreakdown workout={completedWorkout} previous={summaryPrevious} />
                 <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto mb-12">
                   <div className="bg-zinc-900/50 rounded-3xl p-6 border border-zinc-800">
                     <div className="text-xs text-zinc-500 font-black uppercase tracking-widest mb-2">{t('tracker_duration')}</div>

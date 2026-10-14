@@ -1,4 +1,6 @@
-# iOS preview — 1.3.14 (15)
+# iOS preview — 1.3.15 (16)
+
+Latest rebuild includes the per-exercise finish breakdown and previous-session comparisons. Native asset verification and simulator compilation passed; installed and launch-smoke-checked without erasing data. Artifact: `builds/ios/NeuroLift-1.3.15-build16-ios-simulator.app`. Detailed finish-screen checks passed in Chromium and mobile WebKit, not a fresh full native workout. Earlier build notes below are historical.
 
 ## Latest verification — 2026-10-14
 

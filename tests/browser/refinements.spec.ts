@@ -3,6 +3,32 @@ const base = { neuroLift_hasCompletedOnboarding: 'true', neuroLift_userGoal: 'st
 const exercises = [{ name: 'Incline Dumbbell Press', sets: [{ id: 's1', weight: 0, reps: 0, completed: false }, { id: 's2', weight: 0, reps: 0, completed: false }] }];
 const active = { ...base, neuroLift_tracker_phase: 'active', neuroLift_tracker_selected_exercises: JSON.stringify(exercises.map(e => e.name)), neuroLift_tracker_muscles: '["Chest"]', neuroLift_tracker_active_exercises: JSON.stringify(exercises) };
 test.use({ serviceWorkers: 'block' });
+for (const mode of ['web', 'android', 'ios']) {
+  test(`${mode}: finish shows exercise volume and compares only previous completed work`, async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.addInitScript(({ active, mode }) => {
+      if (mode === 'android') Object.assign(window, { androidBridge: {} });
+      if (mode === 'ios') Object.assign(window, { webkit: { messageHandlers: { bridge: {} } } });
+      const sets = Array.from({ length: 3 }, (_, i) => ({ id: String(i), weight: 50, reps: 10, completed: true }));
+      const name = 'Incline Dumbbell Press';
+      localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({ version: 0, dirty: false, data: {
+        ...active,
+        neuroLift_tracker_active_exercises: JSON.stringify([{ name, sets: [...sets, { id: 'skip', weight: 100, reps: 10, completed: false }] }, { name: 'Push-ups', sets: [{ id: 'bw', weight: 0, reps: 12, completed: true }] }]),
+        neuroLift_history: JSON.stringify([{ id: 'previous', date: '2026-10-01T12:00:00Z', durationSeconds: 600, totalVolume: 1400, exercises: [{ name, sets: [{ id: 'p', weight: 50, reps: 28, completed: true }] }] }]),
+      } }));
+    }, { active, mode });
+    await page.goto('/#tracker');
+    await page.getByRole('button', { name: /Finish Workout/ }).click();
+    await page.getByRole('button', { name: 'Finish Workout', exact: true }).click();
+    const result = page.getByRole('region', { name: 'Exercise breakdown' });
+    await expect(result).toContainText('Volume: 1,500 kg');
+    await expect(result).toContainText('1,400 kg · +100 kg');
+    await expect(result).toContainText('Total: 12 reps');
+    await expect(result.locator('article').first().locator('li')).toHaveCount(3);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath('finish-screen.png'), fullPage: true });
+  });
+}
 for (const platform of ['web', 'android', 'ios']) {
   test(`${platform}: repeat routine keeps blank planned sets and offers safe per-set references`, async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });

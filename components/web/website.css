@@ -85,6 +85,12 @@ body .website-redesign.web-modal-theme [class] { -webkit-text-fill-color: curren
 .website-redesign .web-set-labels, .website-redesign .web-set-row { display: grid; grid-template-columns: 36px minmax(50px,1fr) minmax(50px,1fr) 64px 44px; gap: 12px; align-items: center; text-align: center; }
 .website-redesign .web-set-labels { font-size: .7rem; margin-bottom: 10px; }
 .website-redesign .web-set-row { padding-block: 10px; border-top: 1px solid var(--web-line); }
+.workout-breakdown { text-align: start; margin: 0 auto 28px; max-width: 42rem; }
+.workout-breakdown > h3 { font-size: 1.25rem; font-weight: 800; }
+.workout-breakdown p { font-size: .85rem; line-height: 1.6; margin-block: 10px; }
+.workout-exercise-result { margin-block: 16px; padding: 20px; border: 1px solid var(--web-line, #71717a); border-radius: 16px; overflow-wrap: anywhere; }
+.workout-exercise-result h4 { font-size: 1.1rem; font-weight: 800; }
+.workout-exercise-result ul { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-block: 12px; list-style: none; padding: 0; }
 .website-redesign .web-set-reference { grid-column: 2 / -1; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; text-align: start; font-size: .78rem; color: var(--web-muted); }
 .website-redesign .web-set-reference .web-text-button { min-height: 44px; padding: 6px 0; font-size: inherit; }
 .website-redesign .web-set-row input { width: 100%; min-height: 48px; text-align: center; }
