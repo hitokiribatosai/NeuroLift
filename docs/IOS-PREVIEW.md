@@ -1,4 +1,10 @@
-# iOS preview — 1.3.5 (9)
+# iOS preview — 1.3.14 (15)
+
+## Latest verification — 2026-10-14
+
+Rebuilt Debug simulator app with the latest lazy-loaded screens and repeat-workout references. Release-safe bundled assets use the HTTPS preview API; native asset checks and Xcode simulator compilation passed. The compiled `public/` directory matches synchronized source assets byte-for-byte. Installed over the existing app on iPhone 17 / iOS 26.5 without erasing data; Home, the preserved workout draft and the lazy-loaded exercise library rendered successfully. Notification permission was declined in this simulator check. This is a native smoke check, not full hardware, offline cold-launch, audible-alert or keyboard acceptance.
+
+Local artifact: `builds/ios/NeuroLift-1.3.14-build15-ios-simulator.app`. This simulator app cannot be installed on a physical iPhone; use an Xcode device build with the owner's signing team. No Live Activity/Dynamic Island feature was added. Older verification paragraphs below are historical.
 
 The iOS runtime now selects the approved modern interface, retains its existing native theme preference, updates status-bar contrast with the theme, and uses CSS safe areas instead of automatic WKWebView content insets. The launcher uses the same training artwork as Android and the website.
 

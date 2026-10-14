@@ -1,6 +1,12 @@
 # NeuroLift project handover
 
-Last reviewed: **2026-10-13**. Read `AGENTS.md` first on recovery.
+Last reviewed: **2026-10-14**. Read `AGENTS.md` first on recovery.
+
+### iOS refresh — 2026-10-14
+
+Repeat-workout source was pushed as `5d29afb`, with verified tag `checkpoint-2026-10-13-repeat-workouts`. iOS now has **1.3.14 / build 15**, including that change and lazy-loaded screens. Native release-asset verification and Debug simulator compilation passed; compiled public assets match synchronized source byte-for-byte. Installed over the existing iPhone 17 / iOS 26.5 simulator app without clearing data. Visually checked Home, preserved workout draft/resume and the loaded exercise library. Notifications were declined during this smoke check. Automated native scroll input did not establish a result; do not equate this with the user's previously confirmed scrolling being broken. No fresh physical iPhone, keyboard, notification audio, network-isolated cold-launch or full native workout acceptance is claimed.
+
+Artifact: `builds/ios/NeuroLift-1.3.14-build15-ios-simulator.app`; executable-only SHA-256 `8701a6472f7c728393a9500c119f9646f7486e94fbf1e0b5bfee3d8ec7ad4373`. Old simulator build 14 moved to `/private/tmp/neurolift-ios-build14-recovery-2026-10-14/` (temporary, not durable backup). Android APK remains Build 17 and does **not** include the repeat-workout change until rebuilt. Source recovery stamp for this iOS refresh: `checkpoint-2026-10-14-ios-build15`. Live account tests remain with the owner; no new hosting purchases or Live Activity scope were added.
 
 ### Repeat-workout refinement — 2026-10-13
 
@@ -45,7 +51,7 @@ All local builds now live in the git-ignored `builds/` folder of the working che
 | Platform | Current build | Path | Notes |
 | --- | --- | --- | --- |
 | Android | 1.3.13 / 17 (debug-signed test APK, HTTPS preview API) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/android/NeuroLift-1.3.13-build17-android-test.apk` | SHA-256 `7c344e492e5cbfa8b6741db391ca215e695e71cd73d1a3fc67274bc16123e883`. Source checkpoint `checkpoint-2026-10-13-android-build17`; includes lazy loading. |
-| iOS | 1.3.12 / 14 (unsigned Debug **simulator** app) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/ios/NeuroLift-1.3.12-build14-ios-simulator.app` | Simulator only; not installable on a physical iPhone. Use Xcode with your own team for devices. |
+| iOS | 1.3.14 / 15 (unsigned Debug **simulator** app) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/ios/NeuroLift-1.3.14-build15-ios-simulator.app` | Simulator only; includes repeat-workout references and lazy-loaded screens. Use Xcode with your own team for devices. |
 
 Cleanup done 2026-10-13: deleted 13 older APKs from the old Codex `outputs/` folder and the Xcode derived-data folders `work/ios-rest-build` and `work/ios-tour-build` (~1.5 GB). APK paths in older sections below are historical and those files no longer exist. Use an Xcode derived-data path under `builds/` (or the default DerivedData) for future iOS builds, then copy only the final `.app` into `builds/ios/`.
 
