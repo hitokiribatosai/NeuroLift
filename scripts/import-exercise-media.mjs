@@ -6,6 +6,8 @@ const base = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/' + rev
 const guideBase = 'https://raw.githubusercontent.com/bryllim/workout-guide/' + guideRevision;
 // Only exact names and explicit aliases. Never use fuzzy matches for demonstrations.
 const aliases = {
+ 'Tricep Extension Machine': 'Machine Triceps Extension',
+ 'Neutral Grip Cable Row': 'Seated Cable Rows',
  'Flat Dumbbell Press': 'Dumbbell Bench Press',
  'Flat Barbell Bench Press': 'Barbell Bench Press - Medium Grip',
  'Incline Barbell Bench Press': 'Barbell Incline Bench Press - Medium Grip',

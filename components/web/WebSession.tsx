@@ -54,8 +54,18 @@ export function WebSession(p: Props) {
   const switchExercise = (next: number) => {
     if (next < 0 || next >= p.exercises.length || next === index) return;
     closeMenus();
+    // Keep the editor's footprint so shorter exercises cannot clamp the page's scroll.
+    // Never scrollIntoView here: switching should leave the user's viewport in place.
+    const card = cardRef.current;
+    if (card) {
+      card.style.minHeight = `${card.getBoundingClientRect().height}px`;
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        card.getAnimations().forEach(animation => animation.cancel());
+        const direction = (next > index ? 1 : -1) * (language === 'ar' ? -1 : 1);
+        card.animate([{ opacity: 0.55, transform: `translateX(${direction * 24}px)` }, { opacity: 1, transform: 'translateX(0)' }], { duration: 180, easing: 'ease-out' });
+      }
+    }
     setSelected(p.exercises[next].name);
-    if ((cardRef.current?.getBoundingClientRect().top ?? 0) < 80) cardRef.current?.scrollIntoView({ block: 'start' });
   };
   const exerciseNavigation = <div className="web-exercise-paging" role="group" aria-label={c('Switch exercise', 'Changer d’exercice', 'تغيير التمرين')}>
     <button className="web-secondary" disabled={index === 0} onClick={() => switchExercise(index - 1)}>{c('Previous', 'Précédent', 'السابق')}</button>

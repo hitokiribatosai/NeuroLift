@@ -444,15 +444,19 @@ html.light body .web-modal-backdrop, html.dark body .web-modal-backdrop { backgr
   .web-sheet-backdrop .web-more-panel > .web-primary { width: 100%; min-width: 0; }
 }
 @media (max-width: 380px) { .web-modal-backdrop .exercise-group-selector [role="group"] { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.website-redesign .web-reorder-item { position: relative; min-width: 0; }
-.website-redesign .web-reorder-item > span:nth-child(2) { min-width: 0; overflow-wrap: anywhere; }
-.website-redesign .web-reorder-item[data-moved="true"] {
+.website-redesign .web-reorder-item { position: relative; min-width: 0; background: var(--web-paper); border-color: var(--web-line); list-style: none; }
+.website-redesign .web-reorder-item > span { min-width: 0; overflow-wrap: anywhere; }
+.website-redesign .web-surface .web-reorder-item[data-moved="true"] {
   background: var(--web-accent) !important;
   border-color: var(--web-green) !important;
   box-shadow: 0 0 0 2px var(--web-green);
   z-index: 1;
 }
-.website-redesign .web-reorder-item[data-moved="true"] > span { color: #17242a !important; }
+.website-redesign .web-surface .web-reorder-item[data-moved="true"] > span { color: #17242a !important; }
+.website-redesign .web-drag-handle { touch-action: none; user-select: none; cursor: grab; min-width: 32px; min-height: 44px; font-size: 28px; color: var(--web-ink); }
+.website-redesign .web-reorder-item[data-dragging="true"] { z-index: 5; }
+.website-redesign .web-reorder-item[data-dragging="true"] .web-drag-handle { cursor: grabbing; }
+.website-redesign .web-set-editor { touch-action: pan-y pinch-zoom; overflow-anchor: none; }
 @media (prefers-reduced-motion: no-preference) {
   .website-redesign .web-view { animation: web-view-enter 160ms ease-out; }
   .web-modal-backdrop > .web-modal-theme { animation: web-sheet-enter 200ms ease-out; }

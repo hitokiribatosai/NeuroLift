@@ -18,7 +18,7 @@ text fallback. Review demonstrations visually before release and when updating
 the source revision. Two stills cannot show every part of a movement.
 Playback is opt-in and can be paused; both positions are visible initially.
 
-The catalog currently contains 240 entries (231 distinct exercise names); 168
+The catalog currently contains 240 entries (231 distinct exercise names); 170
 distinct exercises have bundled reference demos. Each demo has two still frames.
 Some demos use an explicitly reviewed equivalent movement from a source dataset;
 the UI names that source movement when it differs from the catalog title.

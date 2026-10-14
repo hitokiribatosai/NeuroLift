@@ -881,6 +881,20 @@
       "0b8e1a0b0fff86cafff45d851ea631a20d469713e9fd735031d3fffb0299fde6"
     ]
   },
+  "Neutral Grip Cable Row": {
+    "source": "free-exercise-db",
+    "sourceName": "Seated Cable Rows",
+    "sourceId": "Seated_Cable_Rows",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "images": [
+      "/exercises/Seated_Cable_Rows-0.jpg",
+      "/exercises/Seated_Cable_Rows-1.jpg"
+    ],
+    "hashes": [
+      "f5a4adf972f93a6c7b09e003f23005a1163653a7e36b71f1e374acab0243ddf7",
+      "0b8e1a0b0fff86cafff45d851ea631a20d469713e9fd735031d3fffb0299fde6"
+    ]
+  },
   "Inverted Rows": {
     "source": "workout-guide",
     "sourceName": "Inverted Row",
@@ -2083,6 +2097,20 @@
     "hashes": [
       "c8469b9ac5f0bb97e44d9559b36c45b11f23b806f05c259e70c007b206721028",
       "56ec007d71e605a9c47e01ff961f9a151db0c5727bc527ce88ccb3e0ad44a30e"
+    ]
+  },
+  "Tricep Extension Machine": {
+    "source": "free-exercise-db",
+    "sourceName": "Machine Triceps Extension",
+    "sourceId": "Machine_Triceps_Extension",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "images": [
+      "/exercises/Machine_Triceps_Extension-0.jpg",
+      "/exercises/Machine_Triceps_Extension-1.jpg"
+    ],
+    "hashes": [
+      "0c7f6ceb6d900dce6af0efcf6cc19e05ecc1b4a3f3c76d47b21f75c0b168d92f",
+      "aae6a4b7ee54605f262fb2b04da5343a32711aca9314640cc7db75f37ec4c0fe"
     ]
   },
   "Dip Machine": {

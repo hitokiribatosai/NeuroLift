@@ -30,7 +30,7 @@ export const Modal: React.FC<ModalProps> = ({ children, isOpen, onClose, label =
   const previous = document.activeElement as HTMLElement | null;
   const overflow = document.body.style.overflow;
   document.body.style.overflow = 'hidden';
-  panel.current?.focus();
+  panel.current?.focus({ preventScroll: true });
   const dismiss = () => close.current();
   const unregister = registerOverlay(dismiss);
   const keyboard = (e: KeyboardEvent) => {
@@ -54,7 +54,7 @@ export const Modal: React.FC<ModalProps> = ({ children, isOpen, onClose, label =
    }
   };
   document.addEventListener('keydown', keyboard);
-  return () => { unregister(); document.body.style.overflow = overflow; document.removeEventListener('keydown',keyboard); previous?.focus(); };
+  return () => { unregister(); document.body.style.overflow = overflow; document.removeEventListener('keydown',keyboard); previous?.focus({ preventScroll: true }); };
  }, [isOpen]);
  if (!isOpen) return null;
  return createPortal(

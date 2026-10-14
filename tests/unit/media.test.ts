@@ -8,7 +8,9 @@ test('every bundled demonstration matches its pinned checksum', () => {
  const catalog = source.slice(source.indexOf('const db:'), source.indexOf('export const getExerciseDatabase'));
  const names = new Set([...catalog.matchAll(/\{ en: "([^"]+)"/g)].map(match => match[1]));
  expect(names.size).toBe(231);
- expect(Object.keys(media)).toHaveLength(168);
+ expect(Object.keys(media)).toHaveLength(170);
+ expect(media['Neutral Grip Cable Row'].sourceId).toBe('Seated_Cable_Rows');
+ expect(media['Tricep Extension Machine'].sourceId).toBe('Machine_Triceps_Extension');
  for (const [name, demo] of Object.entries(media)) {
   expect(names.has(name)).toBe(true);
   expect(demo.images).toHaveLength(2);

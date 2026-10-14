@@ -1,5 +1,11 @@
 # Missing exercise media research — 2026-10-14
 
+## Implementation follow-up
+
+Visually approved and bundled the pinned Free Exercise DB pairs for `Tricep Extension Machine` → `Machine Triceps Extension` and `Neutral Grip Cable Row` → `Seated Cable Rows`. The latter uses a V-handle with palms facing each other; both photos and the pinned instructions confirm the neutral grip. Coverage is now **170/231**, leaving **61** without demonstrations. Existing source credits/checksums remain in place.
+
+Rejected the proposed `Reverse Grip Bent-Over Rows` import after fetching both images: `/0.jpg` and `/1.jpg` are byte-identical (SHA-1 `f642d8e885bc70006ffec3d93646d795d27cc6f3`), so they cannot provide a start/finish demonstration. No AI artwork or unclear-license assets were imported. The research below records the earlier candidate stage, not the current coverage count.
+
 Research only: no application mappings, assets or native binaries changed. Counted current catalog against `exerciseMedia.json`: 231 distinct names, 168 demonstrated, 63 missing. Candidate records below are metadata/instruction matches, not completed visual approval or guaranteed final coverage.
 
 ## Sources inspected

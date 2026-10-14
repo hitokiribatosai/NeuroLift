@@ -1,0 +1,65 @@
+# Exercises without demonstrations
+
+Updated 2026-10-14: 170 of 231 distinct exercises have bundled two-frame demonstrations; the following 61 still use the honest missing-image fallback. Do not substitute different equipment, grip or movement merely to fill the list.
+
+- Reverse Grip BB Bench Press
+- Low-to-High Cable Fly
+- Cable Y-Raise (Upper Chest Focus)
+- Archer Pushups (Incline focus)
+- Machine Incline Fly
+- Hammer Strength Chest Press
+- Single Arm Cable Press
+- Flat Cable Bench Press
+- Decline Hammer Strength Press
+- High-to-Low Cable Fly
+- Cable Pullover (Lower Chest)
+- Barbell Rows (Underhand)
+- Underhand Cable Row
+- Wide Grip Pull-ups
+- Snatch Grip High Pull
+- Overhead Cable Face Pull
+- Inverted Rows (Wide)
+- Rear Delt Pushups
+- Upper Back Row Machine
+- Seal Row
+- Single Arm Seated Row
+- Standing Cable Row
+- Cable Face Away Row
+- Cable Good Morning
+- Cable Back Extension
+- Single Leg Cable DL
+- Bridges
+- Back Extension Machine
+- Cable Y-Raise (Front Delt)
+- Cable Face Away Press
+- Chest-Supported Press
+- Lean-Away DB Raise
+- Behind the Back Raise
+- Behind the Back Cable Raise
+- Side Plank Raise
+- Chest Supported Rear Fly
+- Face Pull (DB)
+- Scapular Shrugs
+- Cable Squat
+- Cable Leg Extension
+- Cable Step Up
+- Cable Lunge
+- Cable Sissy Squat
+- Pendulum Squat
+- Lying Leg Curl (DB)
+- Single Leg Cable Curl
+- Cable SLDL
+- Cable Hamstring Walkout
+- Cable Glute-Ham Raise
+- Cable Squat (Wide)
+- Cable Curtsy Lunge
+- Hip Thrust Machine
+- One Leg DB Calf Raise
+- Cable Standing Calf Raise
+- Cable Single Leg Raise
+- Cable Seated Calf Raise
+- Cable Leg Press Calf Raise
+- Cable Calf Stretch
+- Rotary Calf Machine
+- Wrist Curl Machine
+- Butt Kicks

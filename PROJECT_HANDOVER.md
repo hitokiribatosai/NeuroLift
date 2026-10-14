@@ -2,6 +2,18 @@
 
 Last reviewed: **2026-10-14**. Read `AGENTS.md` first on recovery.
 
+### Gym workflow, media and rebuilds — 2026-10-14
+
+Workout search now searches only the currently browsed muscle (across its areas), not the global library. Reordering has a touch/mouse drag handle, animated movement, edge auto-scroll, persistent selected-card highlighting and retained keyboard up/down buttons; Apply commits and Cancel discards the temporary order. Fixed theme specificity that overrode the highlight. Active-card horizontal swipes and Previous/Next no longer call scrollIntoView; the editor retains its height to prevent scroll clamping when switching to a shorter exercise. Short transitions respect reduced motion; vertical scrolling and pinch zoom remain available. Logged sets are preserved. Removed template heading accent bars and the form-cue glow; shared modal focus restoration no longer scrolls the page. The large horizontal stripe in the owner's screenshot was already absent from current source; fresh template screenshots confirm the unobstructed heading, and rebuilding replaces stale installed assets.
+
+Added visually reviewed start/finish pairs for Tricep Extension Machine and Neutral Grip Cable Row. Coverage **170/231**, **61 missing** listed in `docs/MISSING-EXERCISE-IMAGES.md`. Rejected underhand barbell-row candidate because both upstream frames are identical. No AI/unclear-license media added. Attribution and pinned checksums retained.
+
+Final template-specific recheck: **6/6** passed across Chromium/WebKit and web/Android/iOS modes, including delete confirmation, absence of heading decorations, and cancel preserving the template. Save/delete screenshots visually reviewed. Older artifacts were moved, not destroyed, to the temporary recovery path below.
+
+Verification: `npm run check` passed (types, lint, 34 unit tests, production build); **89 Chromium** and **42 selected mobile WebKit** browser regressions passed, including all three platform modes for scoped search, drag/highlight/apply, swipe scroll position, preserved sets and clean template heading. An initial WebKit run overlapped native asset generation and had three page-load failures; the entire 42-test run passed after rebuilding a stable website bundle. New synthetic-touch tests initially missed required identifiers and drag tests measured during layout animation; corrected the tests to use valid events/stable targets. Visual template review passed. No new physical-phone gesture or notification acceptance, native instrumentation, or native simulator interaction test is claimed in this step.
+
+Both native release-asset checks and compilations passed. Android **1.3.16/code 19** APK and iOS **1.3.16/build 17 simulator-only app** contain these fixes; packaged public assets match synchronized source byte-for-byte. Android signature matches Build 18 for in-place upgrades. APK SHA-256: `555e653b16dff5e0cbe0f31566ef58d87cba1e71f99519f61f392341b18a71c4`. Previous Android 18/iOS 16 artifacts moved to `/private/tmp/neurolift-pre-gym-fixes.EAV4fb/` for temporary recovery; only latest artifacts remain in their build folders. Builds are local, not GitHub release uploads. Installed devices must receive the new binary. Source checkpoint prepared: `checkpoint-2026-10-14-gym-flow`; verify remote refs when recovering. Pushing source does not itself verify the Vercel deployment.
+
 ### GitHub exercise-image research — 2026-10-14
 
 Owner requested deeper GitHub research for missing demonstrations. See `docs/MEDIA-RESEARCH-2026-10-14.md` for source/license findings, concrete candidate aliases and rejected mismatches. Recount: 231 unique exercises, 168 demonstrated, 63 missing. No application media changes or rebuilds in this research step. Two strong overlooked photo candidates are underhand barbell rows and machine triceps extensions; visual verification still required. RepDB has relevant start/peak illustrations but AI provenance and redistribution conditions need discussion; GymVisual-derived forks do not automatically grant downstream media rights. Documentation recovery tag: `checkpoint-2026-10-14-media-research`.
@@ -62,8 +74,8 @@ All local builds now live in the git-ignored `builds/` folder of the working che
 
 | Platform | Current build | Path | Notes |
 | --- | --- | --- | --- |
-| Android | 1.3.15 / 18 (debug-signed test APK, HTTPS preview API) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/android/NeuroLift-1.3.15-build18-android-test.apk` | SHA-256 `c4d385328a33a05441af23038ee9c80fccb8029f23048b4031de8e0fab657e85`. Includes repeat workouts and finish breakdown. |
-| iOS | 1.3.15 / 16 (unsigned Debug **simulator** app) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/ios/NeuroLift-1.3.15-build16-ios-simulator.app` | Simulator only; includes repeat workouts and finish breakdown. Use Xcode with your own team for devices. |
+| Android | 1.3.16 / 19 (debug-signed test APK, HTTPS preview API) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/android/NeuroLift-1.3.16-build19-android-test.apk` | SHA-256 `555e653b16dff5e0cbe0f31566ef58d87cba1e71f99519f61f392341b18a71c4`. Includes gym-flow fixes and new media. |
+| iOS | 1.3.16 / 17 (unsigned Debug **simulator** app) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/ios/NeuroLift-1.3.16-build17-ios-simulator.app` | Simulator only; includes gym-flow fixes and new media. Use Xcode with your own team for devices. |
 
 Cleanup done 2026-10-13: deleted 13 older APKs from the old Codex `outputs/` folder and the Xcode derived-data folders `work/ios-rest-build` and `work/ios-tour-build` (~1.5 GB). APK paths in older sections below are historical and those files no longer exist. Use an Xcode derived-data path under `builds/` (or the default DerivedData) for future iOS builds, then copy only the final `.app` into `builds/ios/`.
 

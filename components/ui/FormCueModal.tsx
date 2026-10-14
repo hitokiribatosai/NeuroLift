@@ -18,9 +18,6 @@ export const FormCueModal: React.FC<FormCueModalProps> = ({
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
             <div className="w-full max-w-lg bg-zinc-950 border border-zinc-800 rounded-3xl p-6 md:p-8 relative overflow-hidden">
-                {/* Decoration */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-
                 <div className="flex items-center justify-between mb-8 relative z-10">
                     <h2 className="text-2xl font-black text-white uppercase tracking-tighter w-3/4">
                         {cues.exerciseName}

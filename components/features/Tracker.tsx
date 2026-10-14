@@ -19,7 +19,8 @@ import { safeStorage } from '../../utils/storage';
 import { useTooltip } from '../../hooks/useTooltip';
 import { App as CapApp } from '@capacitor/app';
 import { Modal } from '../ui/Modal';
-import { motion, AnimatePresence, Reorder, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence, Reorder } from 'framer-motion';
+import { ReorderExercise } from '../web/ReorderExercise';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { hapticFeedback } from '../../utils/haptics';
@@ -102,13 +103,9 @@ export const Tracker: React.FC = () => {
   const [showResetSessionConfirm, setShowResetSessionConfirm] = useState(false);
   const [showReorderModal, setShowReorderModal] = useState(false);
   const [tempReorderList, setTempReorderList] = useState<ActiveExercise[]>([]);
-  const reducedMotion = useReducedMotion();
   const [reorderFeedback, setReorderFeedback] = useState<{ name: string; position: number; sequence: number } | null>(null);
   useEffect(() => {
     if (!showReorderModal) { setReorderFeedback(null); return; }
-    if (!reorderFeedback) return;
-    const timeout = window.setTimeout(() => setReorderFeedback(null), 1500);
-    return () => window.clearTimeout(timeout);
   }, [showReorderModal, reorderFeedback]);
   const moveReorderExercise = (index: number, offset: -1 | 1) => {
     const target = index + offset;
@@ -1093,8 +1090,8 @@ export const Tracker: React.FC = () => {
                         machines: { icon: '⚙️', key: 'cat_machines' },
                       };
                       const allMatches: { name: string; muscle: string; category: string }[] = [];
-                      // Global search across all muscles
-                      Object.keys(exercisesByMuscle).forEach(muscle => {
+                      // Workout search stays within the muscle currently being browsed.
+                      [currentPickerMuscle].forEach(muscle => {
                         Object.keys(exercisesByMuscle[muscle]).forEach(subGroup => {
                           (['dumbbells', 'barbells', 'cables', 'bodyweight', 'machines'] as const).forEach(category => {
                             const exercises = exercisesByMuscle[muscle][subGroup][category] || [];
@@ -1794,7 +1791,6 @@ export const Tracker: React.FC = () => {
       <Modal isOpen={showSaveTemplateModal} onClose={() => setShowSaveTemplateModal(false)}>
         <div className="relative w-full rounded-[3rem] border border-zinc-800 bg-zinc-950 p-8 shadow-3xl overflow-hidden">
           <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-8 flex items-center gap-3">
-            <span className="w-2 h-6 bg-teal-500 rounded-full"></span>
             {t('tracker_save_template')}
           </h3>
           <div className="space-y-6">
@@ -1830,7 +1826,6 @@ export const Tracker: React.FC = () => {
       <Modal isOpen={showSaveCompletedModal} onClose={() => setShowSaveCompletedModal(false)}>
         <div className="relative w-full rounded-[3rem] border border-zinc-800 bg-zinc-950 p-8 shadow-3xl overflow-hidden">
           <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-8 flex items-center gap-3">
-            <span className="w-2 h-6 bg-teal-500 rounded-full"></span>
             {t('tracker_save_template')}
           </h3>
           <div className="space-y-6">
@@ -1866,7 +1861,6 @@ export const Tracker: React.FC = () => {
       <Modal isOpen={showLoadTemplateModal} onClose={() => setShowLoadTemplateModal(false)}>
         <div className="relative w-full rounded-[3rem] border border-zinc-800 bg-zinc-950 p-8 shadow-3xl overflow-hidden max-h-[80vh] flex flex-col">
           <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-8 flex items-center gap-3 flex-shrink-0">
-            <span className="w-2 h-6 bg-teal-500 rounded-full"></span>
             {t('tracker_templates_title')}
           </h3>
 
@@ -1931,7 +1925,6 @@ export const Tracker: React.FC = () => {
       <Modal isOpen={showEditTemplateModal} onClose={() => setShowEditTemplateModal(false)}>
         <div className="relative w-full max-w-4xl rounded-[3rem] border border-zinc-800 bg-zinc-950 p-8 shadow-3xl overflow-hidden max-h-[90vh] flex flex-col">
           <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-8 flex items-center gap-3 flex-shrink-0">
-            <span className="w-2 h-6 bg-teal-500 rounded-full"></span>
             {t('tracker_save_template')} - {editingTemplate?.name}
           </h3>
 
@@ -2122,12 +2115,11 @@ export const Tracker: React.FC = () => {
             {t('tracker_reorder_title')}
           </h3>
 
-          <motion.div layoutScroll className="flex-1 overflow-y-auto space-y-3 mb-6 p-1" data-reorder-list>
+          <Reorder.Group axis="y" values={tempReorderList} onReorder={setTempReorderList} layoutScroll className="flex-1 min-h-0 overflow-y-auto space-y-3 mb-6 p-1" data-reorder-list>
             {tempReorderList.map((ex, idx) => (
-              <motion.div key={ex.name} layout={reducedMotion ? false : 'position'}
-                transition={{ layout: { duration: 0.22, ease: 'easeOut' } }}
-                data-exercise={ex.name} data-moved={reorderFeedback?.name === ex.name ? 'true' : undefined}
-                className="web-reorder-item flex items-center gap-3 p-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl">
+              <ReorderExercise key={ex.name} exercise={ex} selected={reorderFeedback?.name === ex.name}
+                select={() => setReorderFeedback(previous => ({ name: ex.name, position: idx + 1, sequence: (previous?.sequence ?? 0) + 1 }))}
+                label={`${language === 'fr' ? 'Déplacer' : language === 'ar' ? 'اسحب' : 'Drag'}: ${getExerciseTranslation(ex.name, language)}`}>
                 <span className="text-2xl font-black text-teal-500 w-8">{idx + 1}</span>
                 <span className="flex-1 text-white font-bold">{getExerciseTranslation(ex.name, language)}</span>
                 <div className="flex flex-col gap-1">
@@ -2152,9 +2144,9 @@ export const Tracker: React.FC = () => {
                     </svg>
                   </button>
                 </div>
-              </motion.div>
+              </ReorderExercise>
             ))}
-          </motion.div>
+          </Reorder.Group>
 
           <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
             {reorderFeedback && `${getExerciseTranslation(reorderFeedback.name, language)} — ${language === 'fr' ? 'position' : language === 'ar' ? 'الموضع' : 'position'} ${reorderFeedback.position} / ${tempReorderList.length}`}
