@@ -2,6 +2,10 @@
 
 Last reviewed: **2026-10-14**. Read `AGENTS.md` first on recovery.
 
+### GitHub exercise-image research — 2026-10-14
+
+Owner requested deeper GitHub research for missing demonstrations. See `docs/MEDIA-RESEARCH-2026-10-14.md` for source/license findings, concrete candidate aliases and rejected mismatches. Recount: 231 unique exercises, 168 demonstrated, 63 missing. No application media changes or rebuilds in this research step. Two strong overlooked photo candidates are underhand barbell rows and machine triceps extensions; visual verification still required. RepDB has relevant start/peak illustrations but AI provenance and redistribution conditions need discussion; GymVisual-derived forks do not automatically grant downstream media rights. Documentation recovery tag: `checkpoint-2026-10-14-media-research`.
+
 ### Per-exercise finish screen and both rebuilds — 2026-10-14
 
 Shared finish screen now leads with an exercise breakdown: completed set details, weight × reps volume, and comparison against the latest previous non-demo session for that same exercise. Historical references are fetched before saving the current workout. Uncompleted exercises/sets do not appear in the breakdown. Bodyweight sets show reps, timed sets show seconds; incompatible reference types are not compared. Session duration/overall volume remain below the breakdown. EN/FR/AR labels included. Changes are shared by website, Android and iOS; no hosting purchase or live account test was performed.
