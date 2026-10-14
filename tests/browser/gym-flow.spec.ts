@@ -18,6 +18,30 @@ async function seed(page: Page, platform: string, phase = 'active') {
 }
 test.use({ serviceWorkers: 'block' });
 for (const platform of ['web', 'android', 'ios']) {
+  test(`${platform}: only the exercise card follows the finger and cancelled swipes spring back`, async ({ page }) => {
+    await seed(page, platform);
+    const card = page.locator('.web-set-editor');
+    await expect(card).toBeVisible();
+    const header = await page.locator('.web-session-header').boundingBox();
+    const offset = () => card.evaluate(el => new DOMMatrixReadOnly(getComputedStyle(el).transform).m41);
+    const settled = () => expect.poll(() => card.evaluate(el => el.getAnimations().filter(a => a.playState === 'running').length)).toBe(0);
+    await card.dispatchEvent('touchstart', { touches: [{ identifier: 0, clientX: 280, clientY: 300 }] });
+    await card.dispatchEvent('touchmove', { touches: [{ identifier: 0, clientX: 160, clientY: 304 }] });
+    expect(await offset()).toBe(-120);
+    expect(await page.locator('.web-session-header').boundingBox()).toEqual(header);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await card.dispatchEvent('touchcancel');
+    await settled();
+    expect(await offset()).toBe(0);
+    await expect(card.locator('h2')).toHaveText(names[0]);
+    await card.dispatchEvent('touchstart', { touches: [{ identifier: 0, clientX: 280, clientY: 300 }] });
+    await card.dispatchEvent('touchmove', { touches: [{ identifier: 0, clientX: 160, clientY: 304 }] });
+    await card.dispatchEvent('touchend', { changedTouches: [{ identifier: 0, clientX: 100, clientY: 304 }] });
+    await expect(card.locator('h2')).toHaveText(names[1]);
+    await settled();
+    expect(await offset()).toBe(0);
+    await expect(page.getByLabel('KG — SET 1', { exact: true })).toHaveValue('20');
+  });
   test(`${platform}: workout search stays in Chest`, async ({ page }) => {
     await seed(page, platform, 'selection');
     const search = page.getByPlaceholder(/search/i).first();
@@ -37,6 +61,7 @@ for (const platform of ['web', 'android', 'ios']) {
     await card.dispatchEvent('touchstart', { touches: [{ identifier: 0, clientX: 280, clientY: 300 }] });
     await card.dispatchEvent('touchend', { changedTouches: [{ identifier: 0, clientX: 80, clientY: 305 }] });
     await expect(card.locator('h2')).toHaveText(names[1]);
+    await expect.poll(() => card.evaluate(el => el.getAnimations().filter(a => a.playState === 'running').length)).toBe(0);
     expect(Math.abs((await page.evaluate(() => scrollY)) - before)).toBeLessThan(3);
     await card.dispatchEvent('touchstart', { touches: [{ identifier: 0, clientX: 80, clientY: 300 }] });
     await card.dispatchEvent('touchend', { changedTouches: [{ identifier: 0, clientX: 280, clientY: 305 }] });

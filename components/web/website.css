@@ -457,6 +457,7 @@ html.light body .web-modal-backdrop, html.dark body .web-modal-backdrop { backgr
 .website-redesign .web-reorder-item[data-dragging="true"] { z-index: 5; }
 .website-redesign .web-reorder-item[data-dragging="true"] .web-drag-handle { cursor: grabbing; }
 .website-redesign .web-set-editor { touch-action: pan-y pinch-zoom; overflow-anchor: none; }
+.website-redesign .web-exercise-swipe-viewport { overflow-x: clip; overflow-y: visible; padding: 4px; margin: -4px; }
 @media (prefers-reduced-motion: no-preference) {
   .website-redesign .web-view { animation: web-view-enter 160ms ease-out; }
   .web-modal-backdrop > .web-modal-theme { animation: web-sheet-enter 200ms ease-out; }

@@ -143,6 +143,7 @@ test('exercise card buttons and swipes preserve sets and dismiss menus', async (
   await page.getByRole('button', { name: 'Next', exact: true }).last().click();
   await expect(page.locator('.web-set-editor h2')).toHaveText('Pull-ups');
   const card = page.locator('.web-set-editor');
+  await expect.poll(() => card.evaluate(el => el.getAnimations().filter(a => a.playState === 'running').length)).toBe(0);
   await card.dispatchEvent('touchstart', { touches: [{ identifier: 0, clientX: 100, clientY: 200 }] });
   await card.dispatchEvent('touchend', { changedTouches: [{ identifier: 0, clientX: 260, clientY: 205 }] });
   await expect(card.locator('h2')).toHaveText('Incline Dumbbell Press');

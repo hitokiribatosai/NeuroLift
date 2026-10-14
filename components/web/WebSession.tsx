@@ -40,7 +40,32 @@ export function WebSession(p: Props) {
   const previous = exercise && p.history.get(exercise.name);
   const sessionRef = useRef<HTMLElement>(null);
   const cardRef = useRef<HTMLElement>(null);
-  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const touchStart = useRef<{ x: number; y: number; axis: 'pending' | 'horizontal' | 'vertical' } | null>(null);
+  const sliding = useRef(false);
+  const slideAnimation = useRef<Animation | null>(null);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; slideAnimation.current?.cancel(); };
+  }, []);
+  const animateCard = async (from: number, to: number, duration: number) => {
+    const card = cardRef.current;
+    if (!card) return;
+    slideAnimation.current?.cancel();
+    card.style.transform = `translateX(${to}px)`;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const animation = card.animate([{ transform: `translateX(${from}px)` }, { transform: `translateX(${to}px)` }], { duration, easing: 'cubic-bezier(.22,.61,.36,1)' });
+    slideAnimation.current = animation;
+    await animation.finished.catch(() => undefined);
+  };
+  const returnCard = async () => {
+    const card = cardRef.current;
+    if (!card || sliding.current) return;
+    sliding.current = true;
+    const offset = new DOMMatrixReadOnly(getComputedStyle(card).transform).m41;
+    await animateCard(offset, 0, 160);
+    sliding.current = false;
+  };
   const closeMenus = () => sessionRef.current?.querySelectorAll('details[open]').forEach(menu => menu.removeAttribute('open'));
   useEffect(() => {
     const outside = (event: PointerEvent) => sessionRef.current?.querySelectorAll('details[open]').forEach(menu => {
@@ -51,21 +76,27 @@ export function WebSession(p: Props) {
     document.addEventListener('keydown', escape);
     return () => { document.removeEventListener('pointerdown', outside); document.removeEventListener('keydown', escape); };
   }, []);
-  const switchExercise = (next: number) => {
-    if (next < 0 || next >= p.exercises.length || next === index) return;
+  const switchExercise = async (next: number) => {
+    if (sliding.current) return;
+    if (next < 0 || next >= p.exercises.length || next === index) { void returnCard(); return; }
+    sliding.current = true;
     closeMenus();
     // Keep the editor's footprint so shorter exercises cannot clamp the page's scroll.
     // Never scrollIntoView here: switching should leave the user's viewport in place.
     const card = cardRef.current;
     if (card) {
       card.style.minHeight = `${card.getBoundingClientRect().height}px`;
-      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        card.getAnimations().forEach(animation => animation.cancel());
-        const direction = (next > index ? 1 : -1) * (language === 'ar' ? -1 : 1);
-        card.animate([{ opacity: 0.55, transform: `translateX(${direction * 24}px)` }, { opacity: 1, transform: 'translateX(0)' }], { duration: 180, easing: 'ease-out' });
-      }
+      const direction = (next > index ? 1 : -1) * (language === 'ar' ? -1 : 1);
+      const width = card.offsetWidth + 24;
+      const offset = new DOMMatrixReadOnly(getComputedStyle(card).transform).m41;
+      await animateCard(offset, -direction * width, 160);
+      if (!mounted.current) return;
+      setSelected(p.exercises[next].name);
+      await animateCard(direction * width, 0, 200);
+    } else {
+      setSelected(p.exercises[next].name);
     }
-    setSelected(p.exercises[next].name);
+    sliding.current = false;
   };
   const exerciseNavigation = <div className="web-exercise-paging" role="group" aria-label={c('Switch exercise', 'Changer d’exercice', 'تغيير التمرين')}>
     <button className="web-secondary" disabled={index === 0} onClick={() => switchExercise(index - 1)}>{c('Previous', 'Précédent', 'السابق')}</button>
@@ -86,21 +117,39 @@ export function WebSession(p: Props) {
           <span>{p.rest !== null && p.rest > 0 ? <><strong>{p.rest}s</strong> {t('tracker_resting')}</> : c('Ready for your next set', 'Prêt pour la prochaine série', 'جاهز للمجموعة التالية')}</span>
           {p.rest !== null && p.rest > 0 && <div><button onClick={p.addRest}>+30s</button><button onClick={p.skipRest}>{t('tracker_skip_rest')}</button></div>}
         </aside>
+        <div className="web-exercise-swipe-viewport">
         {exercise ? <article className="web-panel web-set-editor" ref={cardRef}
           onTouchStart={event => {
             touchStart.current = null;
-            if (event.touches.length !== 1 || (event.target as Element).closest('input, button, select, textarea, a, details')) return;
-            touchStart.current = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+            if (sliding.current) return;
+            if (event.touches.length !== 1) { void returnCard(); return; }
+            if ((event.target as Element).closest('input, button, select, textarea, a, details')) return;
+            touchStart.current = { x: event.touches[0].clientX, y: event.touches[0].clientY, axis: 'pending' };
           }}
-          onTouchCancel={() => { touchStart.current = null; }}
+          onTouchMove={event => {
+            const start = touchStart.current;
+            if (!start || sliding.current) return;
+            if (event.touches.length !== 1) { touchStart.current = null; void returnCard(); return; }
+            const dx = event.touches[0].clientX - start.x;
+            const dy = event.touches[0].clientY - start.y;
+            if (start.axis === 'pending' && Math.max(Math.abs(dx), Math.abs(dy)) > 10) {
+              start.axis = Math.abs(dx) > Math.abs(dy) * 1.5 ? 'horizontal' : 'vertical';
+            }
+            if (start.axis !== 'horizontal') return;
+            closeMenus();
+            const next = index + (dx < 0 ? 1 : -1) * (language === 'ar' ? -1 : 1);
+            const offset = next < 0 || next >= p.exercises.length ? dx * 0.2 : dx;
+            if (cardRef.current) cardRef.current.style.transform = `translateX(${offset}px)`;
+          }}
+          onTouchCancel={() => { touchStart.current = null; void returnCard(); }}
           onTouchEnd={event => {
             const start = touchStart.current;
             touchStart.current = null;
             if (!start || !event.changedTouches.length) return;
             const dx = event.changedTouches[0].clientX - start.x;
             const dy = event.changedTouches[0].clientY - start.y;
-            if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 2) return;
-            switchExercise(index + (dx < 0 ? 1 : -1) * (language === 'ar' ? -1 : 1));
+            if (start.axis === 'vertical' || Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 2) { void returnCard(); return; }
+            void switchExercise(index + (dx < 0 ? 1 : -1) * (language === 'ar' ? -1 : 1));
           }}>
           {exerciseNavigation}
           <div className="web-section-heading"><div><h2>{getExerciseTranslation(exercise.name, language)}</h2>{exercise.targetReps && <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{t('tracker_target_reps')}: {exercise.targetReps}</p>}</div><button className="web-secondary" onClick={() => p.demo(exercise.name)}>{t('library_view_details')}</button></div>
@@ -124,6 +173,7 @@ export function WebSession(p: Props) {
           <button className="web-remove-exercise" onClick={() => p.deleteExercise(index)}>{t('tracker_delete_exercise')}</button>
           {exerciseNavigation}
         </article> : <div className="web-panel"><p>{c('Add an exercise to begin.', 'Ajoutez un exercice pour commencer.', 'أضف تمريناً للبدء.')}</p><button className="web-primary" onClick={p.edit}>{t('tracker_add_exercises')}</button></div>}
+        </div>
       </div>
     </div>
     <footer className="web-session-actions"><button className="web-secondary" onClick={p.reset}>{c('Reset session', 'Réinitialiser la séance', 'إعادة ضبط الحصة')}</button>{confirmFinish ? <div role="group" aria-label={t('tracker_finish')}><p>{c('Finish now? Only completed sets count toward training volume.', 'Terminer ? Seules les séries terminées comptent dans le volume.', 'إنهاء الآن؟ تُحتسب المجموعات المكتملة فقط ضمن حجم التدريب.')}</p><button className="web-secondary" onClick={() => setConfirmFinish(false)}>{t('tracker_cancel')}</button><button className="web-primary" onClick={p.finish}>{t('tracker_finish')}</button></div> : <button className="web-primary" disabled={!completed} onClick={() => setConfirmFinish(true)}>{t('tracker_finish')} ↗</button>}</footer>

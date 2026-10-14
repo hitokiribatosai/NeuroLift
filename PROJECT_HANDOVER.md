@@ -2,6 +2,14 @@
 
 Last reviewed: **2026-10-14**. Read `AGENTS.md` first on recovery.
 
+### Finger-following exercise card swipe — 2026-10-14
+
+Owner clarified that the active card must visibly follow the finger, not merely change exercise after release. WebSession now translates only the exercise editor during a horizontally locked touch gesture; completion slides it out and brings the next/previous card in from the opposite side. Short/cancelled gestures spring back, first/last exercise edges resist overswiping, vertical intent locks to scrolling, multitouch cancels, and input/button/menu interactions do not initiate swipes. Container clips horizontal overflow. Existing scroll-footprint preservation, stored sets, RTL direction and reduced-motion preference are retained. Next/Previous remain optional accessible controls. Concurrent transitions are guarded and animations cancelled on unmount.
+
+Verification: `npm run check` passed (typecheck, lint, 34 unit tests, production build); **64 Chromium/mobile-WebKit regressions passed**, including finger-following offset, fixed surrounding header, no horizontal page overflow, cancelled swipe return, preserved data/scroll, reorder and templates. Synthetic browser gestures are not physical-phone acceptance. Both native asset checks and native compilations passed; public assets in APK and simulator app compare byte-for-byte with synchronized source. No new native interaction or physical-device test is claimed.
+
+Latest artifacts: Android **1.3.17/code 20**, SHA-256 `3ca5fa14d776dad6ad75bd4941cf5ce2b0b39853645229e9582a889f0f840d1a`, same debug signer as prior APK; iOS **1.3.17/build 18**, unsigned simulator app only. Previous Android 19/iOS 17 artifacts moved to `/private/tmp/neurolift-pre-card-swipe.6ivLQP/` for temporary recovery, not destroyed. Local artifacts are not GitHub release uploads. Prepared source checkpoint: `checkpoint-2026-10-14-card-swipe`; verify remote refs on recovery. Install the new binary to receive the animation on a phone; pushing source alone does not update installed apps or prove Vercel deployment.
+
 ### Gym workflow, media and rebuilds — 2026-10-14
 
 Workout search now searches only the currently browsed muscle (across its areas), not the global library. Reordering has a touch/mouse drag handle, animated movement, edge auto-scroll, persistent selected-card highlighting and retained keyboard up/down buttons; Apply commits and Cancel discards the temporary order. Fixed theme specificity that overrode the highlight. Active-card horizontal swipes and Previous/Next no longer call scrollIntoView; the editor retains its height to prevent scroll clamping when switching to a shorter exercise. Short transitions respect reduced motion; vertical scrolling and pinch zoom remain available. Logged sets are preserved. Removed template heading accent bars and the form-cue glow; shared modal focus restoration no longer scrolls the page. The large horizontal stripe in the owner's screenshot was already absent from current source; fresh template screenshots confirm the unobstructed heading, and rebuilding replaces stale installed assets.
@@ -74,8 +82,8 @@ All local builds now live in the git-ignored `builds/` folder of the working che
 
 | Platform | Current build | Path | Notes |
 | --- | --- | --- | --- |
-| Android | 1.3.16 / 19 (debug-signed test APK, HTTPS preview API) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/android/NeuroLift-1.3.16-build19-android-test.apk` | SHA-256 `555e653b16dff5e0cbe0f31566ef58d87cba1e71f99519f61f392341b18a71c4`. Includes gym-flow fixes and new media. |
-| iOS | 1.3.16 / 17 (unsigned Debug **simulator** app) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/ios/NeuroLift-1.3.16-build17-ios-simulator.app` | Simulator only; includes gym-flow fixes and new media. Use Xcode with your own team for devices. |
+| Android | 1.3.17 / 20 (debug-signed test APK, HTTPS preview API) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/android/NeuroLift-1.3.17-build20-android-test.apk` | SHA-256 `3ca5fa14d776dad6ad75bd4941cf5ce2b0b39853645229e9582a889f0f840d1a`. Includes finger-following card swipe. |
+| iOS | 1.3.17 / 18 (unsigned Debug **simulator** app) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/ios/NeuroLift-1.3.17-build18-ios-simulator.app` | Simulator only; includes finger-following card swipe. Use Xcode with your own team for devices. |
 
 Cleanup done 2026-10-13: deleted 13 older APKs from the old Codex `outputs/` folder and the Xcode derived-data folders `work/ios-rest-build` and `work/ios-tour-build` (~1.5 GB). APK paths in older sections below are historical and those files no longer exist. Use an Xcode derived-data path under `builds/` (or the default DerivedData) for future iOS builds, then copy only the final `.app` into `builds/ios/`.
 
