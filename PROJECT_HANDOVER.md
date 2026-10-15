@@ -1,6 +1,14 @@
 # NeuroLift project handover
 
-Last reviewed: **2026-10-14**. Read `AGENTS.md` first on recovery.
+Last reviewed: **2026-10-15**. Read `AGENTS.md` first on recovery.
+
+### Whole-card swipe coverage — 2026-10-15
+
+Completed the owner's follow-up: horizontal swipes may now start anywhere in the exercise card, including weight/repetition fields, set buttons and menus. Removed the interactive-element exclusion that made the middle of the card feel unresponsive. A horizontal drag suppresses its subsequent pointer click so it cannot accidentally complete a set or activate a control. A fresh tap resets suppression; keyboard activation remains available. Zero-distance taps no longer start a spring-back animation that would temporarily block navigation. Existing vertical-scroll intent, animated card-only movement, cancellation and data preservation remain.
+
+Verification before interruption: `npm run check` passed (types/lint/build and 34 unit tests); **70 Chromium/mobile-WebKit regressions passed**, including swipes beginning on middle-card inputs/buttons, accidental click prevention, and normal editing/tapping afterward. Both native compilations and release-asset checks passed. Packaged APK and iOS simulator public assets matched synchronized source byte-for-byte; APK signature matches previous builds. These are automated browser/build checks, not physical-phone acceptance. On continuation, verified the saved build files and APK hash; temporary build logs were no longer present. No source changes beyond documentation were needed.
+
+Latest builds are Android **1.3.18/code 21** and iOS **1.3.18/build 19 simulator-only app**. APK SHA-256: `20ff60bc8d8b852315555805b0b6ac5233e4330ee5feb52cb9f1950b59b3ecc9`. Previous Android 20/iOS 18 moved to `/private/tmp/neurolift-pre-whole-card.4Yvz0P/` for temporary recovery. Local artifacts are not GitHub release uploads. Prepared source checkpoint: `checkpoint-2026-10-15-whole-card-swipe`; verify remote references on recovery. Phones need the rebuilt binary; pushing alone does not update an installed app or certify Vercel deployment.
 
 ### Finger-following exercise card swipe — 2026-10-14
 
@@ -82,8 +90,8 @@ All local builds now live in the git-ignored `builds/` folder of the working che
 
 | Platform | Current build | Path | Notes |
 | --- | --- | --- | --- |
-| Android | 1.3.17 / 20 (debug-signed test APK, HTTPS preview API) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/android/NeuroLift-1.3.17-build20-android-test.apk` | SHA-256 `3ca5fa14d776dad6ad75bd4941cf5ce2b0b39853645229e9582a889f0f840d1a`. Includes finger-following card swipe. |
-| iOS | 1.3.17 / 18 (unsigned Debug **simulator** app) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/ios/NeuroLift-1.3.17-build18-ios-simulator.app` | Simulator only; includes finger-following card swipe. Use Xcode with your own team for devices. |
+| Android | 1.3.18 / 21 (debug-signed test APK, HTTPS preview API) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/android/NeuroLift-1.3.18-build21-android-test.apk` | SHA-256 `20ff60bc8d8b852315555805b0b6ac5233e4330ee5feb52cb9f1950b59b3ecc9`. Includes whole-card swipe coverage. |
+| iOS | 1.3.18 / 19 (unsigned Debug **simulator** app) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/ios/NeuroLift-1.3.18-build19-ios-simulator.app` | Simulator only; includes whole-card swipe coverage. Use Xcode with your own team for devices. |
 
 Cleanup done 2026-10-13: deleted 13 older APKs from the old Codex `outputs/` folder and the Xcode derived-data folders `work/ios-rest-build` and `work/ios-tour-build` (~1.5 GB). APK paths in older sections below are historical and those files no longer exist. Use an Xcode derived-data path under `builds/` (or the default DerivedData) for future iOS builds, then copy only the final `.app` into `builds/ios/`.
 

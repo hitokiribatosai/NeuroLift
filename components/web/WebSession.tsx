@@ -42,6 +42,7 @@ export function WebSession(p: Props) {
   const cardRef = useRef<HTMLElement>(null);
   const touchStart = useRef<{ x: number; y: number; axis: 'pending' | 'horizontal' | 'vertical' } | null>(null);
   const sliding = useRef(false);
+  const suppressClickUntil = useRef(0);
   const slideAnimation = useRef<Animation | null>(null);
   const mounted = useRef(true);
   useEffect(() => {
@@ -61,8 +62,9 @@ export function WebSession(p: Props) {
   const returnCard = async () => {
     const card = cardRef.current;
     if (!card || sliding.current) return;
-    sliding.current = true;
     const offset = new DOMMatrixReadOnly(getComputedStyle(card).transform).m41;
+    if (Math.abs(offset) < 0.5) return;
+    sliding.current = true;
     await animateCard(offset, 0, 160);
     sliding.current = false;
   };
@@ -119,11 +121,21 @@ export function WebSession(p: Props) {
         </aside>
         <div className="web-exercise-swipe-viewport">
         {exercise ? <article className="web-panel web-set-editor" ref={cardRef}
+          onClickCapture={event => {
+            // A horizontal gesture over a control must not also activate it on release.
+            if (event.detail !== 0 && Date.now() < suppressClickUntil.current) {
+              event.preventDefault();
+              event.stopPropagation();
+              suppressClickUntil.current = 0;
+            }
+          }}
           onTouchStart={event => {
             touchStart.current = null;
+            suppressClickUntil.current = 0;
             if (sliding.current) return;
             if (event.touches.length !== 1) { void returnCard(); return; }
-            if ((event.target as Element).closest('input, button, select, textarea, a, details')) return;
+            // Track intent across the entire card, including set fields and controls.
+            // Ordinary taps still reach the input/button; only horizontal drags are swipes.
             touchStart.current = { x: event.touches[0].clientX, y: event.touches[0].clientY, axis: 'pending' };
           }}
           onTouchMove={event => {
@@ -136,6 +148,7 @@ export function WebSession(p: Props) {
               start.axis = Math.abs(dx) > Math.abs(dy) * 1.5 ? 'horizontal' : 'vertical';
             }
             if (start.axis !== 'horizontal') return;
+            suppressClickUntil.current = Date.now() + 700;
             closeMenus();
             const next = index + (dx < 0 ? 1 : -1) * (language === 'ar' ? -1 : 1);
             const offset = next < 0 || next >= p.exercises.length ? dx * 0.2 : dx;
@@ -148,6 +161,7 @@ export function WebSession(p: Props) {
             if (!start || !event.changedTouches.length) return;
             const dx = event.changedTouches[0].clientX - start.x;
             const dy = event.changedTouches[0].clientY - start.y;
+            if (start.axis === 'horizontal') suppressClickUntil.current = Date.now() + 700;
             if (start.axis === 'vertical' || Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 2) { void returnCard(); return; }
             void switchExercise(index + (dx < 0 ? 1 : -1) * (language === 'ar' ? -1 : 1));
           }}>

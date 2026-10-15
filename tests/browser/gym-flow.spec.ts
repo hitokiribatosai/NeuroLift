@@ -18,6 +18,34 @@ async function seed(page: Page, platform: string, phase = 'active') {
 }
 test.use({ serviceWorkers: 'block' });
 for (const platform of ['web', 'android', 'ios']) {
+  test(`${platform}: swipes start on middle-card fields and buttons without activating them`, async ({ page }) => {
+    await seed(page, platform);
+    const card = page.locator('.web-set-editor');
+    const field = page.getByLabel('KG — SET 1', { exact: true });
+    const settled = () => expect.poll(() => card.evaluate(el => el.getAnimations().filter(a => a.playState === 'running').length)).toBe(0);
+    await field.dispatchEvent('touchstart', { touches: [{ identifier: 0, clientX: 260, clientY: 400 }] });
+    await field.dispatchEvent('touchmove', { touches: [{ identifier: 0, clientX: 140, clientY: 403 }] });
+    expect(await card.evaluate(el => new DOMMatrixReadOnly(getComputedStyle(el).transform).m41)).toBe(-120);
+    await field.dispatchEvent('touchend', { changedTouches: [{ identifier: 0, clientX: 140, clientY: 403 }] });
+    await expect(card.locator('h2')).toHaveText(names[1]);
+    await settled();
+    const done = page.getByLabel('Done — SET 1', { exact: true });
+    await done.dispatchEvent('touchstart', { touches: [{ identifier: 0, clientX: 100, clientY: 400 }] });
+    await done.dispatchEvent('touchmove', { touches: [{ identifier: 0, clientX: 220, clientY: 403 }] });
+    await done.dispatchEvent('touchend', { changedTouches: [{ identifier: 0, clientX: 220, clientY: 403 }] });
+    await done.dispatchEvent('click', { bubbles: true, cancelable: true, detail: 1 });
+    await expect(card.locator('h2')).toHaveText(names[0]);
+    await settled();
+    await expect(done).toHaveAttribute('aria-pressed', 'true');
+    await expect(field).toHaveValue('20');
+    // A subsequent deliberate tap must still focus/edit the field and activate a button.
+    await field.dispatchEvent('touchstart', { touches: [{ identifier: 0, clientX: 160, clientY: 400 }] });
+    await field.dispatchEvent('touchend', { changedTouches: [{ identifier: 0, clientX: 160, clientY: 400 }] });
+    await field.fill('25');
+    await expect(field).toHaveValue('25');
+    await done.click();
+    await expect(done).toHaveAttribute('aria-pressed', 'false');
+  });
   test(`${platform}: only the exercise card follows the finger and cancelled swipes spring back`, async ({ page }) => {
     await seed(page, platform);
     const card = page.locator('.web-set-editor');
