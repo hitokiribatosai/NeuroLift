@@ -21,6 +21,7 @@ import { App as CapApp } from '@capacitor/app';
 import { Modal } from '../ui/Modal';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import { ReorderExercise } from '../web/ReorderExercise';
+import { RestDurationPicker } from '../web/RestDurationPicker';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { hapticFeedback } from '../../utils/haptics';
@@ -886,14 +887,7 @@ export const Tracker: React.FC = () => {
                   <h2 className="text-3xl font-black tracking-tight text-zinc-950 dark:text-white sm:text-4xl">{t('tracker_select_muscle')}</h2>
                   <p className="mt-2 max-w-xl text-sm text-zinc-600 dark:text-zinc-400">{t('tracker_setup_hint')}</p>
                 </div>
-                <label className="inline-flex w-fit items-center gap-3 rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
-                  {t('tracker_rest_between_sets')}
-                  <select className="rounded-lg border border-zinc-300 bg-zinc-50 p-2 text-zinc-950 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
-                    defaultValue={safeStorage.getItem('neuroLift_rest_seconds') || '120'}
-                    onChange={e => safeStorage.setItem('neuroLift_rest_seconds', e.target.value)}>
-                    {[60, 90, 120, 180, 300].map(seconds => <option key={seconds} value={seconds}>{seconds} s</option>)}
-                  </select>
-                </label>
+                <RestDurationPicker />
               </div>
 
               {nextScheduledWorkout && (

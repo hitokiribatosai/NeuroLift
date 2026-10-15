@@ -54,6 +54,15 @@ for (const platform of ['web', 'android', 'ios']) {
     await expect(page.locator('.web-set-reference').first()).toContainText('25 kg × 10');
     await expect(page.locator('.web-set-reference').nth(1)).toContainText('25 kg × 8');
     await expect(page.locator('.web-set-reference').nth(2)).toContainText('No matching set');
+    const previousPanel = page.locator('.web-previous-disclosure');
+    await expect(previousPanel).not.toHaveAttribute('open', '');
+    await expect(previousPanel.locator('time')).not.toBeVisible();
+    await expect(page.getByText('Reference only.', { exact: false })).toHaveCount(0);
+    await previousPanel.locator('summary').click();
+    await expect(previousPanel.locator('time')).toBeVisible();
+    await expect(previousPanel.locator('li')).toHaveCount(2);
+    await expect(previousPanel.getByRole('button', { name: 'Use previous values', exact: true })).toBeVisible();
+    await previousPanel.locator('summary').click();
     for (let i = 1; i <= 3; i++) {
       await expect(page.getByLabel(`KG — SET ${i}`, { exact: true })).toHaveValue('');
       await expect(page.getByLabel(`REPS — SET ${i}`, { exact: true })).toHaveValue('');

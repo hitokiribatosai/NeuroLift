@@ -6,8 +6,10 @@ async function seed(page: Page, platform: string, phase = 'active') {
     if (platform === 'android') Object.assign(window, { androidBridge: {} });
     if (platform === 'ios') Object.assign(window, { webkit: { messageHandlers: { bridge: {} } } });
     localStorage.setItem('neurolift.device-tour.v1', JSON.stringify({ mode: 'done' }));
+    if (localStorage.getItem('neuroLift_workspace_guest')) return;
     localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({ version: 0, dirty: false, data: {
       neuroLift_hasCompletedOnboarding: 'true', neuroLift_userGoal: 'strength', neuroLift_tracker_phase: phase,
+      neuroLift_web_theme: platform === 'android' ? 'dark' : 'light', neuroLift_theme: platform === 'android' ? 'dark' : 'light', neuroLift_android_theme: platform === 'android' ? 'dark' : 'light',
       neuroLift_tracker_muscles: '["Chest"]', ui_picker_muscle: '"Chest"',
       neuroLift_tracker_selected_exercises: JSON.stringify(names),
       neuroLift_templates: JSON.stringify([{ id: 'test-template', name: 'Sunday chest', createdAt: '2026-10-01T12:00:00Z', exercises: [{ name: names[0], targetSets: 3, targetReps: '8-10' }] }]),
@@ -18,6 +20,26 @@ async function seed(page: Page, platform: string, phase = 'active') {
 }
 test.use({ serviceWorkers: 'block' });
 for (const platform of ['web', 'android', 'ios']) {
+  test(`${platform}: rest picker uses styled choices and persists selection`, async ({ page }, info) => {
+    await page.emulateMedia({ colorScheme: platform === 'android' ? 'dark' : 'light' });
+    await seed(page, platform, 'setup');
+    await expect(page.locator('html')).toHaveClass(new RegExp(platform === 'android' ? 'dark' : 'light'));
+    const trigger = page.locator('.web-rest-picker-trigger');
+    await trigger.click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.locator('.web-rest-options > button')).toHaveCount(5);
+    await expect(dialog.getByRole('button', { name: /2:00/ })).toHaveAttribute('aria-pressed', 'true');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: info.outputPath('rest-picker.png'), animations: 'disabled' });
+    await dialog.getByRole('button', { name: /1:30/ }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(trigger).toContainText('1:30');
+    await trigger.click();
+    await expect(dialog.getByRole('button', { name: /1:30/ })).toHaveAttribute('aria-pressed', 'true');
+    await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+    await page.reload();
+    await expect(trigger).toContainText('1:30');
+  });
   test(`${platform}: swipes start on middle-card fields and buttons without activating them`, async ({ page }) => {
     await seed(page, platform);
     const card = page.locator('.web-set-editor');

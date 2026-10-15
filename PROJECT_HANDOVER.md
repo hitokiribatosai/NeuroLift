@@ -2,6 +2,16 @@
 
 Last reviewed: **2026-10-15**. Read `AGENTS.md` first on recovery.
 
+### Compact session history and rest picker — 2026-10-15
+
+Replaced the large active-workout Last Session panel with a collapsed-by-default Previous session disclosure beneath the exercise title. Opening it reveals the date, previous set values and optional whole-exercise copy action. Per-set historical references/copy actions remain visible, today’s values stay untouched until explicitly copied, and the repetitive reference-only paragraph is removed. A new exercise resets the disclosure closed. Set-menu outside-click dismissal now targets only set menus, not the history disclosure.
+
+Replaced the Android-looking native rest select with shared `RestDurationPicker`: compact clock/time trigger, accessible modal, five duration tiles (1:00, 1:30, 2:00, 3:00, 5:00), lime selected state, seconds labels and Close. Choosing an option immediately saves the same rest-duration preference and closes; Close without choosing leaves it unchanged. EN/FR/AR text, dark/light palettes, keyboard buttons and existing modal focus/Escape behavior are retained.
+
+Verification: quality check passed (types/lint, 34 unit tests, production build); **76 Chromium/mobile-WebKit regressions passed**, plus **6** explicit dark/light rest-picker rechecks. Verified collapsed history, opening date/sets/copy action, per-set reference behavior, rest selection/reopen/reload persistence, and existing swipe/reorder/workout flows. Initial rest reload tests incorrectly reset their workspace on every navigation; fixed the test seed to preserve saved storage and reran successfully. Dark and light rest-picker screenshots visually reviewed. Both native compilations and release checks passed; packaged public assets match synchronized source byte-for-byte. Android signer matches previous test builds. No new physical-device or native interaction test is claimed.
+
+Latest: Android **1.3.19/code 22**, APK SHA-256 `0c0fb959fba372c8e3bd2cc5b139da7531d6081e1974c022c0a844f19a6cdc86`; iOS **1.3.19/build 20**, unsigned simulator app. Previous Android 21/iOS 19 moved to `/private/tmp/neurolift-pre-compact-history.U2KtuJ/` for temporary recovery. Source checkpoint: `checkpoint-2026-10-15-workout-controls` (verify remote refs). Builds remain local, not GitHub releases; installed devices require updated binaries. No claim of verified Vercel deployment.
+
 ### Whole-card swipe coverage — 2026-10-15
 
 Completed the owner's follow-up: horizontal swipes may now start anywhere in the exercise card, including weight/repetition fields, set buttons and menus. Removed the interactive-element exclusion that made the middle of the card feel unresponsive. A horizontal drag suppresses its subsequent pointer click so it cannot accidentally complete a set or activate a control. A fresh tap resets suppression; keyboard activation remains available. Zero-distance taps no longer start a spring-back animation that would temporarily block navigation. Existing vertical-scroll intent, animated card-only movement, cancellation and data preservation remain.
@@ -90,8 +100,8 @@ All local builds now live in the git-ignored `builds/` folder of the working che
 
 | Platform | Current build | Path | Notes |
 | --- | --- | --- | --- |
-| Android | 1.3.18 / 21 (debug-signed test APK, HTTPS preview API) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/android/NeuroLift-1.3.18-build21-android-test.apk` | SHA-256 `20ff60bc8d8b852315555805b0b6ac5233e4330ee5feb52cb9f1950b59b3ecc9`. Includes whole-card swipe coverage. |
-| iOS | 1.3.18 / 19 (unsigned Debug **simulator** app) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/ios/NeuroLift-1.3.18-build19-ios-simulator.app` | Simulator only; includes whole-card swipe coverage. Use Xcode with your own team for devices. |
+| Android | 1.3.19 / 22 (debug-signed test APK, HTTPS preview API) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/android/NeuroLift-1.3.19-build22-android-test.apk` | SHA-256 `0c0fb959fba372c8e3bd2cc5b139da7531d6081e1974c022c0a844f19a6cdc86`. Includes compact history and rest picker. |
+| iOS | 1.3.19 / 20 (unsigned Debug **simulator** app) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/ios/NeuroLift-1.3.19-build20-ios-simulator.app` | Simulator only; includes compact history and rest picker. Use Xcode with your own team for devices. |
 
 Cleanup done 2026-10-13: deleted 13 older APKs from the old Codex `outputs/` folder and the Xcode derived-data folders `work/ios-rest-build` and `work/ios-tour-build` (~1.5 GB). APK paths in older sections below are historical and those files no longer exist. Use an Xcode derived-data path under `builds/` (or the default DerivedData) for future iOS builds, then copy only the final `.app` into `builds/ios/`.
 
