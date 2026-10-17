@@ -1,107 +1,144 @@
-import { useCopy } from '../../hooks/useCopy';
-import { Capacitor } from '@capacitor/core';
-import { Share } from '@capacitor/share';
-import { AnimatePresence,motion,Reorder } from 'framer-motion';
-import React,{ useEffect,useRef,useState } from 'react';
-import { useClock } from '../../contexts/ClockContext';
-import { useLanguage } from '../../contexts/LanguageContext';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useInterfaceState } from '../../hooks/useInterfaceState';
-import { useTooltip } from '../../hooks/useTooltip';
-import { ActiveExercise,CompletedWorkout,ExerciseHistory,WorkoutSet,WorkoutTemplate } from '../../types';
-import { offerWorkoutNotification } from '../../utils/androidWorkoutNotification';
-import { getExerciseDatabase,getExerciseTranslation,getLocalizedMuscleName,getMuscleForExercise,getSubMuscleForExercise } from '../../utils/exerciseData';
-import { exerciseHistoryService } from '../../utils/exerciseHistory';
-import { hapticFeedback } from '../../utils/haptics';
-import { generateId } from '../../utils/id';
-import { offerIOSRestNotifications } from '../../utils/iosRestNotification';
-import { copyPreviousSets } from '../../utils/repeatWorkout';
-import { clearSessionDraft, isTrackerPhase, TrackerPhase } from '../../utils/sessionDraft';
-import { safeStorage } from '../../utils/storage';
-import { findNextScheduledWorkout,WeeklyWorkoutSchedule } from '../../utils/workoutSchedule';
-import { createFreshTemplateExercises } from '../../utils/workoutTemplates';
-import { hasSetEffort } from '../../utils/workoutValidation';
-import { Card } from '../ui/Card';
-import { ConfirmModal } from '../ui/ConfirmModal';
-import { ExerciseDemo } from '../ui/ExerciseDemo';
-import { ExerciseGroupSelector } from '../ui/ExerciseGroupSelector';
-import { Modal } from '../ui/Modal';
-import { SpotlightButton } from '../ui/SpotlightButton';
-import { Tooltip } from '../ui/Tooltip';
-import { WorkoutGuide } from '../web/GuidedTour';
-import { ReorderExercise } from '../web/ReorderExercise';
-import { RestDurationPicker } from '../web/RestDurationPicker';
-import { WebSession } from '../web/WebSession';
-import { WorkoutBreakdown } from '../web/WorkoutBreakdown';
+import { useWorkoutTemplates } from "../../hooks/useWorkoutTemplates";
+import { Capacitor } from "@capacitor/core";
+import { Share } from "@capacitor/share";
+import { AnimatePresence, motion } from "framer-motion";
+import React, { useEffect, useRef, useState } from "react";
+import { useClock } from "../../contexts/ClockContext";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { useTheme } from "../../contexts/ThemeContext";
+import { useCopy } from "../../hooks/useCopy";
+import { useSessionDraft } from "../../hooks/useSessionDraft";
+import { useTooltip } from "../../hooks/useTooltip";
+import {
+  ActiveExercise,
+  CompletedWorkout,
+  ExerciseHistory,
+  WorkoutTemplate,
+} from "../../types";
+import { offerWorkoutNotification } from "../../utils/androidWorkoutNotification";
+import {
+  getExerciseDatabase,
+  getExerciseTranslation,
+  getLocalizedMuscleName,
+  getMuscleForExercise,
+  getSubMuscleForExercise,
+} from "../../utils/exerciseData";
+import { exerciseHistoryService } from "../../utils/exerciseHistory";
+import { hapticFeedback } from "../../utils/haptics";
+import { generateId } from "../../utils/id";
+import { offerIOSRestNotifications } from "../../utils/iosRestNotification";
+import { copyPreviousSets } from "../../utils/repeatWorkout";
+import { clearSessionDraft } from "../../utils/sessionDraft";
+import { safeStorage } from "../../utils/storage";
+import {
+  findNextScheduledWorkout,
+  WeeklyWorkoutSchedule,
+} from "../../utils/workoutSchedule";
+import { createFreshTemplateExercises } from "../../utils/workoutTemplates";
+import { hasSetEffort } from "../../utils/workoutValidation";
+import { ConfirmModal } from "../ui/ConfirmModal";
+import { ExerciseDemo } from "../ui/ExerciseDemo";
+import { Modal } from "../ui/Modal";
+import { SpotlightButton } from "../ui/SpotlightButton";
+import { Tooltip } from "../ui/Tooltip";
+import { WorkoutGuide } from "../web/GuidedTour";
+import { WebSession } from "../web/WebSession";
+import { WorkoutBreakdown } from "../web/WorkoutBreakdown";
+import { TrackerReorderDialog } from "./TrackerReorderDialog";
+import { TrackerSelection } from "./TrackerSelection";
+import { TrackerSetup } from "./TrackerSetup";
+import { TrackerTemplateEditor } from "./TrackerTemplateEditor";
+import { TrackerTemplatePicker } from "./TrackerTemplatePicker";
 
 export const Tracker: React.FC = () => {
   const {
-    t,
-    language
-  } = useLanguage();
+    phase,
+    setPhase,
+    selectedMuscles,
+    setSelectedMuscles,
+    selectedExercises,
+    setSelectedExercises,
+    pickerMuscle,
+    setPickerMuscle,
+    pickerSubgroup,
+    setPickerSubgroup,
+    selectedTemplate,
+    setSelectedTemplate,
+    activeTemplateId,
+    setActiveTemplateId,
+    activeTemplateName,
+    setActiveTemplateName,
+    activeExercises,
+    setActiveExercises,
+    searchQuery,
+    setSearchQuery,
+  } = useSessionDraft();
+  const { t, language } = useLanguage();
   const c = useCopy();
 
   const { theme } = useTheme();
-  const isLight = theme === 'light';
-
-  const [phase, setPhase] = useState<TrackerPhase>(() => {
-    const saved = safeStorage.getItem('neuroLift_tracker_phase');
-    // Recover drafts left behind by older builds after a completed workout.
-    if (saved === 'summary') {
-      clearSessionDraft();
-      return 'setup';
-    }
-    return isTrackerPhase(saved) ? saved : 'setup';
-  });
+  const isLight = theme === "light";
 
   // Tooltip hooks
-  const muscleSelectorTooltip = useTooltip('tracker_muscle_selector');
+  const muscleSelectorTooltip = useTooltip("tracker_muscle_selector");
   const muscleSelectorRef = useRef<HTMLDivElement>(null);
-  const [selectedMuscles, setSelectedMuscles] = useState<string[]>(() => {
-    return safeStorage.getParsed<string[]>('neuroLift_tracker_muscles', []);
-  });
-  const [selectedExercises, setSelectedExercises] = useState<string[]>(() => {
-    return safeStorage.getParsed<string[]>('neuroLift_tracker_selected_exercises', []);
-  });
-  const [pickerMuscle, setPickerMuscle] = useInterfaceState('picker_muscle', selectedMuscles[0] || 'Chest');
-  const [pickerSubgroup, setPickerSubgroup] = useInterfaceState('picker_subgroup', '');
-  const [templatePickerMuscle, setTemplatePickerMuscle] = useState('Chest');
-  const [templatePickerSubgroup, setTemplatePickerSubgroup] = useState('');
-  const [templateSearch, setTemplateSearch] = useState('');
+
+  const [templatePickerMuscle, setTemplatePickerMuscle] = useState("Chest");
+  const [templatePickerSubgroup, setTemplatePickerSubgroup] = useState("");
+  const [templateSearch, setTemplateSearch] = useState("");
   const [tutorialExercise, setTutorialExercise] = useState<string | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const [plateCalcWeight, setPlateCalcWeight] = useState<number | null>(null);
   const [barWeight, setBarWeight] = useState<number>(20);
-  const [activeSetInfo, setActiveSetInfo] = useState<{ exIdx: number, setIdx: number } | null>(null);
+  const [activeSetInfo, setActiveSetInfo] = useState<{
+    exIdx: number;
+    setIdx: number;
+  } | null>(null);
   const [shareFeedback, setShareFeedback] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [exerciseHistory, setExerciseHistory] = useState<Map<string, ExerciseHistory>>(new Map());
-  const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
-  const [weeklySchedule, setWeeklySchedule] = useState<WeeklyWorkoutSchedule>(() =>
-    safeStorage.getParsed<WeeklyWorkoutSchedule>('neuroLift_weekly_schedule', {})
+  const [exerciseHistory, setExerciseHistory] = useState<
+    Map<string, ExerciseHistory>
+  >(new Map());
+  const { templates, saveTemplate, removeTemplate } = useWorkoutTemplates();
+  const [weeklySchedule, setWeeklySchedule] = useState<WeeklyWorkoutSchedule>(
+    () =>
+      safeStorage.getParsed<WeeklyWorkoutSchedule>(
+        "neuroLift_weekly_schedule",
+        {},
+      ),
   );
-  const [selectedTemplate, setSelectedTemplate] = useState<WorkoutTemplate | null>(() =>
-    safeStorage.getParsed<WorkoutTemplate | null>('neuroLift_tracker_selected_template', null)
-  );
-  const [activeTemplateId, setActiveTemplateId] = useState<string | null>(() => safeStorage.getItem('neuroLift_tracker_active_template'));
-  const [activeTemplateName, setActiveTemplateName] = useState<string | null>(() => safeStorage.getItem('neuroLift_tracker_active_template_name'));
+
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
   const [showLoadTemplateModal, setShowLoadTemplateModal] = useState(false);
   const [showEditTemplateModal, setShowEditTemplateModal] = useState(false);
-  const [templateName, setTemplateName] = useState('');
-  const [editingTemplate, setEditingTemplate] = useState<WorkoutTemplate | null>(null);
-  const [templateDeleteConfirm, setTemplateDeleteConfirm] = useState<{ id: string, name: string } | null>(null);
-  const [exerciseToDelete, setExerciseToDelete] = useState<{ name: string, index: number } | null>(null);
+  const [templateName, setTemplateName] = useState("");
+  const [editingTemplate, setEditingTemplate] =
+    useState<WorkoutTemplate | null>(null);
+  const [templateDeleteConfirm, setTemplateDeleteConfirm] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [exerciseToDelete, setExerciseToDelete] = useState<{
+    name: string;
+    index: number;
+  } | null>(null);
   const [showSaveCompletedModal, setShowSaveCompletedModal] = useState(false);
-  const [completedTemplateName, setCompletedTemplateName] = useState('');
+  const [completedTemplateName, setCompletedTemplateName] = useState("");
   const [showResetSessionConfirm, setShowResetSessionConfirm] = useState(false);
   const [showReorderModal, setShowReorderModal] = useState(false);
   const [tempReorderList, setTempReorderList] = useState<ActiveExercise[]>([]);
-  const [reorderFeedback, setReorderFeedback] = useState<{ name: string; position: number; sequence: number } | null>(null);
+  const [reorderFeedback, setReorderFeedback] = useState<{
+    name: string;
+    position: number;
+    sequence: number;
+  } | null>(null);
   useEffect(() => {
-    if (!showReorderModal) { setReorderFeedback(null); return; }
+    if (!showReorderModal) {
+      setReorderFeedback(null);
+      return;
+    }
   }, [showReorderModal, reorderFeedback]);
   const moveReorderExercise = (index: number, offset: -1 | 1) => {
     const target = index + offset;
@@ -110,17 +147,23 @@ export const Tracker: React.FC = () => {
     const next = [...tempReorderList];
     [next[index], next[target]] = [next[target], next[index]];
     setTempReorderList(next);
-    setReorderFeedback(previous => ({ name: exercise.name, position: target + 1, sequence: (previous?.sequence ?? 0) + 1 }));
+    setReorderFeedback((previous) => ({
+      name: exercise.name,
+      position: target + 1,
+      sequence: (previous?.sequence ?? 0) + 1,
+    }));
   };
-
-
 
   const confirmDeleteExercise = () => {
     if (exerciseToDelete) {
-      const newExs = activeExercises.filter((_, i) => i !== exerciseToDelete.index);
+      const newExs = activeExercises.filter(
+        (_, i) => i !== exerciseToDelete.index,
+      );
       setActiveExercises(newExs);
 
-      const newSelected = selectedExercises.filter(name => name !== exerciseToDelete.name);
+      const newSelected = selectedExercises.filter(
+        (name) => name !== exerciseToDelete.name,
+      );
       setSelectedExercises(newSelected);
 
       hapticFeedback.medium();
@@ -128,13 +171,13 @@ export const Tracker: React.FC = () => {
     }
   };
 
-
   // Load history when selected exercises change
   useEffect(() => {
     const loadHistory = async () => {
       const historyMap = new Map<string, ExerciseHistory>();
       for (const exercise of selectedExercises) {
-        const history = await exerciseHistoryService.getExerciseHistory(exercise);
+        const history =
+          await exerciseHistoryService.getExerciseHistory(exercise);
         if (history) {
           historyMap.set(exercise, history);
         }
@@ -147,18 +190,22 @@ export const Tracker: React.FC = () => {
     }
   }, [selectedExercises]);
 
-
   // Active Session State
-  const [completedWorkout, setCompletedWorkout] = useState<CompletedWorkout | null>(null);
-  const [summaryPrevious, setSummaryPrevious] = useState<Map<string, ExerciseHistory>>(new Map());
+  const [completedWorkout, setCompletedWorkout] =
+    useState<CompletedWorkout | null>(null);
+  const [summaryPrevious, setSummaryPrevious] = useState<
+    Map<string, ExerciseHistory>
+  >(new Map());
   const [direction, setDirection] = useState(0);
 
-  const phaseOrder = ['setup', 'selection', 'active', 'summary'];
+  const phaseOrder = ["setup", "selection", "active", "summary"];
 
   // Use Global Clock for Workouts (Decoupled from Utility Clock)
   const {
-    workoutDuration, setWorkoutDuration,
-    isWorkoutActive, setIsWorkoutActive,
+    workoutDuration,
+    setWorkoutDuration,
+    isWorkoutActive,
+    setIsWorkoutActive,
     resetWorkout,
 
     // Utility clock access if needed (but NOT for workout logic)
@@ -168,7 +215,7 @@ export const Tracker: React.FC = () => {
     startRestTimer,
     stopRestTimer,
     addRestTime,
-    restRemaining
+    restRemaining,
   } = useClock();
 
   // Alias for legacy code compatibility (will replace usages next)
@@ -183,23 +230,37 @@ export const Tracker: React.FC = () => {
 
   // Active Exercises as separate effect to avoid context lag if needed, or just keep in useClock
   // but for now let's use the one from Tracker to keep logic separate
-  const [activeExercises, setActiveExercises] = useState<ActiveExercise[]>(() => {
-    return safeStorage.getParsed<ActiveExercise[]>('neuroLift_tracker_active_exercises', []);
-  });
-  const [searchQuery, setSearchQuery] = useInterfaceState('picker_search', '');
 
   // Dynamic DB
   const exercisesByMuscle = getExerciseDatabase(language);
   const selectableMuscles = Object.keys(exercisesByMuscle);
-  const currentPickerMuscle = exercisesByMuscle[pickerMuscle] ? pickerMuscle : selectableMuscles[0];
-  const currentPickerSubgroup = exercisesByMuscle[currentPickerMuscle]?.[pickerSubgroup]
-    ? pickerSubgroup : Object.keys(exercisesByMuscle[currentPickerMuscle] || {})[0];
-  const currentTemplateMuscle = exercisesByMuscle[templatePickerMuscle] ? templatePickerMuscle : selectableMuscles[0];
-  const currentTemplateSubgroup = exercisesByMuscle[currentTemplateMuscle]?.[templatePickerSubgroup]
-    ? templatePickerSubgroup : Object.keys(exercisesByMuscle[currentTemplateMuscle] || {})[0];
-  const templateAvailableCount = Object.values(exercisesByMuscle[currentTemplateMuscle]?.[currentTemplateSubgroup] || {})
-    .flat().filter(ex => !editingTemplate?.exercises.some(te => te.name === ex)
-      && getExerciseTranslation(ex, language).toLocaleLowerCase().includes(templateSearch.trim().toLocaleLowerCase())).length;
+  const currentPickerMuscle = exercisesByMuscle[pickerMuscle]
+    ? pickerMuscle
+    : selectableMuscles[0];
+  const currentPickerSubgroup = exercisesByMuscle[currentPickerMuscle]?.[
+    pickerSubgroup
+  ]
+    ? pickerSubgroup
+    : Object.keys(exercisesByMuscle[currentPickerMuscle] || {})[0];
+  const currentTemplateMuscle = exercisesByMuscle[templatePickerMuscle]
+    ? templatePickerMuscle
+    : selectableMuscles[0];
+  const currentTemplateSubgroup = exercisesByMuscle[currentTemplateMuscle]?.[
+    templatePickerSubgroup
+  ]
+    ? templatePickerSubgroup
+    : Object.keys(exercisesByMuscle[currentTemplateMuscle] || {})[0];
+  const templateAvailableCount = Object.values(
+    exercisesByMuscle[currentTemplateMuscle]?.[currentTemplateSubgroup] || {},
+  )
+    .flat()
+    .filter(
+      (ex) =>
+        !editingTemplate?.exercises.some((te) => te.name === ex) &&
+        getExerciseTranslation(ex, language)
+          .toLocaleLowerCase()
+          .includes(templateSearch.trim().toLocaleLowerCase()),
+    ).length;
 
   // Notification logic is now partially in ClockContext
   // but we still trigger the rest start here
@@ -207,7 +268,7 @@ export const Tracker: React.FC = () => {
   // Handle Shared Workouts from URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const sharedData = params.get('share');
+    const sharedData = params.get("share");
     if (sharedData) {
       try {
         const decoded = JSON.parse(atob(sharedData));
@@ -216,20 +277,20 @@ export const Tracker: React.FC = () => {
           // Infer muscles from exercises
           const musclesToSelect = new Set<string>();
           Object.entries(exercisesByMuscle).forEach(([muscle, subCats]) => {
-            Object.values(subCats).forEach(categories => {
-              Object.values(categories).forEach(exercises => {
-                exercises.forEach(ex => {
+            Object.values(subCats).forEach((categories) => {
+              Object.values(categories).forEach((exercises) => {
+                exercises.forEach((ex) => {
                   if (decoded.includes(ex)) musclesToSelect.add(muscle);
                 });
               });
             });
           });
           setSelectedMuscles(Array.from(musclesToSelect));
-          setPhase('selection');
+          setPhase("selection");
 
           // Clear URL parameter without refreshing
           const newUrl = window.location.pathname + window.location.hash;
-          window.history.replaceState({}, '', newUrl);
+          window.history.replaceState({}, "", newUrl);
         }
       } catch (e) {
         console.error("Failed to decode shared workout", e);
@@ -239,14 +300,14 @@ export const Tracker: React.FC = () => {
 
   // Handle Quick Start from Dashboard
   useEffect(() => {
-    const quickStartMuscles = sessionStorage.getItem('quickStartMuscles');
+    const quickStartMuscles = sessionStorage.getItem("quickStartMuscles");
     if (quickStartMuscles) {
       try {
         const muscles = JSON.parse(quickStartMuscles);
         setSelectedMuscles(muscles);
-        setPhase('selection');
+        setPhase("selection");
         // Clear the session storage
-        sessionStorage.removeItem('quickStartMuscles');
+        sessionStorage.removeItem("quickStartMuscles");
       } catch (e) {
         console.error("Failed to parse quick start muscles", e);
       }
@@ -255,52 +316,29 @@ export const Tracker: React.FC = () => {
 
   // Safety Check: If in active phase but no active exercises, reset to selection
   useEffect(() => {
-    if (phase === 'active' && activeExercises.length === 0) {
-      setPhase('selection');
+    if (phase === "active" && activeExercises.length === 0) {
+      setPhase("selection");
     }
   }, [phase, activeExercises]);
 
   // Safety Check: If in summary phase but no workout data, reset to setup
   useEffect(() => {
-    if (phase === 'summary' && !completedWorkout) {
-      setPhase('setup');
+    if (phase === "summary" && !completedWorkout) {
+      setPhase("setup");
     }
   }, [phase, completedWorkout]);
-
-  useEffect(() => {
-    if (phase === 'summary') return;
-    safeStorage.setItem('neuroLift_tracker_phase', phase);
-    safeStorage.setItem('neuroLift_tracker_muscles', JSON.stringify(selectedMuscles));
-    safeStorage.setItem('neuroLift_tracker_selected_exercises', JSON.stringify(selectedExercises));
-    safeStorage.setItem('neuroLift_tracker_active_exercises', JSON.stringify(activeExercises));
-  }, [phase, selectedMuscles, selectedExercises, activeExercises]);
-
-  useEffect(() => {
-    if (selectedTemplate) {
-      safeStorage.setItem('neuroLift_tracker_selected_template', JSON.stringify(selectedTemplate));
-    } else {
-      safeStorage.removeItem('neuroLift_tracker_selected_template');
-    }
-  }, [selectedTemplate]);
-  useEffect(() => {
-    if (activeTemplateId) safeStorage.setItem('neuroLift_tracker_active_template', activeTemplateId);
-    else safeStorage.removeItem('neuroLift_tracker_active_template');
-  }, [activeTemplateId]);
-  useEffect(() => {
-    if (activeTemplateName) safeStorage.setItem('neuroLift_tracker_active_template_name', activeTemplateName);
-    else safeStorage.removeItem('neuroLift_tracker_active_template_name');
-  }, [activeTemplateName]);
 
   const nextScheduledWorkout = findNextScheduledWorkout(
     templates,
     weeklySchedule,
     new Date(),
-    safeStorage.getParsed<CompletedWorkout[]>('neuroLift_history', [])
+    safeStorage.getParsed<CompletedWorkout[]>("neuroLift_history", []),
   );
   const weekdayLabels = Array.from({ length: 7 }, (_, day) => {
     const date = new Date(2024, 0, 7 + day); // 7 Jan 2024 was a Sunday.
-    const locale = language === 'fr' ? 'fr-FR' : language === 'ar' ? 'ar' : 'en';
-    return new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(date);
+    const locale =
+      language === "fr" ? "fr-FR" : language === "ar" ? "ar" : "en";
+    return new Intl.DateTimeFormat(locale, { weekday: "short" }).format(date);
   });
 
   const assignTemplateDay = (day: number, templateId: string) => {
@@ -308,58 +346,51 @@ export const Tracker: React.FC = () => {
     if (next[String(day)] === templateId) delete next[String(day)];
     else next[String(day)] = templateId;
     setWeeklySchedule(next);
-    safeStorage.setItem('neuroLift_weekly_schedule', JSON.stringify(next));
+    safeStorage.setItem("neuroLift_weekly_schedule", JSON.stringify(next));
   };
 
   // Load Templates
-  useEffect(() => {
-    const fetchTemplates = async () => {
-      const savedTemplates = await safeStorage.getTemplates();
-      setTemplates(savedTemplates);
-    };
-    fetchTemplates();
-  }, []);
-
 
   // Modern Android has one native Back owner in App. Consume a screen-level
   // step here without resetting the draft, timers, selected exercises or sets.
   useEffect(() => {
-
     const back = (event: Event) => {
-      if (window.location.hash.split('?')[0] !== '#tracker') return;
-      if (phase !== 'active' && phase !== 'selection') return;
+      if (window.location.hash.split("?")[0] !== "#tracker") return;
+      if (phase !== "active" && phase !== "selection") return;
       event.preventDefault();
       setDirection(-1);
-      setPhase(phase === 'active' ? 'selection' : 'setup');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setPhase(phase === "active" ? "selection" : "setup");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     };
-    window.addEventListener('neurolift-screen-back', back);
-    return () => window.removeEventListener('neurolift-screen-back', back);
+    window.addEventListener("neurolift-screen-back", back);
+    return () => window.removeEventListener("neurolift-screen-back", back);
   }, [phase]);
 
-  const handleSetPhase = (newPhase: 'setup' | 'selection' | 'active' | 'summary') => {
-    if (newPhase === 'selection' && phase === 'setup') {
-      setSearchQuery('');
-      setPickerMuscle(selectedMuscles[0] || 'Chest');
-      setPickerSubgroup('');
+  const handleSetPhase = (
+    newPhase: "setup" | "selection" | "active" | "summary",
+  ) => {
+    if (newPhase === "selection" && phase === "setup") {
+      setSearchQuery("");
+      setPickerMuscle(selectedMuscles[0] || "Chest");
+      setPickerSubgroup("");
     }
     const oldIdx = phaseOrder.indexOf(phase);
     const newIdx = phaseOrder.indexOf(newPhase);
     setDirection(newIdx < oldIdx ? -1 : 1);
     setPhase(newPhase);
     // Scroll to top on phase change
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
   const toggleMuscle = (m: string) => {
     if (selectedMuscles.includes(m)) {
-      setSelectedMuscles(selectedMuscles.filter(x => x !== m));
+      setSelectedMuscles(selectedMuscles.filter((x) => x !== m));
     } else {
       setSelectedMuscles([...selectedMuscles, m]);
     }
@@ -367,35 +398,44 @@ export const Tracker: React.FC = () => {
 
   const toggleExercise = (ex: string) => {
     if (selectedExercises.includes(ex)) {
-      setSelectedExercises(selectedExercises.filter(i => i !== ex));
+      setSelectedExercises(selectedExercises.filter((i) => i !== ex));
     } else {
       setSelectedExercises([...selectedExercises, ex]);
       const muscle = getMuscleForExercise(ex);
-      if (exercisesByMuscle[muscle]) setSelectedMuscles(previous => previous.includes(muscle) ? previous : [...previous, muscle]);
+      if (exercisesByMuscle[muscle])
+        setSelectedMuscles((previous) =>
+          previous.includes(muscle) ? previous : [...previous, muscle],
+        );
     }
   };
 
   const handleStartWorkout = () => {
     void offerWorkoutNotification();
     void offerIOSRestNotifications();
-    handleSetPhase('active');
+    handleSetPhase("active");
 
     // Templates create a clean session: retain the plan, never logged weights or reps.
     const templateExercises = selectedTemplate
-      ? new Map(createFreshTemplateExercises(selectedTemplate, generateId).map(exercise => [exercise.name, exercise]))
+      ? new Map(
+          createFreshTemplateExercises(selectedTemplate, generateId).map(
+            (exercise) => [exercise.name, exercise],
+          ),
+        )
       : null;
-    const newActiveExercises: ActiveExercise[] = selectedExercises.map(name => {
-      const fromTemplate = templateExercises?.get(name);
-      if (fromTemplate) return fromTemplate;
-      if (!templateExercises) {
-        const existing = activeExercises.find(a => a.name === name);
-        if (existing) return existing;
-      }
-      return {
-        name,
-        sets: [{ id: generateId(), weight: 0, reps: 0, completed: false }]
-      };
-    });
+    const newActiveExercises: ActiveExercise[] = selectedExercises.map(
+      (name) => {
+        const fromTemplate = templateExercises?.get(name);
+        if (fromTemplate) return fromTemplate;
+        if (!templateExercises) {
+          const existing = activeExercises.find((a) => a.name === name);
+          if (existing) return existing;
+        }
+        return {
+          name,
+          sets: [{ id: generateId(), weight: 0, reps: 0, completed: false }],
+        };
+      },
+    );
 
     setActiveExercises(newActiveExercises);
     setActiveTemplateId(selectedTemplate?.id || activeTemplateId);
@@ -412,13 +452,27 @@ export const Tracker: React.FC = () => {
     }
   };
 
-  const handleQuickLoad = (exerciseIndex: number, exerciseName: string, setIndex?: number) => {
+  const handleQuickLoad = (
+    exerciseIndex: number,
+    exerciseName: string,
+    setIndex?: number,
+  ) => {
     const previous = exerciseHistory.get(exerciseName);
     if (!previous) return;
-    setActiveExercises(current => current.map((exercise, index) =>
-      index === exerciseIndex && exercise.name === exerciseName
-        ? { ...exercise, sets: copyPreviousSets(exercise.sets, previous.lastSets, setIndex) }
-        : exercise));
+    setActiveExercises((current) =>
+      current.map((exercise, index) =>
+        index === exerciseIndex && exercise.name === exerciseName
+          ? {
+              ...exercise,
+              sets: copyPreviousSets(
+                exercise.sets,
+                previous.lastSets,
+                setIndex,
+              ),
+            }
+          : exercise,
+      ),
+    );
     hapticFeedback.success();
   };
 
@@ -436,18 +490,26 @@ export const Tracker: React.FC = () => {
       id: generateId(),
       weight: 0,
       reps: 0,
-      completed: false
+      completed: false,
     });
     setActiveExercises(newExs);
   };
 
-  const updateSet = (exIdx: number, setIdx: number, field: 'weight' | 'reps', val: string) => {
+  const updateSet = (
+    exIdx: number,
+    setIdx: number,
+    field: "weight" | "reps",
+    val: string,
+  ) => {
     if (!activeExercises[exIdx]?.sets[setIdx]) return;
     const newExs = [...activeExercises];
     const parsed = parseFloat(val);
-    const value = Number.isFinite(parsed) ? Math.max(0, field === 'reps' ? Math.floor(parsed) : parsed) : 0;
+    const value = Number.isFinite(parsed)
+      ? Math.max(0, field === "reps" ? Math.floor(parsed) : parsed)
+      : 0;
     newExs[exIdx].sets[setIdx][field] = value;
-    if (!hasSetEffort(newExs[exIdx].sets[setIdx])) newExs[exIdx].sets[setIdx].completed = false;
+    if (!hasSetEffort(newExs[exIdx].sets[setIdx]))
+      newExs[exIdx].sets[setIdx].completed = false;
     setActiveExercises(newExs);
   };
 
@@ -461,25 +523,41 @@ export const Tracker: React.FC = () => {
 
     if (isNowCompleted) {
       hapticFeedback.light();
-      startRestTimer(Number(safeStorage.getItem('neuroLift_rest_seconds') || 120));
+      startRestTimer(
+        Number(safeStorage.getItem("neuroLift_rest_seconds") || 120),
+      );
     } else {
       stopRestTimer();
     }
   };
 
   const finishWorkout = async () => {
-    if (!activeExercises.some(ex => ex.sets.some(set => set.completed && hasSetEffort(set)))) return;
+    if (
+      !activeExercises.some((ex) =>
+        ex.sets.some((set) => set.completed && hasSetEffort(set)),
+      )
+    )
+      return;
     hapticFeedback.success();
     setTimerActive(false);
     stopRestTimer();
     const volume = activeExercises.reduce((acc, ex) => {
-      return acc + ex.sets.reduce((sAcc, s) => s.completed ? sAcc + (s.weight * s.reps) : sAcc, 0);
+      return (
+        acc +
+        ex.sets.reduce(
+          (sAcc, s) => (s.completed ? sAcc + s.weight * s.reps : sAcc),
+          0,
+        )
+      );
     }, 0);
 
-    const muscleNames = selectedMuscles.map(m => getLocalizedMuscleName(m, language));
-    const sessionName = activeTemplateName || templates.find(template => template.id === activeTemplateId)?.name || (muscleNames.length > 0
-      ? muscleNames.join(' & ')
-      : t('tracker_summary'));
+    const muscleNames = selectedMuscles.map((m) =>
+      getLocalizedMuscleName(m, language),
+    );
+    const sessionName =
+      activeTemplateName ||
+      templates.find((template) => template.id === activeTemplateId)?.name ||
+      (muscleNames.length > 0 ? muscleNames.join(" & ") : t("tracker_summary"));
 
     const record: CompletedWorkout = {
       id: generateId(),
@@ -488,13 +566,15 @@ export const Tracker: React.FC = () => {
       durationSeconds: duration,
       exercises: activeExercises,
       totalVolume: volume,
-      ...(activeTemplateId ? { templateId: activeTemplateId } : {})
+      ...(activeTemplateId ? { templateId: activeTemplateId } : {}),
     };
 
     // Capture historical references before saving, so this workout never compares with itself.
     const references = new Map<string, ExerciseHistory>();
     for (const exercise of record.exercises) {
-      const history = await exerciseHistoryService.getExerciseHistory(exercise.name);
+      const history = await exerciseHistoryService.getExerciseHistory(
+        exercise.name,
+      );
       if (history) references.set(exercise.name, history);
     }
     await safeStorage.saveWorkout(record.id, record);
@@ -502,14 +582,14 @@ export const Tracker: React.FC = () => {
 
     setCompletedWorkout(record);
     clearCurrentSession();
-    handleSetPhase('summary');
+    handleSetPhase("summary");
   };
 
   // Shared cleanup intentionally excludes saving, summary and phase navigation.
   const clearCurrentSession = () => {
-    setSearchQuery('');
-    setPickerMuscle('Chest');
-    setPickerSubgroup('');
+    setSearchQuery("");
+    setPickerMuscle("Chest");
+    setPickerSubgroup("");
     setSelectedMuscles([]);
     setSelectedExercises([]);
     setActiveExercises([]);
@@ -524,7 +604,7 @@ export const Tracker: React.FC = () => {
 
   const resetSession = () => {
     clearCurrentSession();
-    setPhase('setup');
+    setPhase("setup");
     setCompletedWorkout(null);
     setShowResetSessionConfirm(false);
     hapticFeedback.medium();
@@ -539,8 +619,6 @@ export const Tracker: React.FC = () => {
     setShowResetConfirm(true);
   };
 
-
-
   const handleShareWorkout = async () => {
     try {
       const encoded = btoa(JSON.stringify(selectedExercises));
@@ -548,10 +626,10 @@ export const Tracker: React.FC = () => {
 
       if (Capacitor.isNativePlatform()) {
         await Share.share({
-          title: 'NeuroLift Workout Plan',
-          text: 'Check out my workout plan on NeuroLift!',
+          title: "NeuroLift Workout Plan",
+          text: "Check out my workout plan on NeuroLift!",
           url: shareUrl,
-          dialogTitle: 'Share Workout Plan'
+          dialogTitle: "Share Workout Plan",
         });
       } else {
         navigator.clipboard.writeText(shareUrl);
@@ -568,32 +646,28 @@ export const Tracker: React.FC = () => {
     const newTemplate: WorkoutTemplate = {
       id: generateId(),
       name: templateName,
-      exercises: selectedExercises.map(ex => ({
+      exercises: selectedExercises.map((ex) => ({
         name: ex,
         targetSets: 3, // Default values
-        targetReps: '8-12'
+        targetReps: "8-12",
       })),
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
 
-    await safeStorage.saveTemplate(newTemplate.id, newTemplate);
-    setTemplates(prev => [newTemplate, ...prev]);
-
-
+    await saveTemplate(newTemplate);
 
     setShowSaveTemplateModal(false);
-    setTemplateName('');
+    setTemplateName("");
     hapticFeedback.success();
   };
 
   const loadTemplate = async (template: WorkoutTemplate) => {
-    const exerciseNames = template.exercises.map(e => e.name);
+    const exerciseNames = template.exercises.map((e) => e.name);
     setSelectedExercises(exerciseNames);
 
     // Update lastUsed
     const updatedTemplate = { ...template, lastUsed: new Date().toISOString() };
-    await safeStorage.saveTemplate(updatedTemplate.id, updatedTemplate);
-    setTemplates(prev => prev.map(t => t.id === updatedTemplate.id ? updatedTemplate : t));
+    await saveTemplate(updatedTemplate);
     setSelectedTemplate(updatedTemplate);
 
     // Loading a template replaces any old draft so the next start is always fresh.
@@ -605,9 +679,9 @@ export const Tracker: React.FC = () => {
     // Infer muscles from exercises
     const musclesToSelect = new Set<string>();
     Object.entries(exercisesByMuscle).forEach(([muscle, subCats]) => {
-      Object.values(subCats).forEach(categories => {
-        Object.values(categories).forEach(exercises => {
-          exercises.forEach(ex => {
+      Object.values(subCats).forEach((categories) => {
+        Object.values(categories).forEach((exercises) => {
+          exercises.forEach((ex) => {
             if (exerciseNames.includes(ex)) musclesToSelect.add(muscle);
           });
         });
@@ -615,15 +689,15 @@ export const Tracker: React.FC = () => {
     });
     setSelectedMuscles(Array.from(musclesToSelect));
     setShowLoadTemplateModal(false);
-    handleSetPhase('selection');
-    setSearchQuery('');
-    setPickerMuscle(Array.from(musclesToSelect)[0] || 'Chest');
-    setPickerSubgroup('');
+    handleSetPhase("selection");
+    setSearchQuery("");
+    setPickerMuscle(Array.from(musclesToSelect)[0] || "Chest");
+    setPickerSubgroup("");
     hapticFeedback.light();
   };
 
   const deleteTemplate = async (id: string) => {
-    const template = templates.find(t => t.id === id);
+    const template = templates.find((t) => t.id === id);
     if (template) {
       setTemplateDeleteConfirm({ id, name: template.name });
     }
@@ -631,11 +705,17 @@ export const Tracker: React.FC = () => {
 
   const confirmDeleteTemplate = async () => {
     if (templateDeleteConfirm) {
-      await safeStorage.deleteTemplate(templateDeleteConfirm.id);
-      setTemplates(prev => prev.filter(t => t.id !== templateDeleteConfirm.id));
-      const nextSchedule = Object.fromEntries(Object.entries(weeklySchedule).filter(([, id]) => id !== templateDeleteConfirm.id));
+      await removeTemplate(templateDeleteConfirm.id);
+      const nextSchedule = Object.fromEntries(
+        Object.entries(weeklySchedule).filter(
+          ([, id]) => id !== templateDeleteConfirm.id,
+        ),
+      );
       setWeeklySchedule(nextSchedule);
-      safeStorage.setItem('neuroLift_weekly_schedule', JSON.stringify(nextSchedule));
+      safeStorage.setItem(
+        "neuroLift_weekly_schedule",
+        JSON.stringify(nextSchedule),
+      );
       setTemplateDeleteConfirm(null);
       hapticFeedback.medium();
     }
@@ -644,19 +724,16 @@ export const Tracker: React.FC = () => {
   const editTemplate = (template: WorkoutTemplate) => {
     setEditingTemplate(template);
     const first = template.exercises[0]?.name;
-    const muscle = first ? getMuscleForExercise(first) : 'Chest';
-    setTemplatePickerMuscle(exercisesByMuscle[muscle] ? muscle : 'Chest');
-    setTemplatePickerSubgroup(first ? getSubMuscleForExercise(first) : '');
-    setTemplateSearch('');
+    const muscle = first ? getMuscleForExercise(first) : "Chest";
+    setTemplatePickerMuscle(exercisesByMuscle[muscle] ? muscle : "Chest");
+    setTemplatePickerSubgroup(first ? getSubMuscleForExercise(first) : "");
+    setTemplateSearch("");
     setShowEditTemplateModal(true);
   };
 
   const saveEditedTemplate = async () => {
     if (editingTemplate) {
-      await safeStorage.saveTemplate(editingTemplate.id, editingTemplate);
-      setTemplates(prev => prev.map(t => t.id === editingTemplate.id ? editingTemplate : t));
-
-
+      await saveTemplate(editingTemplate);
 
       setEditingTemplate(null);
       setShowEditTemplateModal(false);
@@ -670,20 +747,24 @@ export const Tracker: React.FC = () => {
     const newTemplate: WorkoutTemplate = {
       id: generateId(),
       name: completedTemplateName,
-      exercises: completedWorkout.exercises.map(ex => ({
+      exercises: completedWorkout.exercises.map((ex) => ({
         name: ex.name,
         targetSets: ex.sets.length,
-        targetReps: ex.targetReps || ex.sets.find(set => set.completed && set.reps > 0)?.reps.toString() || '10',
-        notes: ''
+        targetReps:
+          ex.targetReps ||
+          ex.sets
+            .find((set) => set.completed && set.reps > 0)
+            ?.reps.toString() ||
+          "10",
+        notes: "",
       })),
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
 
-    await safeStorage.saveTemplate(newTemplate.id, newTemplate);
-    setTemplates(prev => [newTemplate, ...prev]);
+    await saveTemplate(newTemplate);
 
     setShowSaveCompletedModal(false);
-    setCompletedTemplateName('');
+    setCompletedTemplateName("");
     hapticFeedback.success();
   };
 
@@ -692,12 +773,12 @@ export const Tracker: React.FC = () => {
       const newExercise = {
         name: exerciseName,
         targetSets: 3,
-        targetReps: '10-12',
-        notes: ''
+        targetReps: "10-12",
+        notes: "",
       };
       setEditingTemplate({
         ...editingTemplate,
-        exercises: [...editingTemplate.exercises, newExercise]
+        exercises: [...editingTemplate.exercises, newExercise],
       });
     }
   };
@@ -706,19 +787,23 @@ export const Tracker: React.FC = () => {
     if (editingTemplate) {
       setEditingTemplate({
         ...editingTemplate,
-        exercises: editingTemplate.exercises.filter((_, i) => i !== index)
+        exercises: editingTemplate.exercises.filter((_, i) => i !== index),
       });
     }
   };
 
-  const updateTemplateExercise = (index: number, field: 'targetSets' | 'targetReps' | 'notes', value: string | number) => {
+  const updateTemplateExercise = (
+    index: number,
+    field: "targetSets" | "targetReps" | "notes",
+    value: string | number,
+  ) => {
     if (editingTemplate) {
       const updatedExercises = editingTemplate.exercises.map((ex, i) =>
-        i === index ? { ...ex, [field]: value } : ex
+        i === index ? { ...ex, [field]: value } : ex,
       );
       setEditingTemplate({
         ...editingTemplate,
-        exercises: updatedExercises
+        exercises: updatedExercises,
       });
     }
   };
@@ -726,12 +811,13 @@ export const Tracker: React.FC = () => {
   // Global rest timer from logic
   // Removed local logic - handled in ClockContext now
 
-
-
   const MuscleChecklist = () => {
     return (
       <>
-        <div ref={muscleSelectorRef} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-4xl mx-auto px-4 mb-16">
+        <div
+          ref={muscleSelectorRef}
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-4xl mx-auto px-4 mb-16"
+        >
           {selectableMuscles.map((muscle) => (
             <button
               key={muscle}
@@ -739,20 +825,28 @@ export const Tracker: React.FC = () => {
               className="group relative flex items-center justify-center p-6 rounded-3xl border transition-all duration-300"
               style={{
                 backgroundColor: selectedMuscles.includes(muscle)
-                  ? 'rgb(var(--accent-500))'
-                  : (isLight ? '#ffffff' : 'rgba(24,24,27,0.4)'),
+                  ? "rgb(var(--accent-500))"
+                  : isLight
+                    ? "#ffffff"
+                    : "rgba(24,24,27,0.4)",
                 borderColor: selectedMuscles.includes(muscle)
-                  ? 'rgb(var(--accent-500))'
-                  : (isLight ? '#e4e4e7' : '#3f3f46'),
+                  ? "rgb(var(--accent-500))"
+                  : isLight
+                    ? "#e4e4e7"
+                    : "#3f3f46",
                 boxShadow: selectedMuscles.includes(muscle)
-                  ? '0 0 25px rgb(var(--accent-500) / 0.2)'
-                  : '0 1px 3px rgba(0,0,0,0.08)',
+                  ? "0 0 25px rgb(var(--accent-500) / 0.2)"
+                  : "0 1px 3px rgba(0,0,0,0.08)",
                 color: selectedMuscles.includes(muscle)
-                  ? '#ffffff'
-                  : (isLight ? '#18181b' : '#ffffff'),
+                  ? "#ffffff"
+                  : isLight
+                    ? "#18181b"
+                    : "#ffffff",
                 WebkitTextFillColor: selectedMuscles.includes(muscle)
-                  ? '#ffffff'
-                  : (isLight ? '#18181b' : '#ffffff'),
+                  ? "#ffffff"
+                  : isLight
+                    ? "#18181b"
+                    : "#ffffff",
               }}
             >
               <span className="text-xl font-black text-center transition-colors">
@@ -769,8 +863,12 @@ export const Tracker: React.FC = () => {
           position="bottom"
           targetRef={muscleSelectorRef}
         >
-          <p className="text-sm font-bold mb-1">{t('tooltip_muscle_selector_title')}</p>
-          <p className="text-xs opacity-90">{t('tooltip_muscle_selector_desc')}</p>
+          <p className="text-sm font-bold mb-1">
+            {t("tooltip_muscle_selector_title")}
+          </p>
+          <p className="text-xs opacity-90">
+            {t("tooltip_muscle_selector_desc")}
+          </p>
         </Tooltip>
       </>
     );
@@ -778,7 +876,15 @@ export const Tracker: React.FC = () => {
 
   return (
     <div className={`relative w-full min-h-screen `}>
-      <WorkoutGuide phase={phase} selected={selectedExercises.length} completed={activeExercises.reduce((sum, exercise) => sum + exercise.sets.filter(set => set.completed).length, 0)} />
+      <WorkoutGuide
+        phase={phase}
+        selected={selectedExercises.length}
+        completed={activeExercises.reduce(
+          (sum, exercise) =>
+            sum + exercise.sets.filter((set) => set.completed).length,
+          0,
+        )}
+      />
       <AnimatePresence mode="wait" custom={direction} initial={false}>
         <motion.div
           key={phase}
@@ -789,501 +895,155 @@ export const Tracker: React.FC = () => {
           transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
           className="w-full"
         >
-          {phase === 'setup' && (
-            <div className={`web-workout-picker mx-auto max-w-6xl px-5 pb-32 pt-5 sm:px-8 lg:pt-10`}>
-              <div className="mb-6 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-teal-700 dark:text-teal-300">{t('tracker_setup_step')}</p>
-                  <h2 className="text-3xl font-black tracking-tight text-zinc-950 dark:text-white sm:text-4xl">{t('tracker_select_muscle')}</h2>
-                  <p className="mt-2 max-w-xl text-sm text-zinc-600 dark:text-zinc-400">{t('tracker_setup_hint')}</p>
-                </div>
-                <RestDurationPicker />
-              </div>
-
-              {nextScheduledWorkout && (
-                <section className="mb-6 flex flex-col gap-3 rounded-2xl border border-teal-700/30 bg-teal-500/5 p-4 sm:flex-row sm:items-center sm:justify-between" aria-label={t('tracker_next_planned')}>
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-700 dark:text-teal-300">{t('tracker_next_planned')}</p>
-                    <h3 className="mt-1 text-lg font-black text-zinc-950 dark:text-white">{nextScheduledWorkout.template.name}</h3>
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                      {new Intl.DateTimeFormat(language === 'fr' ? 'fr-FR' : language === 'ar' ? 'ar' : 'en', { weekday: 'long', month: 'short', day: 'numeric' }).format(nextScheduledWorkout.date)}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <button type="button" onClick={() => void loadTemplate(nextScheduledWorkout.template)} className="web-primary min-h-11 rounded-xl px-4 py-2 text-sm font-bold">
-                      {t('tracker_load_template')}
-                    </button>
-                    <button type="button" onClick={() => setShowLoadTemplateModal(true)} className="web-secondary min-h-11 rounded-xl px-4 py-2 text-sm font-bold">
-                      {t('tracker_manage_templates')}
-                    </button>
-                  </div>
-                </section>
-              )}
-
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                {selectableMuscles.map((muscle) => (
-                  <motion.button
-                    key={muscle}
-                    type="button"
-                    aria-pressed={selectedMuscles.includes(muscle)}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => toggleMuscle(muscle)}
-                    className="group relative flex min-h-24 items-center justify-center rounded-2xl border p-4 transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400"
-                    style={{
-                      backgroundColor: selectedMuscles.includes(muscle)
-                        ? 'rgb(var(--accent-500))'
-                        : (isLight ? '#ffffff' : 'rgba(24,24,27,0.4)'),
-                      borderColor: selectedMuscles.includes(muscle)
-                        ? 'rgb(var(--accent-500))'
-                        : (isLight ? '#e4e4e7' : '#3f3f46'),
-                      boxShadow: selectedMuscles.includes(muscle)
-                        ? '0 0 25px rgb(var(--accent-500) / 0.2)'
-                        : '0 1px 3px rgba(0,0,0,0.08)',
-                      color: selectedMuscles.includes(muscle)
-                        ? '#ffffff'
-                        : (isLight ? '#18181b' : '#ffffff'),
-                      WebkitTextFillColor: selectedMuscles.includes(muscle)
-                        ? '#ffffff'
-                        : (isLight ? '#18181b' : '#ffffff'),
-                    }}
-                  >
-                    <span className="text-lg font-black text-center transition-colors">
-                      {getLocalizedMuscleName(muscle, language)}
-                    </span>
-                  </motion.button>
-                ))}
-              </div>
-
-              <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/60">
-                <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">{selectedMuscles.length} {t(selectedMuscles.length === 1 ? 'tracker_group_selected' : 'tracker_groups_selected')}</p>
-                <div className="flex flex-wrap items-center gap-3">
-                  {selectedMuscles.length > 0 && <button type="button" onClick={() => setShowResetSessionConfirm(true)} className="text-xs font-bold text-zinc-600 hover:text-rose-500 dark:text-zinc-400">{t('tracker_reset_session')}</button>}
-                  <button type="button" disabled={selectedMuscles.length === 0} onClick={() => handleSetPhase('selection')}
-                    className="min-h-11 rounded-xl bg-teal-600 px-5 py-3 text-sm font-black text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-teal-400 dark:text-zinc-950 dark:hover:bg-teal-300">
-                    {t('tracker_select_exercises')} <span aria-hidden="true">→</span>
-                  </button>
-                </div>
-              </div>
-            </div>
+          {phase === "setup" && (
+            <TrackerSetup
+              t={t}
+              nextScheduledWorkout={nextScheduledWorkout}
+              language={language}
+              loadTemplate={loadTemplate}
+              setShowLoadTemplateModal={setShowLoadTemplateModal}
+              selectableMuscles={selectableMuscles}
+              selectedMuscles={selectedMuscles}
+              toggleMuscle={toggleMuscle}
+              isLight={isLight}
+              setShowResetSessionConfirm={setShowResetSessionConfirm}
+              handleSetPhase={handleSetPhase}
+            />
           )}
 
-          {phase === 'selection' && (
-            <div className={`web-workout-picker mx-auto max-w-6xl px-5 pb-32 pt-5 sm:px-8 lg:pt-10`}>
-              <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-zinc-200 pb-5 dark:border-zinc-800">
-                <div>
-                  <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-teal-700 dark:text-teal-300">{t('tracker_exercises_step')}</p>
-                  <h2 className="mb-2 text-3xl font-black tracking-tight text-zinc-950 dark:text-white">
-                    {t('tracker_add_to_workout')}
-                  </h2>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedMuscles.map(m => (
-                      <span key={m} className="rounded-lg bg-teal-500/10 px-2.5 py-1 text-xs font-bold text-teal-800 dark:text-teal-200">
-                        {getLocalizedMuscleName(m, language)}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+          {phase === "selection" && (
+            <TrackerSelection
+              t={t}
+              selectedMuscles={selectedMuscles}
+              language={language}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              setPhase={setPhase}
+              handleShareWorkout={handleShareWorkout}
+              selectedExercises={selectedExercises}
+              shareFeedback={shareFeedback}
+              templates={templates}
+              setShowLoadTemplateModal={setShowLoadTemplateModal}
+              setShowSaveTemplateModal={setShowSaveTemplateModal}
+              setShowResetSessionConfirm={setShowResetSessionConfirm}
+              setPickerOpen={setPickerOpen}
+              currentPickerMuscle={currentPickerMuscle}
+              currentPickerSubgroup={currentPickerSubgroup}
+              exercisesByMuscle={exercisesByMuscle}
+              setPickerMuscle={setPickerMuscle}
+              setPickerSubgroup={setPickerSubgroup}
+              isLight={isLight}
+              toggleExercise={toggleExercise}
+              setTutorialExercise={setTutorialExercise}
+              setReviewOpen={setReviewOpen}
+              c={c}
+              activeExercises={activeExercises}
+              handleStartWorkout={handleStartWorkout}
+              reviewOpen={reviewOpen}
+              pickerOpen={pickerOpen}
+            />
+          )}
 
-                {/* Search Input */}
-                <div className="order-2 w-full lg:order-none lg:max-w-sm">
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <svg className="h-5 w-5 text-zinc-500 group-focus-within:text-teal-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                    </div>
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder={t('planner_search_placeholder') || "Search exercises..."}
-                      className="block w-full rounded-xl border border-zinc-300 bg-white py-3 pl-11 pr-4 text-sm text-zinc-950 placeholder-zinc-500 transition-all focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+          {/* Shared by selection and the active workout. */}
+          <Modal
+            isOpen={!!tutorialExercise}
+            onClose={() => setTutorialExercise(null)}
+          >
+            {tutorialExercise && (
+              <div className="relative w-full rounded-[3rem] border border-zinc-800 bg-zinc-950 p-6 md:p-10 shadow-3xl overflow-hidden">
+                <button
+                  onClick={() => setTutorialExercise(null)}
+                  className="absolute right-6 top-6 md:right-8 md:top-8 text-zinc-400 hover:text-white transition-colors z-10"
+                  title={t("modal_close")}
+                >
+                  <svg
+                    className="w-8 h-8"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
                     />
-                  </div>
+                  </svg>
+                </button>
+
+                <div className="flex items-center gap-4 mb-8 md:mb-10 pr-10">
+                  <div className="w-2 md:w-3 h-8 md:h-10 bg-teal-500 rounded-full flex-shrink-0"></div>
+                  <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter leading-tight">
+                    {getExerciseTranslation(tutorialExercise, language)}
+                  </h3>
                 </div>
 
-                <div className="order-3 flex w-full flex-wrap gap-2">
-                  <button onClick={() => setPhase('setup')} className="text-xs text-zinc-400 hover:text-white uppercase tracking-widest font-black flex items-center gap-2 transition-colors">
-                      <svg className="w-4 h-4 text-teal-700 dark:text-teal-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                    {t('tracker_back')}
-                  </button>
+                <div className="flex flex-col gap-4">
+                  <ExerciseDemo name={tutorialExercise} />
+                  <a
+                    href={`https://www.youtube.com/results?search_query=${encodeURIComponent(tutorialExercise + " exercise tutorial short")}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full flex items-center justify-center gap-3 py-5 bg-red-600 hover:bg-red-500 text-white font-black text-sm uppercase tracking-widest rounded-2xl transition-all shadow-lg shadow-red-600/30"
+                  >
+                    <svg
+                      className="w-6 h-6"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0C.488 3.45.029 5.804 0 12c.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0C23.512 20.55 23.971 18.196 24 12c-.029-6.185-.484-8.549-4.385-8.816zM9 16V8l8 4-8 4z" />
+                    </svg>
+                    {t("modal_watch_video")}
+                  </a>
 
                   <button
-                    onClick={handleShareWorkout}
-                    disabled={selectedExercises.length === 0}
-                    className={`text-xs uppercase tracking-widest font-black flex items-center gap-2 transition-all px-3 py-1.5 rounded-xl border ${shareFeedback
-                      ? 'bg-teal-500/20 border-teal-500 text-teal-400'
-                      : 'text-zinc-500 hover:text-white border-zinc-800 hover:border-teal-500/50'
-                      }`}
+                    onClick={() => setTutorialExercise(null)}
+                    className="w-full py-4 text-xs text-zinc-500 hover:text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-2xl font-black uppercase tracking-[0.3em] transition-all"
                   >
-                    <svg className={`w-4 h-4 ${shareFeedback ? 'text-teal-500' : 'text-zinc-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      {shareFeedback ? (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      ) : (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                      )}
-                    </svg>
-                    {shareFeedback ? t('save') : t('tracker_share_plan')}
-                  </button>
-
-                  {templates.length > 0 && (
-                    <button
-                      onClick={() => setShowLoadTemplateModal(true)}
-                      className="text-xs text-zinc-400 hover:text-white uppercase tracking-widest font-black flex items-center gap-2 transition-colors px-3 py-1.5 rounded-xl border border-zinc-800 hover:border-teal-500/50"
-                    >
-                      <svg className="w-4 h-4 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                      </svg>
-                      {t('tracker_load_template')}
-                    </button>
-                  )}
-
-                  {selectedExercises.length > 0 && (
-                    <button
-                      onClick={() => setShowSaveTemplateModal(true)}
-                      className="text-xs text-teal-400 hover:text-teal-300 uppercase tracking-widest font-black flex items-center gap-2 transition-colors px-3 py-1.5 rounded-xl border border-teal-500/20 hover:border-teal-500/50 bg-teal-500/5"
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                      </svg>
-                      {t('tracker_save_template')}
-                    </button>
-                  )}
-
-                  <button
-                    onClick={() => setShowResetSessionConfirm(true)}
-                    className="text-xs text-zinc-400 hover:text-rose-500 uppercase tracking-widest font-black flex items-center gap-2 transition-colors px-3 py-1.5 rounded-xl border border-zinc-800 hover:border-rose-500/50"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    {t('tracker_reset_session')}
+                    {t("modal_close")}
                   </button>
                 </div>
-
               </div>
-
-              {<button className="web-secondary web-mobile-filters" onClick={() => setPickerOpen(true)}>{getLocalizedMuscleName(currentPickerMuscle, language)} · {getLocalizedMuscleName(currentPickerSubgroup, language)} ▾</button>}
-              <div className="web-picker-grid mb-10 grid gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
-                <div className="web-picker-groups h-fit rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950/80 sm:p-5 lg:sticky lg:top-24">
-                  <ExerciseGroupSelector
-                    database={exercisesByMuscle}
-                    stacked
-                    muscle={currentPickerMuscle}
-                    subgroup={currentPickerSubgroup}
-                    onMuscleChange={muscle => {
-                      setPickerMuscle(muscle);
-                      setPickerSubgroup(Object.keys(exercisesByMuscle[muscle])[0]);
-                      setSearchQuery('');
-                    }}
-                    onSubgroupChange={subgroup => {
-                      setPickerSubgroup(subgroup);
-                      setSearchQuery('');
-                    }}
-                  />
-                </div>
-                {searchQuery ? (
-                  /* Search Results View */
-                  <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    {(() => {
-                      const categoryMeta: Record<string, { icon: string; key: Parameters<typeof t>[0] }> = {
-                        dumbbells: { icon: '🏋️', key: 'cat_dumbbells' },
-                        barbells: { icon: '🔩', key: 'cat_barbells' },
-                        cables: { icon: '🔗', key: 'cat_cables' },
-                        bodyweight: { icon: '🤸', key: 'cat_bodyweight' },
-                        machines: { icon: '⚙️', key: 'cat_machines' },
-                      };
-                      const allMatches: { name: string; muscle: string; category: string }[] = [];
-                      // Workout search stays within the muscle currently being browsed.
-                      [currentPickerMuscle].forEach(muscle => {
-                        Object.keys(exercisesByMuscle[muscle]).forEach(subGroup => {
-                          (['dumbbells', 'barbells', 'cables', 'bodyweight', 'machines'] as const).forEach(category => {
-                            const exercises = exercisesByMuscle[muscle][subGroup][category] || [];
-                            const normalize = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
-                            exercises.filter(ex => normalize(ex).includes(normalize(searchQuery))).forEach(ex => {
-                              // De-duplicate if needed, or just push
-                              if (!allMatches.some(m => m.name === ex)) {
-                                allMatches.push({ name: ex, muscle, category });
-                              }
-                            });
-                          });
-                        });
-                      });
-
-                      if (allMatches.length === 0) {
-                        return (
-                          <div className="text-center py-20">
-                            <div className="w-16 h-16 bg-zinc-900 rounded-full mx-auto flex items-center justify-center mb-6">
-                              <svg className="w-8 h-8 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                            </div>
-                            <h3 className="text-zinc-400 font-bold">No exercises found</h3>
-                            <p className="text-zinc-600 text-sm mt-2">Try searching for a different name</p>
-                          </div>
-                        );
-                      }
-
-                      return (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {allMatches.map(({ name, muscle, category }) => (
-                            <div key={name} className="relative group">
-                              <label
-                                style={{
-                                  backgroundColor: selectedExercises.includes(name)
-                                    ? 'rgb(var(--accent-500) / 0.08)'
-                                    : (isLight ? '#ffffff' : 'rgba(24,24,27,0.6)'),
-                                  color: isLight ? '#18181b' : '#ffffff',
-                                }}
-                                className={`flex items-center gap-4 p-5 border-2 rounded-2xl cursor-pointer transition-all duration-300 focus-within:outline focus-within:outline-2 focus-within:outline-teal-400 ${selectedExercises.includes(name)
-                                  ? 'border-teal-500 shadow-md'
-                                  : (isLight ? 'border-zinc-200 hover:border-zinc-300' : 'border-zinc-800 hover:border-zinc-700')}`}>
-                                <input
-                                  type="checkbox"
-                                  checked={selectedExercises.includes(name)}
-                                  onChange={() => {
-                                    toggleExercise(name);
-                                  }}
-                                  className="sr-only"
-                                />
-                                <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${selectedExercises.includes(name)
-                                  ? 'bg-teal-500 border-teal-500 text-white shadow-lg shadow-teal-500/20'
-                                  : (isLight ? 'border-zinc-300' : 'border-zinc-700')}`}>
-                                  {selectedExercises.includes(name) && <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>}
-                                </div>
-                                <div className="flex-1">
-                                  <span className="block text-sm font-black tracking-wide uppercase pr-10 rtl:pr-0 rtl:pl-10">{getExerciseTranslation(name, language)}</span>
-                                  <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
-                                    {getLocalizedMuscleName(muscle, language)} · {categoryMeta[category]?.icon} {categoryMeta[category] ? t(categoryMeta[category].key) : ''}
-                                  </span>
-                                </div>
-                              </label>
-
-                              <button
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  setTutorialExercise(name);
-                                }}
-                                className="absolute right-4 rtl:right-auto rtl:left-4 top-1/2 -translate-y-1/2 p-2 text-zinc-600 hover:text-teal-400 opacity-100 transition-all z-10"
-                                title={t('modal_watch_video')}
-                              >
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 16v-4m0-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    })()}
-                  </div>
-
-                ) : (
-                  [currentPickerMuscle].map(majorMuscle => (
-                    <div key={majorMuscle} className="space-y-6">
-                      {/* Show Major Group Header */}
-                      <h3 className="flex items-center gap-3 text-2xl font-black text-zinc-950 dark:text-white">
-                        <span className="h-8 w-1 rounded-full bg-teal-500"></span>
-                        {getLocalizedMuscleName(majorMuscle, language)}
-                      </h3>
-
-                      {/* Render functional sub-groups */}
-                      {Object.keys(exercisesByMuscle[majorMuscle] || {}).filter(subGroup => subGroup === currentPickerSubgroup).map(subGroup => {
-                        const categoryMeta: Record<string, { icon: string; key: Parameters<typeof t>[0] }> = {
-                          dumbbells: { icon: '🏋️', key: 'cat_dumbbells' },
-                          barbells: { icon: '🔩', key: 'cat_barbells' },
-                          cables: { icon: '🔗', key: 'cat_cables' },
-                          bodyweight: { icon: '🤸', key: 'cat_bodyweight' },
-                          machines: { icon: '⚙️', key: 'cat_machines' },
-                        };
-                        const categories = (['dumbbells', 'barbells', 'cables', 'bodyweight', 'machines'] as const);
-
-                        const renderExerciseCard = (ex: string) => (
-                          <div key={ex} className="relative group">
-                            <label
-                              style={{
-                                backgroundColor: selectedExercises.includes(ex)
-                                  ? 'rgb(var(--accent-500) / 0.08)'
-                                  : (isLight ? '#ffffff' : 'rgba(24,24,27,0.6)'),
-                                color: isLight ? '#18181b' : '#ffffff',
-                              }}
-                              className={`flex items-center gap-4 p-5 border-2 rounded-2xl cursor-pointer transition-all duration-300 focus-within:outline focus-within:outline-2 focus-within:outline-teal-400 ${selectedExercises.includes(ex)
-                                ? 'border-teal-500 shadow-md'
-                                : (isLight ? 'border-zinc-200 hover:border-zinc-300' : 'border-zinc-800 hover:border-zinc-700')}`}>
-                              <input
-                                type="checkbox"
-                                checked={selectedExercises.includes(ex)}
-                                onChange={() => toggleExercise(ex)}
-                                className="sr-only"
-                              />
-                              <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${selectedExercises.includes(ex)
-                                ? 'bg-teal-500 border-teal-500 text-white shadow-lg shadow-teal-500/20'
-                                : (isLight ? 'border-zinc-300' : 'border-zinc-700')}`}>
-                                {selectedExercises.includes(ex) && <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>}
-                              </div>
-                              <div className="flex-1 min-w-0 pr-10 rtl:pr-0 rtl:pl-10">
-                                <span className="block text-sm font-black tracking-wide uppercase">{getExerciseTranslation(ex, language)}</span>
-                              </div>
-                            </label>
-
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setTutorialExercise(ex);
-                              }}
-                              className="absolute right-4 rtl:right-auto rtl:left-4 top-1/2 -translate-y-1/2 p-2 text-zinc-600 hover:text-teal-400 opacity-100 transition-all z-10"
-                              title={t('modal_watch_video')}
-                            >
-                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 16v-4m0-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                            </button>
-                          </div>
-                        );
-
-                        return (
-                          <div key={subGroup} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <h4 className="mb-5 flex items-center gap-3 text-lg font-black text-zinc-950 dark:text-zinc-200">
-                              <span className="w-1.5 h-6 bg-teal-500/50 rounded-full"></span>
-                              {getLocalizedMuscleName(subGroup, language)}
-                            </h4>
-
-                            <div className="space-y-6">
-                              {categories.map(cat => {
-                                const exercises = exercisesByMuscle[majorMuscle]?.[subGroup]?.[cat] || [];
-                                if (exercises.length === 0) return null;
-                                const meta = categoryMeta[cat];
-
-                                return (
-                                  <div key={cat}>
-                                    <h5 className="text-[0.625rem] font-black uppercase tracking-[0.4em] mb-6 ml-1 flex items-center gap-3"
-                                      style={{ color: isLight ? '#71717a' : '#a1a1aa' }}>
-                                      <span className="text-base">{meta.icon}</span>
-                                      {t(meta.key)}
-                                      <div className="h-px flex-1" style={{ backgroundColor: isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)' }}></div>
-                                      <span className="text-zinc-600 font-medium">{exercises.length}</span>
-                                    </h5>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                      {exercises.map(ex => renderExerciseCard(ex))}
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ))
-                )}
-
-                {<aside className="web-selection-panel"><h3>{t('picker_selected_count')}: {selectedExercises.length}</h3><ul>{selectedExercises.map(name => <li key={name}><span>{getExerciseTranslation(name, language)}</span><button aria-label={`${t('tracker_delete_exercise')}: ${name}`} onClick={() => toggleExercise(name)}>×</button></li>)}</ul><button className="web-primary" disabled={!selectedExercises.length} onClick={() => setReviewOpen(true)}>{c('review')}</button></aside>}
-              </div>
-
-              <div className="web-selection-actions sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-white/95 p-3 shadow-2xl backdrop-blur dark:border-zinc-700 dark:bg-zinc-950/95 md:bottom-6 md:p-4">
-                <div className="min-w-0">
-                  <div className="text-xs font-black text-zinc-900 dark:text-white">{t('picker_selected_count')}: {selectedExercises.length}</div>
-                  {<button className="web-text-button" onClick={() => setReviewOpen(true)}>{c('review')}</button>}
-                  <div className="hidden max-w-[400px] truncate text-xs text-zinc-600 dark:text-zinc-400 md:block">{selectedExercises.join(', ')}</div>
-                </div>
-                <div className="flex gap-4 w-full md:w-auto">
-                  {activeExercises.length > 0 && (
-                    <button
-                      onClick={() => setPhase('active')}
-                      className="flex-1 md:flex-none px-8 py-5 text-xs font-black uppercase tracking-widest text-zinc-300 hover:text-white transition-colors border border-zinc-800 rounded-2xl"
-                    >
-                      {t('tracker_back')}
-                    </button>
-                  )}
-                  <SpotlightButton
-                    onClick={handleStartWorkout}
-                    disabled={selectedExercises.length === 0}
-                    className="flex-1 md:flex-none px-6 md:px-16 py-5 text-sm md:text-lg font-black uppercase tracking-widest shadow-lg shadow-teal-500/20 flex items-center justify-center !rounded-2xl"
-                  >
-                    {activeExercises.length > 0 ? t('tracker_resume') : t('tracker_start')}
-                  </SpotlightButton>
-                </div>
-              </div>
-
-              <Modal isOpen={reviewOpen} onClose={() => setReviewOpen(false)} label={t('picker_selected_count')} sheet><div className="web-more-panel"><div className="web-section-heading"><h2>{t('picker_selected_count')}: {selectedExercises.length}</h2><button className="web-secondary" onClick={() => setReviewOpen(false)}>{t('modal_close')}</button></div><ul className="web-selection-list">{selectedExercises.map(name => <li key={name}><span>{getExerciseTranslation(name, language)}</span><button aria-label={`${t('tracker_delete_exercise')}: ${name}`} onClick={() => toggleExercise(name)}>×</button></li>)}</ul><button className="web-primary" disabled={!selectedExercises.length} onClick={() => { setReviewOpen(false); handleStartWorkout(); }}>{activeExercises.length ? t('tracker_resume') : t('tracker_start')}</button></div></Modal>
-              <Modal isOpen={pickerOpen} onClose={() => setPickerOpen(false)} label={t('picker_muscle_group')} sheet><div className="web-more-panel"><h2>{t('picker_muscle_group')}</h2><ExerciseGroupSelector database={exercisesByMuscle} stacked muscle={currentPickerMuscle} subgroup={currentPickerSubgroup} onMuscleChange={value => { setPickerMuscle(value); setPickerSubgroup(Object.keys(exercisesByMuscle[value])[0]); setSearchQuery(''); }} onSubgroupChange={value => { setPickerSubgroup(value); setSearchQuery(''); }} /><button className="web-primary" onClick={() => setPickerOpen(false)}>{t('modal_close')}</button></div></Modal>
-
-            </div>
-          )}
-
-              {/* Shared by selection and the active workout. */}
-              <Modal isOpen={!!tutorialExercise} onClose={() => setTutorialExercise(null)}>
-                {tutorialExercise && (
-                  <div className="relative w-full rounded-[3rem] border border-zinc-800 bg-zinc-950 p-6 md:p-10 shadow-3xl overflow-hidden">
-                    <button
-                      onClick={() => setTutorialExercise(null)}
-                      className="absolute right-6 top-6 md:right-8 md:top-8 text-zinc-400 hover:text-white transition-colors z-10"
-                      title={t('modal_close')}
-                    >
-                      <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-
-                    <div className="flex items-center gap-4 mb-8 md:mb-10 pr-10">
-                      <div className="w-2 md:w-3 h-8 md:h-10 bg-teal-500 rounded-full flex-shrink-0"></div>
-                      <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter leading-tight">
-                        {getExerciseTranslation(tutorialExercise, language)}
-                      </h3>
-                    </div>
-
-                    <div className="flex flex-col gap-4">
-                      <ExerciseDemo name={tutorialExercise} />
-                      <a
-                        href={`https://www.youtube.com/results?search_query=${encodeURIComponent(tutorialExercise + ' exercise tutorial short')}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="w-full flex items-center justify-center gap-3 py-5 bg-red-600 hover:bg-red-500 text-white font-black text-sm uppercase tracking-widest rounded-2xl transition-all shadow-lg shadow-red-600/30"
-                      >
-                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0C.488 3.45.029 5.804 0 12c.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0C23.512 20.55 23.971 18.196 24 12c-.029-6.185-.484-8.549-4.385-8.816zM9 16V8l8 4-8 4z" /></svg>
-                        {t('modal_watch_video')}
-                      </a>
-
-                      <button
-                        onClick={() => setTutorialExercise(null)}
-                        className="w-full py-4 text-xs text-zinc-500 hover:text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-2xl font-black uppercase tracking-[0.3em] transition-all"
-                      >
-                        {t('modal_close')}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </Modal>
+            )}
+          </Modal>
           {activeSetInfo && (
             <Modal isOpen={true} onClose={() => setActiveSetInfo(null)}>
               <div className="relative w-full rounded-[3rem] border border-zinc-800 bg-zinc-950 p-8 shadow-3xl overflow-hidden">
                 <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-8 flex items-center gap-3">
                   <span className="w-2 h-6 bg-teal-500 rounded-full"></span>
-                  {t('tracker_plate_calc_title')}
+                  {t("tracker_plate_calc_title")}
                 </h3>
 
                 <div className="space-y-6">
                   <div>
-                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-2 px-1">{t('tracker_plate_one_side')}</label>
+                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-2 px-1">
+                      {t("tracker_plate_one_side")}
+                    </label>
                     <input
                       type="number"
-                      value={plateCalcWeight || ''}
-                      onChange={(e) => setPlateCalcWeight(parseFloat(e.target.value) || 0)}
+                      value={plateCalcWeight || ""}
+                      onChange={(e) =>
+                        setPlateCalcWeight(parseFloat(e.target.value) || 0)
+                      }
                       placeholder="e.g., 20"
                       className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-teal-500 transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-2 px-1">{t('tracker_bar_weight')}</label>
+                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-2 px-1">
+                      {t("tracker_bar_weight")}
+                    </label>
                     <div className="grid grid-cols-4 gap-2">
-                      {[0, 10, 15, 20].map(w => (
+                      {[0, 10, 15, 20].map((w) => (
                         <button
                           key={w}
                           onClick={() => setBarWeight(w)}
-                          className={`py-3 rounded-xl border font-bold transition-all ${barWeight === w
-                            ? 'bg-teal-500 border-teal-500 text-white'
-                            : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700'}`}
+                          className={`py-3 rounded-xl border font-bold transition-all ${
+                            barWeight === w
+                              ? "bg-teal-500 border-teal-500 text-white"
+                              : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700"
+                          }`}
                         >
                           {w}kg
                         </button>
@@ -1292,102 +1052,166 @@ export const Tracker: React.FC = () => {
                   </div>
 
                   <div className="bg-teal-500/5 border border-teal-500/20 rounded-2xl p-6 text-center">
-                    <div className="text-[10px] font-black text-teal-500 uppercase tracking-[0.2em] mb-1">{t('tracker_total_weight')}</div>
+                    <div className="text-[10px] font-black text-teal-500 uppercase tracking-[0.2em] mb-1">
+                      {t("tracker_total_weight")}
+                    </div>
                     <div className="text-4xl font-black text-white">
-                      {((plateCalcWeight || 0) * 2) + barWeight} <span className="text-sm text-zinc-500">kg</span>
+                      {(plateCalcWeight || 0) * 2 + barWeight}{" "}
+                      <span className="text-sm text-zinc-500">kg</span>
                     </div>
                   </div>
 
                   <SpotlightButton
                     onClick={() => {
-                      const total = ((plateCalcWeight || 0) * 2) + barWeight;
-                      updateSet(activeSetInfo.exIdx, activeSetInfo.setIdx, 'weight', total.toString());
+                      const total = (plateCalcWeight || 0) * 2 + barWeight;
+                      updateSet(
+                        activeSetInfo.exIdx,
+                        activeSetInfo.setIdx,
+                        "weight",
+                        total.toString(),
+                      );
                       setActiveSetInfo(null);
                       setPlateCalcWeight(null);
                     }}
                     className="w-full py-4 text-xs font-black uppercase tracking-widest"
                   >
-                    {t('tracker_set_weight_btn')}
+                    {t("tracker_set_weight_btn")}
                   </SpotlightButton>
 
                   <button
                     onClick={() => setActiveSetInfo(null)}
                     className="w-full py-2 text-[10px] text-zinc-600 hover:text-rose-500 font-black uppercase tracking-widest transition-all"
                   >
-                    {t('tracker_cancel')}
+                    {t("tracker_cancel")}
                   </button>
                 </div>
               </div>
             </Modal>
           )}
 
-          {phase === 'active' && <WebSession
-            exercises={activeExercises} history={exerciseHistory} duration={formatTime(duration)} running={timerActive}
-            rest={restTimerRemaining} pause={() => setTimerActive(!timerActive)} skipRest={stopRestTimer} addRest={() => addRestTime(30)}
-            update={updateSet} complete={toggleSetComplete} add={addSet} remove={removeSet} demo={setTutorialExercise}
-            deleteExercise={index => setExerciseToDelete({ name: activeExercises[index].name, index })}
-            quickLoad={handleQuickLoad} plates={(exIdx, setIdx) => setActiveSetInfo({ exIdx, setIdx })}
-            edit={() => setPhase('selection')} reorder={() => { setTempReorderList([...activeExercises]); setShowReorderModal(true); }}
-            finish={finishWorkout} reset={() => setShowResetSessionConfirm(true)} />}
+          {phase === "active" && (
+            <WebSession
+              exercises={activeExercises}
+              history={exerciseHistory}
+              duration={formatTime(duration)}
+              running={timerActive}
+              rest={restTimerRemaining}
+              pause={() => setTimerActive(!timerActive)}
+              skipRest={stopRestTimer}
+              addRest={() => addRestTime(30)}
+              update={updateSet}
+              complete={toggleSetComplete}
+              add={addSet}
+              remove={removeSet}
+              demo={setTutorialExercise}
+              deleteExercise={(index) =>
+                setExerciseToDelete({
+                  name: activeExercises[index].name,
+                  index,
+                })
+              }
+              quickLoad={handleQuickLoad}
+              plates={(exIdx, setIdx) => setActiveSetInfo({ exIdx, setIdx })}
+              edit={() => setPhase("selection")}
+              reorder={() => {
+                setTempReorderList([...activeExercises]);
+                setShowReorderModal(true);
+              }}
+              finish={finishWorkout}
+              reset={() => setShowResetSessionConfirm(true)}
+            />
+          )}
 
+          {phase === "summary" && completedWorkout && (
+            <div className="mx-auto max-w-4xl px-6 pt-10 pb-32 text-center">
+              <div className="w-24 h-24 bg-teal-500 rounded-full mx-auto flex items-center justify-center mb-8 shadow-2xl shadow-teal-500/30 animate-in zoom-in duration-500">
+                <svg
+                  className="w-12 h-12 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={3}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <h2 className="text-4xl md:text-6xl font-black text-white mb-4 uppercase tracking-tighter">
+                {t("tracker_summary")}
+              </h2>
+              <p className="text-zinc-400 text-lg mb-12 max-w-lg mx-auto">
+                {t("tracker_quote")}
+              </p>
 
-          {
-            phase === 'summary' && completedWorkout && (
-              <div className="mx-auto max-w-4xl px-6 pt-10 pb-32 text-center">
-                <div className="w-24 h-24 bg-teal-500 rounded-full mx-auto flex items-center justify-center mb-8 shadow-2xl shadow-teal-500/30 animate-in zoom-in duration-500">
-                  <svg className="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                </div>
-                <h2 className="text-4xl md:text-6xl font-black text-white mb-4 uppercase tracking-tighter">
-                  {t('tracker_summary')}
-                </h2>
-                <p className="text-zinc-400 text-lg mb-12 max-w-lg mx-auto">
-                  {t('tracker_quote')}
-                </p>
-
-                <WorkoutBreakdown workout={completedWorkout} previous={summaryPrevious} />
-                <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto mb-12">
-                  <div className="bg-zinc-900/50 rounded-3xl p-6 border border-zinc-800">
-                    <div className="text-xs text-zinc-500 font-black uppercase tracking-widest mb-2">{t('tracker_duration')}</div>
-                    <div className="text-3xl font-black text-white text-mono">{formatTime(completedWorkout.durationSeconds)}</div>
+              <WorkoutBreakdown
+                workout={completedWorkout}
+                previous={summaryPrevious}
+              />
+              <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto mb-12">
+                <div className="bg-zinc-900/50 rounded-3xl p-6 border border-zinc-800">
+                  <div className="text-xs text-zinc-500 font-black uppercase tracking-widest mb-2">
+                    {t("tracker_duration")}
                   </div>
-                  <div className="bg-zinc-900/50 rounded-3xl p-6 border border-zinc-800">
-                    <div className="text-xs text-zinc-500 font-black uppercase tracking-widest mb-2">{t('tracker_volume')}</div>
-                    <div className="text-3xl font-black text-white text-mono">{completedWorkout.totalVolume.toLocaleString()} <span className="text-sm text-zinc-500">{t('unit_kg')}</span></div>
+                  <div className="text-3xl font-black text-white text-mono">
+                    {formatTime(completedWorkout.durationSeconds)}
                   </div>
                 </div>
-
-                <div className="flex flex-col gap-4 items-center">
-                  <button
-                    onClick={() => setShowSaveCompletedModal(true)}
-                    className="px-8 py-3 bg-zinc-900/50 hover:bg-zinc-800 border border-zinc-800 hover:border-teal-500/50 text-zinc-400 hover:text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all flex items-center gap-2"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                    </svg>
-                    {t('tracker_save_template')}
-                  </button>
-
-                  <SpotlightButton
-                    onClick={reset}
-                    className="px-12 py-5 text-lg font-black uppercase tracking-widest shadow-xl mx-auto"
-                  >
-                    {t('tracker_start_new')}
-                  </SpotlightButton>
+                <div className="bg-zinc-900/50 rounded-3xl p-6 border border-zinc-800">
+                  <div className="text-xs text-zinc-500 font-black uppercase tracking-widest mb-2">
+                    {t("tracker_volume")}
+                  </div>
+                  <div className="text-3xl font-black text-white text-mono">
+                    {completedWorkout.totalVolume.toLocaleString()}{" "}
+                    <span className="text-sm text-zinc-500">
+                      {t("unit_kg")}
+                    </span>
+                  </div>
                 </div>
               </div>
-            )
-          }
 
+              <div className="flex flex-col gap-4 items-center">
+                <button
+                  onClick={() => setShowSaveCompletedModal(true)}
+                  className="px-8 py-3 bg-zinc-900/50 hover:bg-zinc-800 border border-zinc-800 hover:border-teal-500/50 text-zinc-400 hover:text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all flex items-center gap-2"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2.5}
+                      d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+                    />
+                  </svg>
+                  {t("tracker_save_template")}
+                </button>
+
+                <SpotlightButton
+                  onClick={reset}
+                  className="px-12 py-5 text-lg font-black uppercase tracking-widest shadow-xl mx-auto"
+                >
+                  {t("tracker_start_new")}
+                </SpotlightButton>
+              </div>
+            </div>
+          )}
         </motion.div>
       </AnimatePresence>
 
       {/* Modals */}
       <ConfirmModal
         isOpen={!!exerciseToDelete}
-        title={t('tracker_delete_exercise')}
-        message={t('tracker_confirm_delete_exercise')}
-        confirmLabel={t('tracker_delete_exercise')}
-        cancelLabel={t('tracker_cancel')}
+        title={t("tracker_delete_exercise")}
+        message={t("tracker_confirm_delete_exercise")}
+        confirmLabel={t("tracker_delete_exercise")}
+        cancelLabel={t("tracker_cancel")}
         onConfirm={confirmDeleteExercise}
         onCancel={() => setExerciseToDelete(null)}
         isDestructive={true}
@@ -1396,10 +1220,10 @@ export const Tracker: React.FC = () => {
       {/* Existing Modals */}
       <ConfirmModal
         isOpen={showResetConfirm}
-        title={t('tracker_reset_timer_title')}
-        message={t('tracker_reset_timer_desc')}
-        confirmLabel={t('timer_reset')}
-        cancelLabel={t('tracker_cancel')}
+        title={t("tracker_reset_timer_title")}
+        message={t("tracker_reset_timer_desc")}
+        confirmLabel={t("timer_reset")}
+        cancelLabel={t("tracker_cancel")}
         onConfirm={() => {
           resetClock();
           setShowResetConfirm(false);
@@ -1409,17 +1233,20 @@ export const Tracker: React.FC = () => {
         isDestructive={true}
       />
 
-
-
       {/* Save Template Modal */}
-      <Modal isOpen={showSaveTemplateModal} onClose={() => setShowSaveTemplateModal(false)}>
+      <Modal
+        isOpen={showSaveTemplateModal}
+        onClose={() => setShowSaveTemplateModal(false)}
+      >
         <div className="relative w-full rounded-[3rem] border border-zinc-800 bg-zinc-950 p-8 shadow-3xl overflow-hidden">
           <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-8 flex items-center gap-3">
-            {t('tracker_save_template')}
+            {t("tracker_save_template")}
           </h3>
           <div className="space-y-6">
             <div>
-              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-2 px-1">{t('tracker_template_name')}</label>
+              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-2 px-1">
+                {t("tracker_template_name")}
+              </label>
               <input
                 type="text"
                 value={templateName}
@@ -1434,27 +1261,32 @@ export const Tracker: React.FC = () => {
               disabled={!templateName.trim()}
               className="w-full py-4 text-xs font-black uppercase tracking-widest disabled:opacity-50"
             >
-              {t('tracker_save')}
+              {t("tracker_save")}
             </SpotlightButton>
             <button
               onClick={() => setShowSaveTemplateModal(false)}
               className="w-full py-2 text-[10px] text-zinc-600 hover:text-rose-500 font-black uppercase tracking-widest transition-all"
             >
-              {t('tracker_cancel')}
+              {t("tracker_cancel")}
             </button>
           </div>
         </div>
       </Modal>
 
       {/* Save Completed Workout as Template Modal */}
-      <Modal isOpen={showSaveCompletedModal} onClose={() => setShowSaveCompletedModal(false)}>
+      <Modal
+        isOpen={showSaveCompletedModal}
+        onClose={() => setShowSaveCompletedModal(false)}
+      >
         <div className="relative w-full rounded-[3rem] border border-zinc-800 bg-zinc-950 p-8 shadow-3xl overflow-hidden">
           <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-8 flex items-center gap-3">
-            {t('tracker_save_template')}
+            {t("tracker_save_template")}
           </h3>
           <div className="space-y-6">
             <div>
-              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-2 px-1">{t('tracker_template_name')}</label>
+              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-2 px-1">
+                {t("tracker_template_name")}
+              </label>
               <input
                 type="text"
                 value={completedTemplateName}
@@ -1469,335 +1301,158 @@ export const Tracker: React.FC = () => {
               disabled={!completedTemplateName.trim()}
               className="w-full py-4 text-xs font-black uppercase tracking-widest disabled:opacity-50"
             >
-              {t('tracker_save')}
+              {t("tracker_save")}
             </SpotlightButton>
             <button
               onClick={() => setShowSaveCompletedModal(false)}
               className="w-full py-2 text-[10px] text-zinc-600 hover:text-rose-500 font-black uppercase tracking-widest transition-all"
             >
-              {t('tracker_cancel')}
+              {t("tracker_cancel")}
             </button>
           </div>
         </div>
       </Modal>
 
       {/* Load Template Modal */}
-      <Modal isOpen={showLoadTemplateModal} onClose={() => setShowLoadTemplateModal(false)}>
-        <div className="relative w-full rounded-[3rem] border border-zinc-800 bg-zinc-950 p-8 shadow-3xl overflow-hidden max-h-[80vh] flex flex-col">
-          <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-8 flex items-center gap-3 flex-shrink-0">
-            {t('tracker_templates_title')}
-          </h3>
-
-          <div className="space-y-3 overflow-y-auto flex-1 pr-2 custom-scrollbar">
-            {templates.map(template => (
-              <div key={template.id} className="group flex flex-col gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4 transition-all hover:border-teal-500/50">
-                <button
-                  onClick={() => loadTemplate(template)}
-                  className="flex-1 text-left"
-                >
-                  <div className="text-sm font-black text-white uppercase tracking-tight mb-1">{template.name}</div>
-                  <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
-                    {template.exercises.length} {t('tracker_exercises')} • {t('tracker_created')} {new Date(template.createdAt).toLocaleDateString()}
-                  </div>
-                </button>
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => editTemplate(template)}
-                    className="p-2 text-zinc-500 hover:text-teal-500 transition-colors"
-                    title="Edit template"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => deleteTemplate(template.id)}
-                    className="p-2 text-zinc-500 hover:text-rose-500 transition-colors"
-                    title="Delete template"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
-                <div className="border-t border-zinc-800 pt-3">
-                  <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500">{t('tracker_schedule_days')}</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {weekdayLabels.map((dayLabel, day) => {
-                      const assigned = weeklySchedule[String(day)] === template.id;
-                      return <button key={day} type="button" aria-pressed={assigned} aria-label={`${dayLabel} · ${template.name}`} onClick={() => assignTemplateDay(day, template.id)}
-                        className={`min-h-9 min-w-10 rounded-lg border px-2 text-xs font-bold transition ${assigned ? 'border-teal-500 bg-teal-500 text-zinc-950' : 'border-zinc-700 bg-zinc-950 text-zinc-300 hover:border-teal-500/60'}`}>
-                        {dayLabel}
-                      </button>;
-                    })}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <button
-            onClick={() => setShowLoadTemplateModal(false)}
-            className="w-full py-4 mt-6 text-[10px] text-zinc-600 hover:text-white font-black uppercase tracking-widest transition-all border-t border-zinc-900 flex-shrink-0"
-          >
-            {t('modal_close')}
-          </button>
-        </div>
-      </Modal>
+      <TrackerTemplatePicker
+        showLoadTemplateModal={showLoadTemplateModal}
+        setShowLoadTemplateModal={setShowLoadTemplateModal}
+        t={t}
+        templates={templates}
+        loadTemplate={loadTemplate}
+        editTemplate={editTemplate}
+        deleteTemplate={deleteTemplate}
+        weekdayLabels={weekdayLabels}
+        weeklySchedule={weeklySchedule}
+        assignTemplateDay={assignTemplateDay}
+      />
 
       {/* Edit Template Modal */}
-      <Modal isOpen={showEditTemplateModal} onClose={() => setShowEditTemplateModal(false)}>
-        <div className="relative w-full max-w-4xl rounded-[3rem] border border-zinc-800 bg-zinc-950 p-8 shadow-3xl overflow-hidden max-h-[90vh] flex flex-col">
-          <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-8 flex items-center gap-3 flex-shrink-0">
-            {t('tracker_save_template')} - {editingTemplate?.name}
-          </h3>
-
-          <div className="space-y-6 overflow-y-auto flex-1 pr-2 custom-scrollbar">
-            {/* Template Exercises */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-black text-zinc-400 uppercase tracking-widest">Exercises</h4>
-              {editingTemplate?.exercises.map((exercise, index) => (
-                <Card key={index} className="p-4 bg-zinc-900/50 border-zinc-800">
-                  <div className="flex items-center justify-between mb-3">
-                    <h5 className="text-sm font-bold text-white">{exercise.name}</h5>
-                    <button
-                      onClick={() => removeExerciseFromTemplate(index)}
-                      className="p-1 text-zinc-500 hover:text-rose-500 transition-colors"
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Sets</label>
-                      <input
-                        type="number"
-                        value={exercise.targetSets}
-                        onChange={(e) => updateTemplateExercise(index, 'targetSets', parseInt(e.target.value) || 1)}
-                        className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm"
-                        min="1"
-                        max="10"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Reps</label>
-                      <input
-                        type="text"
-                        value={exercise.targetReps}
-                        onChange={(e) => updateTemplateExercise(index, 'targetReps', e.target.value)}
-                        className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm"
-                        placeholder="10-12"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Notes</label>
-                      <input
-                        type="text"
-                        value={exercise.notes || ''}
-                        onChange={(e) => updateTemplateExercise(index, 'notes', e.target.value)}
-                        className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm"
-                        placeholder="Optional notes"
-                      />
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-
-            {/* Add Exercise from Library */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-black text-zinc-400 uppercase tracking-widest">{t('picker_add_from_library')}</h4>
-              <ExerciseGroupSelector
-                database={exercisesByMuscle}
-                muscle={currentTemplateMuscle}
-                subgroup={currentTemplateSubgroup}
-                onMuscleChange={muscle => {
-                  setTemplatePickerMuscle(muscle);
-                  setTemplatePickerSubgroup(Object.keys(exercisesByMuscle[muscle])[0]);
-                }}
-                onSubgroupChange={setTemplatePickerSubgroup}
-              />
-              <input type="search" value={templateSearch} onChange={event => setTemplateSearch(event.target.value)}
-                aria-label={t('planner_search_placeholder')} placeholder={t('planner_search_placeholder')}
-                className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-white focus:border-teal-400 focus:outline-none" />
-              <p className="text-xs font-semibold text-teal-300">{t('picker_selected_count')}: {editingTemplate?.exercises.length || 0}</p>
-              <div className="max-h-96 space-y-5 overflow-y-auto custom-scrollbar">
-                {templateAvailableCount === 0 && <p className="rounded-xl border border-zinc-800 p-4 text-sm text-zinc-400">{t('picker_no_matches')}</p>}
-                {Object.entries(exercisesByMuscle[currentTemplateMuscle]?.[currentTemplateSubgroup] || {}).map(([category, exercises]) => {
-                  const available = exercises.filter(ex => !editingTemplate?.exercises.some(te => te.name === ex)
-                    && getExerciseTranslation(ex, language).toLocaleLowerCase().includes(templateSearch.trim().toLocaleLowerCase()));
-                  if (!available.length) return null;
-                  const categoryKey = `cat_${category}` as Parameters<typeof t>[0];
-                  return <div key={category}>
-                    <h5 className="mb-2 text-xs font-bold uppercase tracking-widest text-zinc-400">{t(categoryKey)}</h5>
-                    <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                      {available.map(exercise => <button key={`${category}-${exercise}`} type="button"
-                        onClick={() => addExerciseToTemplate(exercise)}
-                        className="rounded-lg border border-zinc-800 bg-zinc-900/30 p-3 text-left text-sm font-bold text-white hover:border-teal-500/50 hover:bg-teal-500/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400">
-                        {getExerciseTranslation(exercise, language)}
-                      </button>)}
-                    </div>
-                  </div>;
-                })}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex gap-3 mt-6 pt-6 border-t border-zinc-900 flex-shrink-0">
-            <button
-              onClick={() => setShowEditTemplateModal(false)}
-              className="flex-1 py-3 text-zinc-600 hover:text-white font-black uppercase tracking-widest transition-all"
-            >
-              {t('tracker_cancel')}
-            </button>
-            <button
-              onClick={saveEditedTemplate}
-              className="flex-1 py-3 bg-teal-500 hover:bg-teal-400 text-white font-black uppercase tracking-widest rounded-lg transition-all"
-            >
-              {t('tracker_save')}
-            </button>
-          </div>
-        </div>
-      </Modal>
+      <TrackerTemplateEditor
+        showEditTemplateModal={showEditTemplateModal}
+        setShowEditTemplateModal={setShowEditTemplateModal}
+        t={t}
+        editingTemplate={editingTemplate}
+        removeExerciseFromTemplate={removeExerciseFromTemplate}
+        updateTemplateExercise={updateTemplateExercise}
+        exercisesByMuscle={exercisesByMuscle}
+        currentTemplateMuscle={currentTemplateMuscle}
+        currentTemplateSubgroup={currentTemplateSubgroup}
+        setTemplatePickerMuscle={setTemplatePickerMuscle}
+        setTemplatePickerSubgroup={setTemplatePickerSubgroup}
+        templateSearch={templateSearch}
+        setTemplateSearch={setTemplateSearch}
+        templateAvailableCount={templateAvailableCount}
+        language={language}
+        addExerciseToTemplate={addExerciseToTemplate}
+        saveEditedTemplate={saveEditedTemplate}
+      />
 
       {/* Template Delete Confirmation Modal */}
-      <Modal isOpen={templateDeleteConfirm !== null} onClose={() => setTemplateDeleteConfirm(null)}>
+      <Modal
+        isOpen={templateDeleteConfirm !== null}
+        onClose={() => setTemplateDeleteConfirm(null)}
+      >
         <div className="p-8 bg-zinc-950 border border-zinc-900 rounded-[3rem] text-center space-y-6 relative overflow-hidden">
           <div className="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto text-rose-500 mb-4">
-            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            <svg
+              className="w-8 h-8"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
             </svg>
           </div>
           <h3 className="text-2xl font-black text-white uppercase italic tracking-tight">
-            {t('confirm_delete_workout')}
+            {t("confirm_delete_workout")}
           </h3>
           <p className="text-zinc-400 font-bold text-sm leading-relaxed">
-            Are you sure you want to delete "{templateDeleteConfirm?.name}"? This action cannot be undone.
+            Are you sure you want to delete "{templateDeleteConfirm?.name}"?
+            This action cannot be undone.
           </p>
           <div className="flex gap-3">
             <button
               onClick={() => setTemplateDeleteConfirm(null)}
               className="flex-1 py-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-zinc-400 hover:text-white font-black uppercase tracking-widest transition-colors"
             >
-              {t('confirm_cancel')}
+              {t("confirm_cancel")}
             </button>
             <button
               onClick={confirmDeleteTemplate}
               className="flex-1 py-4 bg-rose-500 hover:bg-rose-600 text-white font-black uppercase tracking-widest rounded-2xl transition-colors"
             >
-              {t('confirm_yes')}
+              {t("confirm_yes")}
             </button>
           </div>
         </div>
       </Modal>
 
       {/* Reset Session Confirmation Modal */}
-      <Modal isOpen={showResetSessionConfirm} onClose={() => setShowResetSessionConfirm(false)}>
+      <Modal
+        isOpen={showResetSessionConfirm}
+        onClose={() => setShowResetSessionConfirm(false)}
+      >
         <div className="p-8 bg-zinc-950 border border-zinc-900 rounded-[3rem] text-center space-y-6 relative overflow-hidden">
           <div className="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto text-rose-500 mb-4">
-            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            <svg
+              className="w-8 h-8"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
             </svg>
           </div>
           <h3 className="text-2xl font-black text-white uppercase italic tracking-tight">
-            {t('tracker_reset_session_title')}
+            {t("tracker_reset_session_title")}
           </h3>
           <p className="text-zinc-400 font-bold text-sm leading-relaxed">
-            {t('tracker_reset_session_desc')}
+            {t("tracker_reset_session_desc")}
           </p>
           <div className="flex gap-3">
             <button
               onClick={() => setShowResetSessionConfirm(false)}
               className="flex-1 py-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-zinc-400 hover:text-white font-black uppercase tracking-widest transition-colors"
             >
-              {t('confirm_cancel')}
+              {t("confirm_cancel")}
             </button>
             <button
               onClick={resetSession}
               className="flex-1 py-4 bg-rose-500 hover:bg-rose-600 text-white font-black uppercase tracking-widest rounded-2xl transition-colors"
             >
-              {t('confirm_yes')}
+              {t("confirm_yes")}
             </button>
           </div>
         </div>
       </Modal>
 
       {/* Reorder Modal */}
-      <Modal isOpen={showReorderModal} onClose={() => setShowReorderModal(false)} label={t('tracker_reorder_title')}>
-        <div className="p-8 bg-zinc-950 border border-zinc-900 rounded-[3rem] max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
-          <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-6 flex items-center gap-3">
-            <svg className="w-6 h-6 text-teal-500" fill="currentColor" viewBox="0 0 24 24">
-              <circle cx="9" cy="5" r="1.5" />
-              <circle cx="9" cy="12" r="1.5" />
-              <circle cx="9" cy="19" r="1.5" />
-              <circle cx="15" cy="5" r="1.5" />
-              <circle cx="15" cy="12" r="1.5" />
-              <circle cx="15" cy="19" r="1.5" />
-            </svg>
-            {t('tracker_reorder_title')}
-          </h3>
-
-          <Reorder.Group axis="y" values={tempReorderList} onReorder={setTempReorderList} layoutScroll className="flex-1 min-h-0 overflow-y-auto space-y-3 mb-6 p-1" data-reorder-list>
-            {tempReorderList.map((ex, idx) => (
-              <ReorderExercise key={ex.name} exercise={ex} selected={reorderFeedback?.name === ex.name}
-                select={() => setReorderFeedback(previous => ({ name: ex.name, position: idx + 1, sequence: (previous?.sequence ?? 0) + 1 }))}
-                label={`${c('drag')}: ${getExerciseTranslation(ex.name, language)}`}>
-                <span className="text-2xl font-black text-teal-500 w-8">{idx + 1}</span>
-                <span className="flex-1 text-white font-bold">{getExerciseTranslation(ex.name, language)}</span>
-                <div className="flex flex-col gap-1">
-                  <button
-                    onClick={() => moveReorderExercise(idx, -1)}
-                    aria-label={`${c('move_up')}: ${getExerciseTranslation(ex.name, language)}`}
-                    disabled={idx === 0}
-                    className="p-3 bg-zinc-800 hover:bg-teal-500 text-zinc-400 hover:text-white disabled:opacity-30 disabled:hover:bg-zinc-800 disabled:hover:text-zinc-400 rounded-lg transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => moveReorderExercise(idx, 1)}
-                    aria-label={`${c('move_down')}: ${getExerciseTranslation(ex.name, language)}`}
-                    disabled={idx === tempReorderList.length - 1}
-                    className="p-3 bg-zinc-800 hover:bg-teal-500 text-zinc-400 hover:text-white disabled:opacity-30 disabled:hover:bg-zinc-800 disabled:hover:text-zinc-400 rounded-lg transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                </div>
-              </ReorderExercise>
-            ))}
-          </Reorder.Group>
-
-          <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-            {reorderFeedback && `${getExerciseTranslation(reorderFeedback.name, language)} — ${c('position')} ${reorderFeedback.position} / ${tempReorderList.length}`}
-          </p>
-
-          <div className="flex gap-3">
-            <button
-              onClick={() => setShowReorderModal(false)}
-              className="flex-1 py-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-zinc-400 hover:text-white font-black uppercase tracking-widest transition-colors text-xs"
-            >
-              {t('confirm_cancel')}
-            </button>
-            <button
-              onClick={() => {
-                setActiveExercises(tempReorderList);
-                safeStorage.setItem('neuroLift_tracker_active_exercises', JSON.stringify(tempReorderList));
-                setShowReorderModal(false);
-              }}
-              className="flex-1 py-4 bg-teal-500 hover:bg-teal-600 text-white font-black uppercase tracking-widest rounded-2xl transition-colors text-xs"
-            >
-              {t('tracker_reorder_apply')}
-            </button>
-          </div>
-        </div>
-      </Modal>
+      <TrackerReorderDialog
+        showReorderModal={showReorderModal}
+        setShowReorderModal={setShowReorderModal}
+        t={t}
+        tempReorderList={tempReorderList}
+        setTempReorderList={setTempReorderList}
+        reorderFeedback={reorderFeedback}
+        setReorderFeedback={setReorderFeedback}
+        c={c}
+        language={language}
+        moveReorderExercise={moveReorderExercise}
+        setActiveExercises={setActiveExercises}
+      />
 
       {/* ... other modals ... */}
-    </div >
+    </div>
   );
 };
