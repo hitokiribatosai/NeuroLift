@@ -15,6 +15,7 @@ import { hapticFeedback } from '../../utils/haptics';
 import { generateId } from '../../utils/id';
 import { offerIOSRestNotifications } from '../../utils/iosRestNotification';
 import { copyPreviousSets } from '../../utils/repeatWorkout';
+import { clearSessionDraft } from '../../utils/sessionDraft';
 import { safeStorage } from '../../utils/storage';
 import { findNextScheduledWorkout,WeeklyWorkoutSchedule } from '../../utils/workoutSchedule';
 import { createFreshTemplateExercises } from '../../utils/workoutTemplates';
@@ -45,10 +46,7 @@ export const Tracker: React.FC = () => {
     const saved = safeStorage.getItem('neuroLift_tracker_phase');
     // Recover drafts left behind by older builds after a completed workout.
     if (saved === 'summary') {
-      for (const key of ['muscles', 'selected_exercises', 'active_exercises', 'selected_template', 'active_template', 'active_template_name']) {
-        safeStorage.removeItem(`neuroLift_tracker_${key}`);
-      }
-      for (const key of ['picker_search', 'picker_muscle', 'picker_subgroup', 'session_exercise']) safeStorage.removeItem(`ui_${key}`);
+      clearSessionDraft();
       return 'setup';
     }
     const validPhases = ['setup', 'selection', 'active', 'summary'];
@@ -502,50 +500,31 @@ export const Tracker: React.FC = () => {
     setSummaryPrevious(references);
 
     setCompletedWorkout(record);
-    setSelectedMuscles([]);
-    setSelectedExercises([]);
-    setActiveExercises([]);
+    clearCurrentSession();
+    handleSetPhase('summary');
+  };
+
+  // Shared cleanup intentionally excludes saving, summary and phase navigation.
+  const clearCurrentSession = () => {
     setSearchQuery('');
     setPickerMuscle('Chest');
     setPickerSubgroup('');
-    safeStorage.removeItem('ui_session_exercise');
-    handleSetPhase('summary');
-    // Clear persistence on completion
-    safeStorage.removeItem('neuroLift_tracker_phase');
-    safeStorage.removeItem('neuroLift_tracker_muscles');
-    safeStorage.removeItem('neuroLift_tracker_selected_exercises');
-    safeStorage.removeItem('neuroLift_tracker_active_exercises');
-    safeStorage.removeItem('neuroLift_tracker_selected_template');
-    safeStorage.removeItem('neuroLift_tracker_active_template');
+    setSelectedMuscles([]);
+    setSelectedExercises([]);
+    setActiveExercises([]);
     setSelectedTemplate(null);
     setActiveTemplateId(null);
     setActiveTemplateName(null);
+    stopRestTimer();
+    setTimerActive(false);
+    clearSessionDraft();
     resetClock();
   };
 
   const resetSession = () => {
-    setSearchQuery('');
-    setPickerMuscle('Chest');
-    setPickerSubgroup('');
-    safeStorage.removeItem('ui_session_exercise');
+    clearCurrentSession();
     setPhase('setup');
-    setSelectedMuscles([]);
-    setSelectedExercises([]);
-    setActiveExercises([]);
     setCompletedWorkout(null);
-    stopRestTimer();
-    setTimerActive(false);
-    // Clear persistence on reset
-    safeStorage.removeItem('neuroLift_tracker_phase');
-    safeStorage.removeItem('neuroLift_tracker_muscles');
-    safeStorage.removeItem('neuroLift_tracker_selected_exercises');
-    safeStorage.removeItem('neuroLift_tracker_active_exercises');
-    safeStorage.removeItem('neuroLift_tracker_selected_template');
-    safeStorage.removeItem('neuroLift_tracker_active_template');
-    setSelectedTemplate(null);
-    setActiveTemplateId(null);
-    setActiveTemplateName(null);
-    resetClock();
     setShowResetSessionConfirm(false);
     hapticFeedback.medium();
   };
