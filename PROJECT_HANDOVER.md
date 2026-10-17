@@ -2,6 +2,16 @@
 
 Last reviewed: **2026-10-17**. Read `AGENTS.md` first on recovery.
 
+### Refactor completed and native artifacts refreshed — 2026-10-17
+
+Completed the approved incremental refactor: verified legacy cleanup/archive, shared draft cleanup, centralized interface copy and stronger types, focused Tracker screens/draft/template hooks, explicit surface styles, and isolated card gestures. Each implementation stage was tested, committed, tagged and pushed; remote main/tag equality was verified. See the stage notes below and `docs/FRONTEND-ARCHITECTURE.md`. AGENTS.md carries the owner's future-code conventions. This does not imply that all technical debt is gone or future refactoring will never be needed.
+
+Final verification: typecheck/lint/build and **43 unit tests passed**; full browser run **195/196 passed**. The single failure is the same pre-refactor mobile-WebKit PWA offline reload `WebKit encountered an internal error`; Chromium offline passed. Do not report full offline WebKit acceptance. The explicit-style audit matched computed styles on all 48 sampled screen/theme/size combinations; targeted stage suites are listed below. No physical-device, live account/email/sync, Vercel deployment or fresh native interaction acceptance was performed.
+
+Android **1.3.20 / code 23** Debug APK and iOS **1.3.20 / build 21** unsigned Debug simulator app compiled successfully. Both HTTPS release-asset checks passed; each compiled bundle's public web assets match synchronized sources byte-for-byte. Android signature matches previous test builds (`add900865013fc4048db8f680d45933ec247ccf6296dcba4e4fe7651bc0d9d19`). APK SHA-256: `df0f8a26f6630c090942aea5f6e319f3340b07bc5b39c7a57124be526c8f4c12`. Build paths are in the current table below. The previous APK 22 and simulator app 20 were moved to `/private/tmp/neurolift-pre-refactor-builds.6ug1Lo/` for temporary recovery, not destroyed; temporary storage is not a durable backup. Latest native products remain gitignored, not GitHub release uploads. Installed apps require installing the new build; iOS simulator app cannot be installed on an iPhone.
+
+Final checkpoint: `checkpoint-2026-10-17-refactor-builds` (verify remote refs on recovery). Next acceptance: owner Samsung swipes/reorder/templates/finish/reset and notifications, physical iPhone keyboard/scroll/rest alerts, and separately investigate/confirm Safari offline cold reopening. No behavior tuning was bundled into the swipe extraction.
+
 ### Incremental refactor — stage 1, 2026-10-17
 
 Stage 6 completed: extracted `useExerciseCardSwipe` from WebSession, preserving the existing thresholds, animation timing, scroll footprint, cancellation/unmount guard, RTL direction and input-click suppression. The hook accepts index/count/selection callbacks and owns no workout data or page navigation. Quality check passed (43 unit tests); all 84 gesture/refinement/phone Chromium/WebKit checks passed. Physical-phone gesture confirmation remains pending; this is a behavior-preserving extraction, not new gesture tuning. Checkpoint: checkpoint-2026-10-17-swipe-controller. Final full-suite/native verification follows.
@@ -116,8 +126,8 @@ All local builds now live in the git-ignored `builds/` folder of the working che
 
 | Platform | Current build | Path | Notes |
 | --- | --- | --- | --- |
-| Android | 1.3.19 / 22 (debug-signed test APK, HTTPS preview API) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/android/NeuroLift-1.3.19-build22-android-test.apk` | SHA-256 `0c0fb959fba372c8e3bd2cc5b139da7531d6081e1974c022c0a844f19a6cdc86`. Includes compact history and rest picker. |
-| iOS | 1.3.19 / 20 (unsigned Debug **simulator** app) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/ios/NeuroLift-1.3.19-build20-ios-simulator.app` | Simulator only; includes compact history and rest picker. Use Xcode with your own team for devices. |
+| Android | 1.3.20 / 23 (debug-signed test APK, HTTPS preview API) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/android/NeuroLift-1.3.20-build23-android-test.apk` | SHA-256 `df0f8a26f6630c090942aea5f6e319f3340b07bc5b39c7a57124be526c8f4c12`. Includes the verified refactor. |
+| iOS | 1.3.20 / 21 (unsigned Debug **simulator** app) | `/Users/rahalabdelilah/Desktop/NeuroLift/builds/ios/NeuroLift-1.3.20-build21-ios-simulator.app` | Simulator only; includes the verified refactor. Use Xcode with your own team for devices. |
 
 Cleanup done 2026-10-13: deleted 13 older APKs from the old Codex `outputs/` folder and the Xcode derived-data folders `work/ios-rest-build` and `work/ios-tour-build` (~1.5 GB). APK paths in older sections below are historical and those files no longer exist. Use an Xcode derived-data path under `builds/` (or the default DerivedData) for future iOS builds, then copy only the final `.app` into `builds/ios/`.
 

@@ -15,6 +15,8 @@ The owner designated `/Users/rahalabdelilah/Desktop/NeuroLift` as the active pro
 
 ### Maintainable code (owner instruction, 2026-10-17)
 
+Read `docs/FRONTEND-ARCHITECTURE.md` when changing shared workout UI, persistence, translations, theme roles or gestures.
+
 - Preserve the approved shared UI and platform-specific native behavior. Do not add parallel legacy implementations or select presentation by platform unless the design actually differs.
 - Keep screen components focused on composition. Extract cohesive dialogs, selection controls and template workflows; put persistence and session transitions behind typed helpers/hooks. Avoid giant hooks or untyped prop bags that merely relocate complexity.
 - Share reset/cleanup rules, but keep finish (save + summary) distinct from discard. Preserve workspace keys and saved-data formats unless a tested migration is explicitly required.
