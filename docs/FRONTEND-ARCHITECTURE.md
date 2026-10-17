@@ -8,6 +8,7 @@
 - `clearSessionDraft` defines the persisted cleanup boundary. Finish saves first and shows a summary; reset discards the draft. Neither may delete history, routines or preferences.
 - `useWorkoutTemplates` owns routine loading and persistence; editing and selection remain UI responsibilities.
 - `ClockContext` is the single owner of workout/rest timers and their lifecycle. Do not add a second countdown in a screen hook.
+- `useExerciseCardSwipe` owns card gestures and animation only. Keep thresholds/RTL/reduced-motion/cancellation/input suppression covered by the gym-flow browser tests. Workout records and page navigation stay outside this hook.
 - Native notifications/auth/networking use real Capacitor detection. Shared presentation must not grow a second legacy branch.
 
 ## Text and styling
