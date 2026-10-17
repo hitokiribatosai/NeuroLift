@@ -53,7 +53,8 @@ simulator compilation. CI must run on your repository before treating it as veri
 - [Training review and sources](docs/TRAINING.md)
 - [Exercise media provenance](docs/MEDIA.md)
 - [Release gates and known limitations](docs/RELEASE.md)
-- [Implementation progress](IMPLEMENTATION.md)
+- [Current project handover](PROJECT_HANDOVER.md)
+- [Historical implementation notes](docs/archive/IMPLEMENTATION.md)
 
 This is a development baseline, not a claim of store approval or production
 certification. Hosting, real email delivery, signing and store submission require

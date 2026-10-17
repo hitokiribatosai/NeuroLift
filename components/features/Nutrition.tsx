@@ -78,11 +78,11 @@ export const Nutrition: React.FC = () => {
                 value={caloriesInput}
                 onChange={(e) => setCaloriesInput(e.target.value)}
                 placeholder="0"
-                className="flex-1 bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-zinc-900 dark:text-white font-bold focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none transition-all"
+                className="min-w-0 flex-1 bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-zinc-900 dark:text-white font-bold focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none transition-all"
               />
               <button
                 onClick={addCalories}
-                className="bg-teal-600 hover:bg-teal-500 text-white px-6 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 shadow-lg shadow-teal-500/20"
+                className="shrink-0 bg-teal-600 hover:bg-teal-500 text-white px-6 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 shadow-lg shadow-teal-500/20"
               >
                 {t('cal_add')}
               </button>

@@ -13,6 +13,16 @@ The owner designated `/Users/rahalabdelilah/Desktop/NeuroLift` as the active pro
 
 ## During work and before ending
 
+### Maintainable code (owner instruction, 2026-10-17)
+
+- Preserve the approved shared UI and platform-specific native behavior. Do not add parallel legacy implementations or select presentation by platform unless the design actually differs.
+- Keep screen components focused on composition. Extract cohesive dialogs, selection controls and template workflows; put persistence and session transitions behind typed helpers/hooks. Avoid giant hooks or untyped prop bags that merely relocate complexity.
+- Share reset/cleanup rules, but keep finish (save + summary) distinct from discard. Preserve workspace keys and saved-data formats unless a tested migration is explicitly required.
+- Reuse centralized translations, theme tokens and explicit component classes. Do not add broad substring-based utility overrides or escalate CSS specificity to patch a component.
+- Isolate gesture/animation logic from workout data; preserve keyboard alternatives, vertical scrolling, reduced motion, RTL and input behavior.
+- Add regression coverage for changed behavior; run types/lint/unit/build and relevant browser tests before committing. Native compilation and physical-device acceptance are separate evidence.
+- Remove dead code only after checking all callers, configurations and native entry points. Prefer small independently tested refactors over speculative abstraction. Refactoring remains normal as requirements evolve.
+
 - Track features, fixes, decisions, incomplete work and remaining risks. Update `PROJECT_HANDOVER.md` after each meaningful development step and before ending a development session.
 - Keep it navigable and project-specific. Distinguish implementation, tests, device validation, commits, pushes and deployments. Never invent results or completion.
 - Never record passwords, tokens, API keys, database connection strings, certificates or other private credentials. Public service URLs and configuration variable names are sufficient.

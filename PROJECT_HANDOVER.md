@@ -1,6 +1,12 @@
 # NeuroLift project handover
 
-Last reviewed: **2026-10-15**. Read `AGENTS.md` first on recovery.
+Last reviewed: **2026-10-17**. Read `AGENTS.md` first on recovery.
+
+### Incremental refactor — stage 1, 2026-10-17
+
+Owner approved the seven-stage behavior-preserving refactor and maintainability rules for future work. Added these rules to AGENTS.md. Removed unreachable legacy branches in App, Tracker, planner, journal and shared dialogs; removed verified unused old screens/onboarding components. Preserved active plate calculation, journal demo-data cleanup, PWA status, native bridges and saved-data formats. Archived eleven historical root guides under docs/archive, preserving their contents; updated README links. Removed unused direct PostCSS-plugin dependencies (Vite uses @tailwindcss/vite).
+
+Baseline: quality check passed (34 unit tests/types/lint/build); browser run 195/196 passed. WebKit offline reload failed with an internal browser error before edits, separately from the sandbox launch restriction resolved by running browser tests with launch permission. Cleanup: quality check passed; 193/194 browser regressions initially passed with the PWA case excluded on both engines. The mobile-WebKit Nutrition case exposed a two-pixel overflow; explicitly constrained the calorie input and prevented button shrinking, rebuilt and reran that case successfully. Existing APK 22/iOS simulator 20 are unchanged and do not contain refactored source. No physical-device, deployment or offline-WebKit acceptance claim. Subsequent stages: shared session cleanup, localization/types, tracker extraction, explicit styles, isolated swipe controller. Checkpoint: checkpoint-2026-10-17-refactor-cleanup; verify remote refs.
 
 ### Compact session history and rest picker — 2026-10-15
 

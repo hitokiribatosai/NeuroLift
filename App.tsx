@@ -1,9 +1,19 @@
-import React, { useState } from 'react';
+import { App as CapApp } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
+import React,{ useState } from 'react';
+import { Tracker } from './components/features/Tracker';
+import { TourProvider } from './components/web/GuidedTour';
+import { WebFrame,WebGoals,WebHome,WebWelcome } from './components/web/WebExperience';
+import { ClockProvider } from './contexts/ClockContext';
+import { FontSizeProvider } from './contexts/FontSizeContext';
+import { GymModeProvider } from './contexts/GymModeContext';
+import { LanguageProvider } from './contexts/LanguageContext';
+import { ThemeProvider,useTheme } from './contexts/ThemeContext';
 import { useAndroidWorkoutNotification } from './hooks/useAndroidWorkoutNotification';
 import { useIOSRestNotification } from './hooks/useIOSRestNotification';
-import { Navbar } from './components/Navbar';
-import { Home } from './components/Home';
-import { Tracker } from './components/features/Tracker';
+import { dismissTopOverlay } from './utils/overlays';
+import { safeStorage } from './utils/storage';
+import { startSync } from './utils/sync';
 // Secondary destinations are split into their own chunks to keep the startup
 // bundle smaller. The service worker precaches every built file, and native
 // builds bundle them locally, so these remain available offline.
@@ -12,33 +22,13 @@ const Nutrition = React.lazy(() => import('./components/features/Nutrition').the
 const Journal = React.lazy(() => import('./components/features/Journal').then(m => ({ default: m.Journal })));
 const Clock = React.lazy(() => import('./components/features/Clock').then(m => ({ default: m.Clock })));
 const Privacy = React.lazy(() => import('./components/features/Privacy').then(m => ({ default: m.Privacy })));
-import { LanguageProvider } from './contexts/LanguageContext';
-import { ClockProvider } from './contexts/ClockContext';
-import { ThemeProvider, useTheme } from './contexts/ThemeContext';
-import { FontSizeProvider } from './contexts/FontSizeContext';
-import { GymModeProvider } from './contexts/GymModeContext';
-import { AnimatePresence, motion } from 'framer-motion';
-import { OfflineIndicator } from './components/ui/OfflineIndicator';
-import Onboarding from './components/features/Onboarding';
-import { GoalSetting } from './components/features/GoalSetting';
-import { safeStorage } from './utils/storage';
 const Account = React.lazy(() => import('./components/features/Account').then(m => ({ default: m.Account })));
-import { startSync } from './utils/sync';
-import { SyncIndicator } from './components/ui/SyncIndicator';
-import { PwaStatus } from './components/ui/PwaStatus';
-import { usesModernInterface } from './utils/interfacePlatform';
-import { WebFrame, WebHome, WebWelcome, WebGoals } from './components/web/WebExperience';
-import { Capacitor } from '@capacitor/core';
-import { App as CapApp } from '@capacitor/app';
-import { dismissTopOverlay } from './utils/overlays';
-import { TourProvider } from './components/web/GuidedTour';
 
 function AppInner() {
   useAndroidWorkoutNotification();
   useIOSRestNotification();
   const { theme } = useTheme();
   const isLight = theme === 'light';
-  const isWebsite = usesModernInterface();
 
 
   const [currentView, setCurrentView] = React.useState(() => {
@@ -52,22 +42,22 @@ function AppInner() {
   viewRef.current = currentView;
   const navigationDepth = React.useRef(0);
   React.useEffect(() => {
-    if (!isWebsite) return;
+
     window.history.replaceState({ ...window.history.state, neuroLiftDepth: 0 }, '', window.location.href);
     const save = () => { scrollPositions.current[viewRef.current] = window.scrollY; };
     window.addEventListener('scroll', save, { passive: true });
     return () => window.removeEventListener('scroll', save);
-  }, [isWebsite]);
+  }, []);
   React.useLayoutEffect(() => {
-    if (!isWebsite) return;
+
     const frame = requestAnimationFrame(() => {
       document.getElementById('web-content')?.focus({ preventScroll: true });
       window.scrollTo(0, scrollPositions.current[currentView] || 0);
     });
     return () => cancelAnimationFrame(frame);
-  }, [currentView, isWebsite]);
+  }, [currentView]);
   React.useEffect(() => {
-    if (!isWebsite || Capacitor.getPlatform() !== 'android' || !Capacitor.isPluginAvailable('App')) return;
+    if (Capacitor.getPlatform() !== 'android' || !Capacitor.isPluginAvailable('App')) return;
     const listener = CapApp.addListener('backButton', () => {
       if (dismissTopOverlay()) return;
       // Give the current screen its own back step before leaving the destination.
@@ -79,7 +69,7 @@ function AppInner() {
       } else void CapApp.minimizeApp();
     });
     return () => { void listener.then(handle => handle.remove()); };
-  }, [isWebsite]);
+  }, []);
   const viewOrder = ['home', 'planner', 'tracker', 'journal', 'clock', 'nutrition'];
 
   React.useEffect(() => {
@@ -109,22 +99,22 @@ function AppInner() {
       navigationDepth.current += 1;
       window.history.pushState({ neuroLiftDepth: navigationDepth.current }, '', `/#${view}`);
       setCurrentView(route);
-      if (!isWebsite) window.scrollTo(0, 0);
+
     }
   };
 
   const renderView = () => {
     const viewContent = (() => {
       switch (currentView) {
-        case 'home': return isWebsite ? <WebHome setCurrentView={handleSetView} /> : <Home setCurrentView={handleSetView} />;
+        case 'home': return <WebHome setCurrentView={handleSetView} />;
         case 'tracker': return <Tracker />;
-        case 'planner': return <ProgramPlanner initialMuscle={isWebsite ? new URLSearchParams(window.location.hash.split('?')[1]).get('muscle') || undefined : undefined} />;
+        case 'planner': return <ProgramPlanner initialMuscle={new URLSearchParams(window.location.hash.split('?')[1]).get('muscle') || undefined} />;
         case 'nutrition': return <Nutrition />;
         case 'journal': return <Journal />;
         case 'clock': return <Clock />;
         case 'account': return <Account />;
         case 'privacy': return <Privacy />;
-        default: return <Home setCurrentView={handleSetView} />;
+        default: return <WebHome setCurrentView={handleSetView} />;
       }
     })();
     const content = (
@@ -133,19 +123,7 @@ function AppInner() {
       </React.Suspense>
     );
 
-    if (isWebsite) return <div key={currentView} className="web-view">{content}</div>;
-    return (
-      <motion.div
-        key={currentView}
-        initial={{ opacity: 0, x: direction * 50 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: direction * -50 }}
-        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-        className="w-full h-full"
-      >
-        {content}
-      </motion.div>
-    );
+    return <div key={currentView} className="web-view">{content}</div>;
   };
 
   /* Onboarding & Goal Setting Logic */
@@ -175,40 +153,11 @@ function AppInner() {
     setShowGoalSetting(false);
   };
 
-  if (isWebsite) {
+  {
     if (showOnboarding && !['account', 'privacy'].includes(currentView)) return <WebWelcome onComplete={handleOnboardingComplete} />;
     if (showGoalSetting && !['account', 'privacy'].includes(currentView)) return <WebGoals onComplete={handleGoalSettingComplete} />;
     return <TourProvider><WebFrame currentView={currentView} setCurrentView={handleSetView}>{renderView()}</WebFrame></TourProvider>;
   }
-
-  return (
-    <div
-      className="min-h-screen transition-colors duration-300 overflow-x-hidden flex flex-col"
-      style={{
-        backgroundColor: isLight ? '#ffffff' : '#0a0a0a',
-        color: isLight ? '#18181b' : '#ffffff',
-      }}
-    >
-      {showOnboarding && !['account', 'privacy'].includes(currentView) ? (
-        <Onboarding onComplete={handleOnboardingComplete} />
-      ) : showGoalSetting && !['account', 'privacy'].includes(currentView) ? (
-        <GoalSetting onComplete={handleGoalSettingComplete} />
-      ) : (
-        <>
-          <Navbar
-            currentView={currentView}
-            setCurrentView={handleSetView}
-          />
-
-          <main className="flex-1 pt-[calc(5rem+env(safe-area-inset-top))] pb-[calc(8rem+env(safe-area-inset-bottom))] min-h-screen relative overflow-x-hidden">
-            <AnimatePresence mode="wait">
-              {renderView()}
-            </AnimatePresence>
-          </main>
-        </>
-      )}
-    </div>
-  );
 }
 
 function WorkspaceApp() {
@@ -218,7 +167,7 @@ function WorkspaceApp() {
         <FontSizeProvider>
           <ClockProvider>
             <GymModeProvider>
-              {!usesModernInterface() && <><OfflineIndicator /><SyncIndicator /><PwaStatus /></>}
+
               <AppInner />
             </GymModeProvider>
           </ClockProvider>

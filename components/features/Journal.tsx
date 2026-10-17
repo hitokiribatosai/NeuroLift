@@ -1,21 +1,19 @@
-import { usesModernInterface } from '../../utils/interfacePlatform';
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useLanguage } from '../../contexts/LanguageContext';
-import { JournalEntry, CustomMeasurement, CompletedWorkout, ActiveExercise, WorkoutSet, WorkoutTemplate } from '../../types';
-import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
-import { Card } from '../ui/Card';
-import { SpotlightButton } from '../ui/SpotlightButton';
-import { getMuscleForExercise, getLocalizedMuscleName, getExerciseTranslation } from '../../utils/exerciseData';
-import { ConfirmModal } from '../ui/ConfirmModal';
+import { Share } from '@capacitor/share';
+import { AnimatePresence } from 'framer-motion';
+import React,{ useEffect,useState } from 'react';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { ActiveExercise,CompletedWorkout,CustomMeasurement,JournalEntry,WorkoutSet,WorkoutTemplate } from '../../types';
+import { clearDemoData,hasDemoData } from '../../utils/demoData';
+import { getExerciseTranslation,getLocalizedMuscleName,getMuscleForExercise } from '../../utils/exerciseData';
 import { generateId } from '../../utils/id';
 import { safeStorage } from '../../utils/storage';
-import { clearDemoData, hasDemoData } from '../../utils/demoData';
+import { Card } from '../ui/Card';
+import { ConfirmModal } from '../ui/ConfirmModal';
+import { SpotlightButton } from '../ui/SpotlightButton';
 
 export const Journal: React.FC = () => {
   const { t, language } = useLanguage();
-  const isWebsite = usesModernInterface();
   const [journalView, setJournalView] = useState<'workouts' | 'measurements'>('workouts');
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [formData, setFormData] = useState<Partial<JournalEntry>>({});
@@ -450,11 +448,11 @@ export const Journal: React.FC = () => {
     <div className="mx-auto max-w-6xl px-6 pt-4 pb-32">
       <h2 className="text-4xl font-black text-zinc-900 dark:text-white mb-8 uppercase tracking-tight">{t('journal_title')}</h2>
 
-      {isWebsite && <div className="web-journal-tabs" role="group" aria-label={t('journal_title')}>
+      {<div className="web-journal-tabs" role="group" aria-label={t('journal_title')}>
         <button aria-pressed={journalView === 'workouts'} onClick={() => setJournalView('workouts')}>{t('nav_workout')}</button>
         <button aria-pressed={journalView === 'measurements'} onClick={() => setJournalView('measurements')}>{t('journal_body_metrics')}</button>
       </div>}
-      {(!isWebsite || journalView === 'workouts') && <section className="mb-8 grid grid-cols-3 gap-2 sm:gap-4" aria-label={t('journal_training_consistency')}>
+      {(journalView === 'workouts') && <section className="mb-8 grid grid-cols-3 gap-2 sm:gap-4" aria-label={t('journal_training_consistency')}>
         {[
           { label: t('journal_sessions_week'), value: recentTraining.length },
           { label: t('journal_minutes_week'), value: recentTrainingMinutes },
@@ -464,7 +462,7 @@ export const Journal: React.FC = () => {
           <p className="mt-2 text-2xl font-black tabular-nums text-zinc-950 dark:text-white sm:text-3xl">{metric.value}</p>
         </Card>)}
       </section>}
-      {(!isWebsite || journalView === 'workouts') && <VolumeChart
+      {(journalView === 'workouts') && <VolumeChart
         history={history}
         t={t}
         selectedMuscle={selectedMuscleChart}
@@ -472,8 +470,8 @@ export const Journal: React.FC = () => {
         language={language}
       />}
 
-      <div className={isWebsite ? `web-journal-layout web-journal-${journalView}` : 'grid grid-cols-1 lg:grid-cols-3 gap-12'}>
-        <div hidden={isWebsite && journalView !== 'measurements'} className="lg:col-span-1 space-y-8">
+      <div className={`web-journal-layout web-journal-${journalView}`}>
+        <div hidden={journalView !== 'measurements'} className="lg:col-span-1 space-y-8">
           <Card className={`p-8 space-y-6 rounded-[2.5rem] shadow-sm transition-all duration-300 ${editingId ? 'bg-teal-500/5 border-teal-500 shadow-teal-500/10' : 'bg-white dark:bg-zinc-900/80 border-zinc-200 dark:border-zinc-800'}`}>
             <div className="flex items-center justify-between">
               <div>
@@ -582,9 +580,9 @@ export const Journal: React.FC = () => {
         </div>
 
         <div className="lg:col-span-2 space-y-12">
-          {(!isWebsite || journalView === 'workouts') && <WorkoutHistory />}
+          {(journalView === 'workouts') && <WorkoutHistory />}
 
-          <div hidden={isWebsite && journalView !== 'measurements'} className="pt-8 border-t border-zinc-100 dark:border-zinc-800">
+          <div hidden={journalView !== 'measurements'} className="pt-8 border-t border-zinc-100 dark:border-zinc-800">
             <h3 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight mb-8 flex items-center gap-3">
               <span className="w-2 h-6 bg-teal-500 rounded-full"></span>
               {t('journal_body_metrics')}
@@ -631,7 +629,7 @@ export const Journal: React.FC = () => {
                       <span className="text-teal-600 dark:text-teal-400 font-black text-xs uppercase tracking-widest">{entry.date}</span>
                       {entry.weight && <span className="text-zinc-900 dark:text-white font-black text-xl font-mono tracking-tighter">{entry.weight} <span className="text-[10px] text-zinc-200 dark:text-zinc-300">KG</span></span>}
                     </div>
-                    {isWebsite && <button className="web-secondary" onClick={event => { event.stopPropagation(); handleSelectEntry(entry); }}>{t('journal_edit_entry')}</button>}
+                    {<button className="web-secondary" onClick={event => { event.stopPropagation(); handleSelectEntry(entry); }}>{t('journal_edit_entry')}</button>}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-xs text-zinc-300 dark:text-zinc-200">
                       {entry.chest && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">{t('journal_chest')}</span> <span className="text-zinc-900 dark:text-zinc-200 font-bold">{entry.chest} cm</span></div>}
                       {entry.waist && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">{t('journal_waist')}</span> <span className="text-zinc-900 dark:text-zinc-200 font-bold">{entry.waist} cm</span></div>}

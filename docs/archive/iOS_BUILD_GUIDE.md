@@ -1,3 +1,5 @@
+> Historical document. Not current setup or release guidance; see PROJECT_HANDOVER.md and docs/DEVELOPMENT.md.
+
 # NeuroLift iOS build
 
 Use your Mac with Xcode 26+ and an iOS simulator runtime. This project uses

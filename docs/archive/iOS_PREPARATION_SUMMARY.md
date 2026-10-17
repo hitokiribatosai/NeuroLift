@@ -1,3 +1,5 @@
+> Historical document. Not current setup or release guidance; see PROJECT_HANDOVER.md and docs/DEVELOPMENT.md.
+
 # iOS Preparation Summary
 
 ## ✅ What I Did to Make Your App iOS-Ready

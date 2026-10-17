@@ -1,3 +1,5 @@
+> Historical document. Not current setup or release guidance; see PROJECT_HANDOVER.md and docs/DEVELOPMENT.md.
+
 # ✅ Android Compatibility Fixes Applied
 
 ## Problem Solved

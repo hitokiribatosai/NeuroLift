@@ -1,40 +1,36 @@
-import { usesModernInterface } from '../../utils/interfacePlatform';
-import { offerWorkoutNotification } from '../../utils/androidWorkoutNotification';
-import { offerIOSRestNotifications } from '../../utils/iosRestNotification';
-import { hasSetEffort } from '../../utils/workoutValidation';
-import { WorkoutGuide } from '../web/GuidedTour';
-import React, { useState, useEffect, useRef } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { Share } from '@capacitor/share';
+import { AnimatePresence,motion,Reorder } from 'framer-motion';
+import React,{ useEffect,useRef,useState } from 'react';
+import { useClock } from '../../contexts/ClockContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { SpotlightButton } from '../ui/SpotlightButton';
-import { Card } from '../ui/Card';
-import { CompletedWorkout, ActiveExercise, WorkoutSet, WorkoutTemplate } from '../../types';
-import { getExerciseDatabase, getLocalizedMuscleName, getMuscleForExercise, getSubMuscleForExercise, getExerciseTranslation } from '../../utils/exerciseData';
-import { useClock } from '../../contexts/ClockContext';
-import { playNotificationSound } from '../../utils/audio';
-import { ConfirmModal } from '../ui/ConfirmModal';
-import { Tooltip } from '../ui/Tooltip';
-import { generateId } from '../../utils/id';
-import { safeStorage } from '../../utils/storage';
+import { useInterfaceState } from '../../hooks/useInterfaceState';
 import { useTooltip } from '../../hooks/useTooltip';
-import { App as CapApp } from '@capacitor/app';
-import { Modal } from '../ui/Modal';
-import { motion, AnimatePresence, Reorder } from 'framer-motion';
-import { ReorderExercise } from '../web/ReorderExercise';
-import { RestDurationPicker } from '../web/RestDurationPicker';
-import { Share } from '@capacitor/share';
-import { Capacitor } from '@capacitor/core';
-import { hapticFeedback } from '../../utils/haptics';
+import { ActiveExercise,CompletedWorkout,ExerciseHistory,WorkoutSet,WorkoutTemplate } from '../../types';
+import { offerWorkoutNotification } from '../../utils/androidWorkoutNotification';
+import { getExerciseDatabase,getExerciseTranslation,getLocalizedMuscleName,getMuscleForExercise,getSubMuscleForExercise } from '../../utils/exerciseData';
 import { exerciseHistoryService } from '../../utils/exerciseHistory';
+import { hapticFeedback } from '../../utils/haptics';
+import { generateId } from '../../utils/id';
+import { offerIOSRestNotifications } from '../../utils/iosRestNotification';
+import { copyPreviousSets } from '../../utils/repeatWorkout';
+import { safeStorage } from '../../utils/storage';
+import { findNextScheduledWorkout,WeeklyWorkoutSchedule } from '../../utils/workoutSchedule';
+import { createFreshTemplateExercises } from '../../utils/workoutTemplates';
+import { hasSetEffort } from '../../utils/workoutValidation';
+import { Card } from '../ui/Card';
+import { ConfirmModal } from '../ui/ConfirmModal';
 import { ExerciseDemo } from '../ui/ExerciseDemo';
 import { ExerciseGroupSelector } from '../ui/ExerciseGroupSelector';
+import { Modal } from '../ui/Modal';
+import { SpotlightButton } from '../ui/SpotlightButton';
+import { Tooltip } from '../ui/Tooltip';
+import { WorkoutGuide } from '../web/GuidedTour';
+import { ReorderExercise } from '../web/ReorderExercise';
+import { RestDurationPicker } from '../web/RestDurationPicker';
 import { WebSession } from '../web/WebSession';
-import { useInterfaceState } from '../../hooks/useInterfaceState';
-import { createFreshTemplateExercises } from '../../utils/workoutTemplates';
-import { copyPreviousSets } from '../../utils/repeatWorkout';
 import { WorkoutBreakdown } from '../web/WorkoutBreakdown';
-import { ExerciseHistory } from '../../types';
-import { findNextScheduledWorkout, WeeklyWorkoutSchedule } from '../../utils/workoutSchedule';
 
 export const Tracker: React.FC = () => {
   const {
@@ -329,7 +325,7 @@ export const Tracker: React.FC = () => {
   // Modern Android has one native Back owner in App. Consume a screen-level
   // step here without resetting the draft, timers, selected exercises or sets.
   useEffect(() => {
-    if (!usesModernInterface()) return;
+
     const back = (event: Event) => {
       if (window.location.hash.split('?')[0] !== '#tracker') return;
       if (phase !== 'active' && phase !== 'selection') return;
@@ -340,72 +336,6 @@ export const Tracker: React.FC = () => {
     };
     window.addEventListener('neurolift-screen-back', back);
     return () => window.removeEventListener('neurolift-screen-back', back);
-  }, [phase]);
-
-  // Sync Phase with URL & Handle Back Navigation
-  useEffect(() => {
-    if (usesModernInterface()) return; // Modern navigation never rewinds a saved workout.
-    // 1. Handle Web Back Button (PopState)
-    const handlePopState = () => {
-      // Check if we are still in tracker view
-      const hash = window.location.hash;
-      if (!hash.startsWith('#tracker')) return;
-
-      const params = new URLSearchParams(hash.split('?')[1]);
-      const urlPhase = params.get('phase');
-      const validPhases = ['setup', 'selection', 'active', 'summary'];
-
-      if (urlPhase && validPhases.includes(urlPhase) && urlPhase !== phase) {
-        const oldIdx = phaseOrder.indexOf(phase);
-        const newIdx = phaseOrder.indexOf(urlPhase);
-        setDirection(newIdx < oldIdx ? -1 : 1);
-        setPhase(urlPhase as any);
-      } else if (!urlPhase && phase !== 'setup') {
-        setDirection(-1);
-        setPhase('setup');
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-
-    // 2. Handle Android Hardware Back Button
-    const backListenerPromise = CapApp.addListener('backButton', ({ canGoBack }: { canGoBack: boolean }) => {
-      if (phase === 'active') {
-        setPhase('selection');
-        window.history.replaceState(null, '', '#tracker?phase=selection');
-      } else if (phase === 'selection') {
-        setPhase('setup');
-        window.history.replaceState(null, '', '#tracker?phase=setup');
-      } else if (phase === 'summary') {
-        setPhase('setup');
-        window.history.replaceState(null, '', '#tracker?phase=setup');
-      } else {
-        if (window.location.hash.includes('tracker')) {
-          window.history.back();
-        } else if (canGoBack) {
-          window.history.back();
-        } else {
-          CapApp.exitApp();
-        }
-      }
-    });
-
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-      backListenerPromise.then(l => l.remove());
-    };
-  }, [phase]);
-
-  // Update URL when phase changes (Forward Navigation)
-  useEffect(() => {
-    if (usesModernInterface()) return;
-    const currentHash = window.location.hash;
-    const targetHash = `#tracker?phase=${phase}`;
-
-    if (!currentHash.includes(`phase=${phase}`)) {
-      const oldIdx = phaseOrder.indexOf(phase);
-      window.history.pushState({ phase }, '', targetHash);
-    }
   }, [phase]);
 
   const handleSetPhase = (newPhase: 'setup' | 'selection' | 'active' | 'summary') => {
@@ -867,20 +797,20 @@ export const Tracker: React.FC = () => {
   };
 
   return (
-    <div className={`relative w-full min-h-screen ${usesModernInterface() ? '' : 'overflow-x-hidden'}`}>
+    <div className={`relative w-full min-h-screen `}>
       <WorkoutGuide phase={phase} selected={selectedExercises.length} completed={activeExercises.reduce((sum, exercise) => sum + exercise.sets.filter(set => set.completed).length, 0)} />
       <AnimatePresence mode="wait" custom={direction} initial={false}>
         <motion.div
           key={phase}
           custom={direction}
-          initial={usesModernInterface() ? false : { opacity: 0, x: direction * 50 }}
-          animate={usesModernInterface() ? { opacity: 1 } : { opacity: 1, x: 0 }}
-          exit={usesModernInterface() ? { opacity: 0 } : { opacity: 0, x: direction * -50 }}
+          initial={false}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
           className="w-full"
         >
           {phase === 'setup' && (
-            <div className={`${usesModernInterface() ? 'web-workout-picker ' : ''}mx-auto max-w-6xl px-5 pb-32 pt-5 sm:px-8 lg:pt-10`}>
+            <div className={`web-workout-picker mx-auto max-w-6xl px-5 pb-32 pt-5 sm:px-8 lg:pt-10`}>
               <div className="mb-6 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-teal-700 dark:text-teal-300">{t('tracker_setup_step')}</p>
@@ -958,7 +888,7 @@ export const Tracker: React.FC = () => {
           )}
 
           {phase === 'selection' && (
-            <div className={`${usesModernInterface() ? 'web-workout-picker ' : ''}mx-auto max-w-6xl px-5 pb-32 pt-5 sm:px-8 lg:pt-10`}>
+            <div className={`web-workout-picker mx-auto max-w-6xl px-5 pb-32 pt-5 sm:px-8 lg:pt-10`}>
               <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-zinc-200 pb-5 dark:border-zinc-800">
                 <div>
                   <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-teal-700 dark:text-teal-300">{t('tracker_exercises_step')}</p>
@@ -1053,7 +983,7 @@ export const Tracker: React.FC = () => {
 
               </div>
 
-              {usesModernInterface() && <button className="web-secondary web-mobile-filters" onClick={() => setPickerOpen(true)}>{getLocalizedMuscleName(currentPickerMuscle, language)} · {getLocalizedMuscleName(currentPickerSubgroup, language)} ▾</button>}
+              {<button className="web-secondary web-mobile-filters" onClick={() => setPickerOpen(true)}>{getLocalizedMuscleName(currentPickerMuscle, language)} · {getLocalizedMuscleName(currentPickerSubgroup, language)} ▾</button>}
               <div className="web-picker-grid mb-10 grid gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
                 <div className="web-picker-groups h-fit rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950/80 sm:p-5 lg:sticky lg:top-24">
                   <ExerciseGroupSelector
@@ -1267,13 +1197,13 @@ export const Tracker: React.FC = () => {
                   ))
                 )}
 
-                {usesModernInterface() && <aside className="web-selection-panel"><h3>{t('picker_selected_count')}: {selectedExercises.length}</h3><ul>{selectedExercises.map(name => <li key={name}><span>{getExerciseTranslation(name, language)}</span><button aria-label={`${t('tracker_delete_exercise')}: ${name}`} onClick={() => toggleExercise(name)}>×</button></li>)}</ul><button className="web-primary" disabled={!selectedExercises.length} onClick={() => setReviewOpen(true)}>{language === 'fr' ? 'Vérifier' : language === 'ar' ? 'مراجعة' : 'Review'}</button></aside>}
+                {<aside className="web-selection-panel"><h3>{t('picker_selected_count')}: {selectedExercises.length}</h3><ul>{selectedExercises.map(name => <li key={name}><span>{getExerciseTranslation(name, language)}</span><button aria-label={`${t('tracker_delete_exercise')}: ${name}`} onClick={() => toggleExercise(name)}>×</button></li>)}</ul><button className="web-primary" disabled={!selectedExercises.length} onClick={() => setReviewOpen(true)}>{language === 'fr' ? 'Vérifier' : language === 'ar' ? 'مراجعة' : 'Review'}</button></aside>}
               </div>
 
               <div className="web-selection-actions sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-white/95 p-3 shadow-2xl backdrop-blur dark:border-zinc-700 dark:bg-zinc-950/95 md:bottom-6 md:p-4">
                 <div className="min-w-0">
                   <div className="text-xs font-black text-zinc-900 dark:text-white">{t('picker_selected_count')}: {selectedExercises.length}</div>
-                  {usesModernInterface() && <button className="web-text-button" onClick={() => setReviewOpen(true)}>{language === 'fr' ? 'Vérifier' : language === 'ar' ? 'مراجعة' : 'Review'}</button>}
+                  {<button className="web-text-button" onClick={() => setReviewOpen(true)}>{language === 'fr' ? 'Vérifier' : language === 'ar' ? 'مراجعة' : 'Review'}</button>}
                   <div className="hidden max-w-[400px] truncate text-xs text-zinc-600 dark:text-zinc-400 md:block">{selectedExercises.join(', ')}</div>
                 </div>
                 <div className="flex gap-4 w-full md:w-auto">
@@ -1411,7 +1341,7 @@ export const Tracker: React.FC = () => {
             </Modal>
           )}
 
-          {phase === 'active' && usesModernInterface() && <WebSession
+          {phase === 'active' && <WebSession
             exercises={activeExercises} history={exerciseHistory} duration={formatTime(duration)} running={timerActive}
             rest={restTimerRemaining} pause={() => setTimerActive(!timerActive)} skipRest={stopRestTimer} addRest={() => addRestTime(30)}
             update={updateSet} complete={toggleSetComplete} add={addSet} remove={removeSet} demo={setTutorialExercise}
@@ -1419,287 +1349,7 @@ export const Tracker: React.FC = () => {
             quickLoad={handleQuickLoad} plates={(exIdx, setIdx) => setActiveSetInfo({ exIdx, setIdx })}
             edit={() => setPhase('selection')} reorder={() => { setTempReorderList([...activeExercises]); setShowReorderModal(true); }}
             finish={finishWorkout} reset={() => setShowResetSessionConfirm(true)} />}
-          {phase === 'active' && !usesModernInterface() && (
-            <div className="mx-auto max-w-4xl px-4 md:px-6 py-6">
-              <div className="text-center mb-12">
-                <div className="inline-flex flex-col items-center relative">
-                  {/* Gym Mode Badge */}
-                  {/* Rest Timer Overlay */}
-                  <AnimatePresence>
-                    {restTimerRemaining !== null && restTimerRemaining > 0 && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md"
-                      >
-                        <h3 className="text-zinc-500 text-sm font-black uppercase tracking-[0.5em] mb-8">{t('tracker_resting')}</h3>
-                        <div className="text-[12rem] font-black text-orange-500 font-mono leading-none tracking-tighter tabular-nums mb-12">
-                          {restTimerRemaining}
-                        </div>
 
-                        <div className="flex items-center gap-4">
-                          <button
-                            onClick={() => addRestTime(30)}
-                            className="px-8 py-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-zinc-400 font-bold hover:text-white hover:border-zinc-700 transition-all uppercase tracking-widest text-xs"
-                          >
-                            +30s
-                          </button>
-                          <button
-                            onClick={stopRestTimer}
-                            className="px-8 py-4 bg-teal-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-teal-500/20 hover:scale-105 transition-all"
-                          >
-                            {t('tracker_skip_rest')}
-                          </button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  <span className="text-[10px] font-black text-zinc-300 uppercase tracking-[0.3em] mb-4">
-                    {t('tracker_total_time')}
-                  </span>
-
-                  <div className="flex items-center gap-6">
-                    <div className="text-7xl md:text-8xl font-black text-teal-400 font-mono tracking-tighter drop-shadow-[0_0_30px_rgba(20,184,166,0.3)]">
-                      {formatTime(duration)}
-                    </div>
-                  </div>
-                </div>
-
-
-                <div className="flex items-center justify-center gap-4">
-                  <button
-                    onClick={() => {
-                      setTimerActive(!timerActive);
-                    }}
-                    className={`w-16 h-16 rounded-2xl flex items-center justify-center text-white transition-all shadow-2xl ${timerActive ? 'bg-amber-500 shadow-amber-500/30' : 'bg-teal-500 shadow-teal-500/30'}`}
-                  >
-                    {timerActive ? (
-                      <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
-                    ) : (
-                      <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                    )}
-                  </button>
-
-                  <button
-                    onClick={() => {/* Open Laps/History if needed */ }}
-                    className="w-12 h-12 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300 hover:text-white transition-all"
-                  >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  </button>
-
-                  <button
-                    onClick={() => setShowResetConfirm(true)}
-                    className="w-12 h-12 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300 hover:text-white transition-all"
-                  >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                  </button>
-
-                  {/* Small timer removed in favor of overlay */}
-                </div>
-
-              </div>
-
-              {/* 2. Exercise List */}
-              <div className="space-y-12 mb-12">
-                {activeExercises.map((ex, exIdx) => (
-                  <div key={ex.name}>
-                    <Card className="p-8 bg-zinc-900/40 border-zinc-800 rounded-[3rem] shadow-sm overflow-hidden">
-                      <h3 className="text-2xl font-black text-white mb-8 flex items-center gap-4 uppercase tracking-tight">
-
-                        <span className="w-2.5 h-8 bg-teal-500 rounded-full shadow-lg shadow-teal-500/20 flex-shrink-0"></span>
-                        <span className="flex-1 min-w-0 break-words">{getExerciseTranslation(ex.name, language)}</span>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <button
-                            onClick={() => setTutorialExercise(ex.name)}
-                            className="p-2 transition-colors"
-                            style={{ color: 'rgb(var(--accent-500))' }}
-                            title={t('modal_watch_video')}
-                          >
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                          </button>
-                          <button
-                            onClick={() => setExerciseToDelete({ name: ex.name, index: exIdx })}
-                            className="p-2 transition-colors"
-                            style={{ color: isLight ? '#71717a' : '#52525b' }}
-                            title={t('tracker_delete_exercise')}
-                          >
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                          </button>
-                        </div>
-                      </h3>
-                      {ex.targetReps && (
-                        <p className="-mt-5 mb-6 px-4 text-xs font-semibold text-zinc-400">
-                          {t('tracker_target_reps')}: {ex.targetReps}
-                        </p>
-                      )}
-
-                      {/* History & Quick Load */}
-                      {exerciseHistory.get(ex.name) && (
-                        <div className="mb-6 px-4">
-                          <div className="flex items-center justify-between bg-zinc-800/50 rounded-xl p-3 border border-zinc-700/50">
-                            <div>
-                              <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">{t('tracker_last_session')}</div>
-                              <div className="text-xs text-zinc-300 font-mono">
-                                {exerciseHistory.get(ex.name).lastSets.length} {t('tracker_sets_count')} × {exerciseHistory.get(ex.name).lastSets[0]?.reps} {t('tracker_reps_count')} @ {exerciseHistory.get(ex.name).lastSets[0]?.weight}kg
-                              </div>
-                            </div>
-
-                            {/* Only show Quick Load if current sets are empty/default */}
-                            {ex.sets.every(s => s.weight === 0 && s.reps === 0) && (
-                              <button
-                                onClick={() => handleQuickLoad(exIdx, ex.name)}
-                                className="px-3 py-1.5 bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 text-[10px] font-black uppercase tracking-widest rounded-lg border border-teal-500/30 transition-all flex items-center gap-2"
-                              >
-                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                                {t('tracker_quick_load')}
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-12 gap-1 md:gap-3 text-[10px] text-zinc-100 mb-2 px-4 font-black uppercase tracking-[0.3em]">
-                          <div className="col-span-2 text-center">{t('tracker_header_set')}</div>
-                          <div className="col-span-2 text-center">{t('tracker_header_kg')}</div>
-                          <div className="col-span-1 text-center"></div>
-                          <div className="col-span-2 text-center">{t('tracker_header_reps')}</div>
-                          <div className="col-span-3 text-center">{t('tracker_header_check')}</div>
-                          <div className="col-span-2 text-center"></div>
-                        </div>
-
-                        <div className="space-y-3">
-                          {ex.sets.map((set, setIdx) => (
-                            <div key={set.id} className={`grid grid-cols-12 gap-0.5 md:gap-3 items-center rounded-2xl p-1.5 md:p-3 bg-black/20 border border-zinc-800/50 transition-all ${set.completed ? 'opacity-50' : 'opacity-100'}`}>
-                              <div className="col-span-2 flex justify-center">
-                                <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] font-black text-zinc-200">
-                                  {setIdx + 1}
-                                </div>
-                              </div>
-
-                              <div className="col-span-2 relative group/kg">
-                                <input
-                                  type="tel"
-                                  pattern="[0-9]*"
-                                  inputMode="numeric"
-                                  value={set.weight || ''}
-                                  onChange={(e) => updateSet(exIdx, setIdx, 'weight', e.target.value)}
-                                  placeholder="0"
-                                  className="w-full bg-transparent text-center text-lg font-bold text-white placeholder-zinc-700 outline-none border-b border-transparent focus:border-teal-500 transition-all"
-                                />
-                              </div>
-
-                              <div className="col-span-1 flex justify-center">
-                                <button
-                                  onClick={() => setActiveSetInfo({ exIdx, setIdx })}
-                                  className="p-1.5 rounded-full bg-zinc-800/50 text-zinc-500 hover:text-teal-400 hover:bg-zinc-800 transition-all"
-                                  title={t('tracker_plate_calc_title')}
-                                >
-                                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-                                    <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" />
-                                    <circle cx="12" cy="12" r="3" />
-                                  </svg>
-                                </button>
-                              </div>
-
-                              <div className="col-span-2">
-                                <input
-                                  type="tel"
-                                  pattern="[0-9]*"
-                                  inputMode="numeric"
-                                  value={set.reps || ''}
-                                  onChange={(e) => updateSet(exIdx, setIdx, 'reps', e.target.value)}
-                                  placeholder="0"
-                                  className="w-full bg-transparent text-center text-lg font-bold text-white placeholder-zinc-700 outline-none border-b border-transparent focus:border-teal-500 transition-all"
-                                />
-                              </div>
-
-                              <div className="col-span-3 flex justify-center">
-                                <button
-                                  onClick={() => toggleSetComplete(exIdx, setIdx)}
-                                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${set.completed
-                                    ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/20'
-                                    : 'bg-zinc-800 text-zinc-600 hover:bg-zinc-700'
-                                    }`}
-                                >
-                                  {set.completed ? (
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                  ) : (
-                                    <span className="w-2.5 h-2.5 rounded-full border-2 border-zinc-600"></span>
-                                  )}
-                                </button>
-                              </div>
-
-                              <div className="col-span-2 flex justify-center">
-                                <button
-                                  onClick={() => removeSet(exIdx, setIdx)}
-                                  className="w-8 h-8 rounded-lg bg-zinc-900/50 flex items-center justify-center text-zinc-500 hover:text-rose-500 transition-colors"
-                                >
-                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                  </svg>
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-
-                        <button
-                          onClick={() => addSet(exIdx)}
-                          className="w-full py-4 text-xs font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white hover:bg-zinc-800/50 rounded-2xl border border-zinc-800 border-dashed hover:border-zinc-600 transition-all mt-4 flex items-center justify-center gap-2"
-                        >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                          {t('tracker_add_set')}
-                        </button>
-                      </div>
-
-                    </Card>
-                  </div>
-                ))}
-              </div>
-
-              {/* Bottom Actions: Add Exercise & Finish */}
-              < div className="flex flex-col items-center gap-6 pb-8" >
-                <button
-                  onClick={() => setPhase('selection')}
-                  className="px-6 py-2 bg-zinc-800/50 hover:bg-zinc-800 text-zinc-400 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-full border border-zinc-700/50 hover:border-zinc-600 transition-all flex items-center justify-center gap-2"
-                >
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
-                  {t('tracker_add_exercises')}
-                </button>
-
-                <button
-                  onClick={() => {
-                    setTempReorderList([...activeExercises]);
-                    setShowReorderModal(true);
-                  }}
-                  className="px-6 py-2 text-[10px] font-black uppercase tracking-widest rounded-full border transition-all flex items-center justify-center gap-2 bg-zinc-800/50 hover:bg-zinc-800 text-zinc-400 hover:text-white border-zinc-700/50 hover:border-zinc-600"
-                >
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                    <circle cx="9" cy="5" r="1.5" />
-                    <circle cx="9" cy="12" r="1.5" />
-                    <circle cx="9" cy="19" r="1.5" />
-                    <circle cx="15" cy="5" r="1.5" />
-                    <circle cx="15" cy="12" r="1.5" />
-                    <circle cx="15" cy="19" r="1.5" />
-                  </svg>
-                  {t('tracker_reorder_mode')}
-                </button>
-
-                <div className="flex justify-center items-center w-full">
-                  <SpotlightButton
-                    onClick={finishWorkout}
-                    variant="secondary"
-                    spotlightColor="rgba(244, 63, 94, 0.4)"
-                    className="w-auto px-20 py-5 bg-rose-500/10 border-rose-500/20 text-rose-500 hover:text-rose-400 font-black uppercase tracking-[0.2em] text-sm shadow-none hover:shadow-lg hover:shadow-rose-500/10"
-                  >
-                    {t('tracker_finish')}
-                  </SpotlightButton>
-                </div>
-              </div>
-            </div>
-          )}
 
           {
             phase === 'summary' && completedWorkout && (

@@ -1,13 +1,12 @@
 import { Capacitor } from '@capacitor/core';
-import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence,motion } from 'framer-motion';
+import React,{ useEffect,useState } from 'react';
+import { FontSize,useFontSize } from '../contexts/FontSizeContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useFontSize, FontSize } from '../contexts/FontSizeContext';
-import { useTheme, Theme, AccentColor } from '../contexts/ThemeContext';
-import { DataManager } from '../utils/dataManager';
+import { AccentColor,Theme,useTheme } from '../contexts/ThemeContext';
 import { Language } from '../types';
+import { DataManager } from '../utils/dataManager';
 import { registerOverlay } from '../utils/overlays';
-import { usesModernInterface } from '../utils/interfacePlatform';
 import { AndroidWorkoutNotificationControl } from './web/AndroidWorkoutNotificationControl';
 import { IOSRestNotificationControl } from './web/IOSRestNotificationControl';
 interface NavbarProps {
@@ -19,7 +18,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
   const [scrolled, setScrolled] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   useEffect(() => {
-    if (isSettingsOpen && usesModernInterface()) return registerOverlay(() => setIsSettingsOpen(false));
+    if (isSettingsOpen) return registerOverlay(() => setIsSettingsOpen(false));
   }, [isSettingsOpen]);
   useEffect(() => {
     if (!settingsOnly) return;
@@ -169,7 +168,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
           transition={{ duration: 0.2 }}
           className={`absolute top-full mt-2 w-64 max-h-[80vh] overflow-y-auto bg-zinc-950/95 backdrop-blur-xl border border-zinc-800 rounded-3xl p-4 shadow-2xl z-[100] ${dir === 'rtl' ? 'left-0' : 'right-0'}`}
         >
-          {usesModernInterface() && <div className="web-tour-settings">
+          {<div className="web-tour-settings">
             <h3>{language === 'fr' ? 'Aide et visite' : language === 'ar' ? 'المساعدة والدليل' : 'Help & tour'}</h3>
             {(['overview', 'workout'] as const).map(mode => <button key={mode} type="button" onClick={() => {
               setIsSettingsOpen(false);
