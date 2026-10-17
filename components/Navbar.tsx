@@ -1,3 +1,4 @@
+import { useCopy } from '../hooks/useCopy';
 import { Capacitor } from '@capacitor/core';
 import { AnimatePresence,motion } from 'framer-motion';
 import React,{ useEffect,useState } from 'react';
@@ -28,6 +29,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
   }, [settingsOnly]);
   const settingsButton = React.useRef<HTMLButtonElement>(null);
   const { language, setLanguage, t, dir } = useLanguage();
+  const c = useCopy();
   const { fontSize, setFontSize } = useFontSize();
   const { theme, setTheme, accent, setAccent } = useTheme();
   const isNative = Capacitor.isNativePlatform();
@@ -97,7 +99,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
   }, [isSettingsOpen]);
 
   const navItems = [
-    { id: 'account', label: language === 'ar' ? 'الحساب' : language === 'fr' ? 'Compte' : 'Account', icon: <span aria-hidden="true">@</span> },
+    { id: 'account', label: c('account'), icon: <span aria-hidden="true">@</span> },
     {
       id: 'home',
       label: t('nav_home'),
@@ -169,12 +171,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
           className={`absolute top-full mt-2 w-64 max-h-[80vh] overflow-y-auto bg-zinc-950/95 backdrop-blur-xl border border-zinc-800 rounded-3xl p-4 shadow-2xl z-[100] ${dir === 'rtl' ? 'left-0' : 'right-0'}`}
         >
           {<div className="web-tour-settings">
-            <h3>{language === 'fr' ? 'Aide et visite' : language === 'ar' ? 'المساعدة والدليل' : 'Help & tour'}</h3>
+            <h3>{c('help_tour')}</h3>
             {(['overview', 'workout'] as const).map(mode => <button key={mode} type="button" onClick={() => {
               setIsSettingsOpen(false);
               window.dispatchEvent(new CustomEvent('neurolift-tour', { detail: mode }));
               setCurrentView(mode === 'workout' ? 'tracker' : 'home');
-            }}>{mode === 'overview' ? (language === 'fr' ? 'Visite de l’application' : language === 'ar' ? 'جولة التطبيق' : 'App overview') : (language === 'fr' ? 'Guide de séance' : language === 'ar' ? 'دليل الحصة' : 'Workout walkthrough')}</button>)}
+            }}>{mode === 'overview' ? (c('app_overview')) : (c('workout_walkthrough'))}</button>)}
           </div>}
           <AndroidWorkoutNotificationControl />
           <IOSRestNotificationControl />

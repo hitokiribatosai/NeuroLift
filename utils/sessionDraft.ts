@@ -1,5 +1,10 @@
 import { safeStorage } from './storage';
 
+export type TrackerPhase = 'setup' | 'selection' | 'active' | 'summary';
+export function isTrackerPhase(value: unknown): value is TrackerPhase {
+  return value === 'setup' || value === 'selection' || value === 'active' || value === 'summary';
+}
+
 export const SESSION_DRAFT_KEYS = [
   'neuroLift_tracker_phase', 'neuroLift_tracker_muscles',
   'neuroLift_tracker_selected_exercises', 'neuroLift_tracker_active_exercises',

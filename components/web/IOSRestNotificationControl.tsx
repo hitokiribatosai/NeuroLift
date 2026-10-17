@@ -1,3 +1,4 @@
+import { useCopy } from '../../hooks/useCopy';
 import React, { useEffect, useState } from 'react';
 import { App } from '@capacitor/app';
 import { LocalNotifications } from '@capacitor/local-notifications';
@@ -6,7 +7,7 @@ import { enableIOSRestNotifications, hasIOSRestNotifications, iosRestEnabled, se
 
 export function IOSRestNotificationControl() {
   const { language } = useLanguage();
-  const c = (en: string, fr: string, ar: string) => language === 'fr' ? fr : language === 'ar' ? ar : en;
+  const c = useCopy();
   const [enabled, setEnabled] = useState(iosRestEnabled);
   const [granted, setGranted] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -30,16 +31,16 @@ export function IOSRestNotificationControl() {
     };
   }, [available]);
   if (!available) return null;
-  return <aside className="web-panel" aria-label={c('Rest alerts', 'Alertes de repos', 'تنبيهات الراحة')}>
+  return <aside className="web-panel" aria-label={c('rest_alerts')}>
     <button className="web-secondary" aria-pressed={enabled && granted} disabled={busy} onClick={async () => {
       setBusy(true); setError(false);
       try {
         if (enabled) setIOSRestEnabled(false);
         else setGranted(await enableIOSRestNotifications());
       } catch { setError(true); } finally { setBusy(false); }
-    }}>{enabled ? c('Turn off rest alerts', 'Désactiver les alertes de repos', 'إيقاف تنبيهات الراحة') : c('Enable rest alerts', 'Activer les alertes de repos', 'تفعيل تنبيهات الراحة')}</button>
-    <p className="web-small">{c('Optional alert when rest finishes. Focus and iPhone notification settings may silence it.', 'Alerte facultative à la fin du repos. Concentration et les réglages iPhone peuvent la rendre silencieuse.', 'تنبيه اختياري عند انتهاء الراحة. قد يسكت وضع التركيز وإعدادات iPhone التنبيه.')}</p>
-    {!granted && <p className="web-small">{c('If permission was denied, enable notifications for NeuroLift in iPhone Settings.', 'Si l’autorisation a été refusée, activez les notifications NeuroLift dans Réglages sur iPhone.', 'إذا رُفض الإذن، فعّل إشعارات NeuroLift في إعدادات iPhone.')}</p>}
-    {error && <p role="status">{c('Rest alert unavailable. Your in-app timer still works.', 'Alerte indisponible. Le minuteur reste disponible.', 'تنبيه الراحة غير متاح. المؤقت داخل التطبيق يعمل.')}</p>}
+    }}>{enabled ? c('turn_off_rest_alerts') : c('enable_rest_alerts')}</button>
+    <p className="web-small">{c('optional_alert_when_rest_finishes_focus_and_iphone_notification_settin')}</p>
+    {!granted && <p className="web-small">{c('if_permission_was_denied_enable_notifications_for_neurolift_in_iphone_')}</p>}
+    {error && <p role="status">{c('rest_alert_unavailable_your_in_app_timer_still_works')}</p>}
   </aside>;
 }

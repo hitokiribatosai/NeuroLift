@@ -1,3 +1,4 @@
+import { useCopy } from '../../hooks/useCopy';
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
 import { AnimatePresence,motion,Reorder } from 'framer-motion';
@@ -15,7 +16,7 @@ import { hapticFeedback } from '../../utils/haptics';
 import { generateId } from '../../utils/id';
 import { offerIOSRestNotifications } from '../../utils/iosRestNotification';
 import { copyPreviousSets } from '../../utils/repeatWorkout';
-import { clearSessionDraft } from '../../utils/sessionDraft';
+import { clearSessionDraft, isTrackerPhase, TrackerPhase } from '../../utils/sessionDraft';
 import { safeStorage } from '../../utils/storage';
 import { findNextScheduledWorkout,WeeklyWorkoutSchedule } from '../../utils/workoutSchedule';
 import { createFreshTemplateExercises } from '../../utils/workoutTemplates';
@@ -38,19 +39,19 @@ export const Tracker: React.FC = () => {
     t,
     language
   } = useLanguage();
+  const c = useCopy();
 
   const { theme } = useTheme();
   const isLight = theme === 'light';
 
-  const [phase, setPhase] = useState<'setup' | 'selection' | 'active' | 'summary'>(() => {
+  const [phase, setPhase] = useState<TrackerPhase>(() => {
     const saved = safeStorage.getItem('neuroLift_tracker_phase');
     // Recover drafts left behind by older builds after a completed workout.
     if (saved === 'summary') {
       clearSessionDraft();
       return 'setup';
     }
-    const validPhases = ['setup', 'selection', 'active', 'summary'];
-    return (saved && validPhases.includes(saved)) ? (saved as any) : 'setup';
+    return isTrackerPhase(saved) ? saved : 'setup';
   });
 
   // Tooltip hooks
@@ -76,7 +77,7 @@ export const Tracker: React.FC = () => {
   const [activeSetInfo, setActiveSetInfo] = useState<{ exIdx: number, setIdx: number } | null>(null);
   const [shareFeedback, setShareFeedback] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [exerciseHistory, setExerciseHistory] = useState<Map<string, any>>(new Map());
+  const [exerciseHistory, setExerciseHistory] = useState<Map<string, ExerciseHistory>>(new Map());
   const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
   const [weeklySchedule, setWeeklySchedule] = useState<WeeklyWorkoutSchedule>(() =>
     safeStorage.getParsed<WeeklyWorkoutSchedule>('neuroLift_weekly_schedule', {})
@@ -131,7 +132,7 @@ export const Tracker: React.FC = () => {
   // Load history when selected exercises change
   useEffect(() => {
     const loadHistory = async () => {
-      const historyMap = new Map();
+      const historyMap = new Map<string, ExerciseHistory>();
       for (const exercise of selectedExercises) {
         const history = await exerciseHistoryService.getExerciseHistory(exercise);
         if (history) {
@@ -440,12 +441,12 @@ export const Tracker: React.FC = () => {
     setActiveExercises(newExs);
   };
 
-  const updateSet = (exIdx: number, setIdx: number, field: keyof WorkoutSet, val: string) => {
+  const updateSet = (exIdx: number, setIdx: number, field: 'weight' | 'reps', val: string) => {
     if (!activeExercises[exIdx]?.sets[setIdx]) return;
     const newExs = [...activeExercises];
     const parsed = parseFloat(val);
     const value = Number.isFinite(parsed) ? Math.max(0, field === 'reps' ? Math.floor(parsed) : parsed) : 0;
-    (newExs[exIdx].sets[setIdx] as any)[field] = value;
+    newExs[exIdx].sets[setIdx][field] = value;
     if (!hasSetEffort(newExs[exIdx].sets[setIdx])) newExs[exIdx].sets[setIdx].completed = false;
     setActiveExercises(newExs);
   };
@@ -1176,13 +1177,13 @@ export const Tracker: React.FC = () => {
                   ))
                 )}
 
-                {<aside className="web-selection-panel"><h3>{t('picker_selected_count')}: {selectedExercises.length}</h3><ul>{selectedExercises.map(name => <li key={name}><span>{getExerciseTranslation(name, language)}</span><button aria-label={`${t('tracker_delete_exercise')}: ${name}`} onClick={() => toggleExercise(name)}>×</button></li>)}</ul><button className="web-primary" disabled={!selectedExercises.length} onClick={() => setReviewOpen(true)}>{language === 'fr' ? 'Vérifier' : language === 'ar' ? 'مراجعة' : 'Review'}</button></aside>}
+                {<aside className="web-selection-panel"><h3>{t('picker_selected_count')}: {selectedExercises.length}</h3><ul>{selectedExercises.map(name => <li key={name}><span>{getExerciseTranslation(name, language)}</span><button aria-label={`${t('tracker_delete_exercise')}: ${name}`} onClick={() => toggleExercise(name)}>×</button></li>)}</ul><button className="web-primary" disabled={!selectedExercises.length} onClick={() => setReviewOpen(true)}>{c('review')}</button></aside>}
               </div>
 
               <div className="web-selection-actions sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-white/95 p-3 shadow-2xl backdrop-blur dark:border-zinc-700 dark:bg-zinc-950/95 md:bottom-6 md:p-4">
                 <div className="min-w-0">
                   <div className="text-xs font-black text-zinc-900 dark:text-white">{t('picker_selected_count')}: {selectedExercises.length}</div>
-                  {<button className="web-text-button" onClick={() => setReviewOpen(true)}>{language === 'fr' ? 'Vérifier' : language === 'ar' ? 'مراجعة' : 'Review'}</button>}
+                  {<button className="web-text-button" onClick={() => setReviewOpen(true)}>{c('review')}</button>}
                   <div className="hidden max-w-[400px] truncate text-xs text-zinc-600 dark:text-zinc-400 md:block">{selectedExercises.join(', ')}</div>
                 </div>
                 <div className="flex gap-4 w-full md:w-auto">
@@ -1742,13 +1743,13 @@ export const Tracker: React.FC = () => {
             {tempReorderList.map((ex, idx) => (
               <ReorderExercise key={ex.name} exercise={ex} selected={reorderFeedback?.name === ex.name}
                 select={() => setReorderFeedback(previous => ({ name: ex.name, position: idx + 1, sequence: (previous?.sequence ?? 0) + 1 }))}
-                label={`${language === 'fr' ? 'Déplacer' : language === 'ar' ? 'اسحب' : 'Drag'}: ${getExerciseTranslation(ex.name, language)}`}>
+                label={`${c('drag')}: ${getExerciseTranslation(ex.name, language)}`}>
                 <span className="text-2xl font-black text-teal-500 w-8">{idx + 1}</span>
                 <span className="flex-1 text-white font-bold">{getExerciseTranslation(ex.name, language)}</span>
                 <div className="flex flex-col gap-1">
                   <button
                     onClick={() => moveReorderExercise(idx, -1)}
-                    aria-label={`${language === 'fr' ? 'Monter' : language === 'ar' ? 'نقل لأعلى' : 'Move up'}: ${getExerciseTranslation(ex.name, language)}`}
+                    aria-label={`${c('move_up')}: ${getExerciseTranslation(ex.name, language)}`}
                     disabled={idx === 0}
                     className="p-3 bg-zinc-800 hover:bg-teal-500 text-zinc-400 hover:text-white disabled:opacity-30 disabled:hover:bg-zinc-800 disabled:hover:text-zinc-400 rounded-lg transition-colors"
                   >
@@ -1758,7 +1759,7 @@ export const Tracker: React.FC = () => {
                   </button>
                   <button
                     onClick={() => moveReorderExercise(idx, 1)}
-                    aria-label={`${language === 'fr' ? 'Descendre' : language === 'ar' ? 'نقل لأسفل' : 'Move down'}: ${getExerciseTranslation(ex.name, language)}`}
+                    aria-label={`${c('move_down')}: ${getExerciseTranslation(ex.name, language)}`}
                     disabled={idx === tempReorderList.length - 1}
                     className="p-3 bg-zinc-800 hover:bg-teal-500 text-zinc-400 hover:text-white disabled:opacity-30 disabled:hover:bg-zinc-800 disabled:hover:text-zinc-400 rounded-lg transition-colors"
                   >
@@ -1772,7 +1773,7 @@ export const Tracker: React.FC = () => {
           </Reorder.Group>
 
           <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-            {reorderFeedback && `${getExerciseTranslation(reorderFeedback.name, language)} — ${language === 'fr' ? 'position' : language === 'ar' ? 'الموضع' : 'position'} ${reorderFeedback.position} / ${tempReorderList.length}`}
+            {reorderFeedback && `${getExerciseTranslation(reorderFeedback.name, language)} — ${c('position')} ${reorderFeedback.position} / ${tempReorderList.length}`}
           </p>
 
           <div className="flex gap-3">

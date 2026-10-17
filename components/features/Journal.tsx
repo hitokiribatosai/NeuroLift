@@ -131,7 +131,7 @@ export const Journal: React.FC = () => {
     setDeleteConfirm(null);
   };
 
-  const handleUpdateWorkoutSet = (workoutId: string, exIdx: number, setId: string, field: keyof WorkoutSet, val: number) => {
+  const handleUpdateWorkoutSet = (workoutId: string, exIdx: number, setId: string, field: 'weight' | 'reps' | 'durationSeconds' | 'distanceKm', val: number) => {
     val = Number.isFinite(val) ? Math.max(0, field === 'reps' ? Math.floor(val) : val) : 0;
     const updatedHistory = history.map(w => {
       if (w.id === workoutId) {
@@ -143,7 +143,7 @@ export const Journal: React.FC = () => {
         const setIndex = newSets.findIndex(s => s.id === setId);
         if (setIndex === -1) return w;
 
-        (newSets[setIndex] as any)[field] = val;
+        newSets[setIndex][field] = val;
         const updatedEx = { ...newExs[exIdx], sets: newSets };
         newExs[exIdx] = updatedEx;
 
