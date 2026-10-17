@@ -168,7 +168,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -10, scale: 0.95 }}
           transition={{ duration: 0.2 }}
-          className={`absolute top-full mt-2 w-64 max-h-[80vh] overflow-y-auto bg-zinc-950/95 backdrop-blur-xl border border-zinc-800 rounded-3xl p-4 shadow-2xl z-[100] ${dir === 'rtl' ? 'left-0' : 'right-0'}`}
+          className={`absolute top-full mt-2 w-64 max-h-[80vh] overflow-y-auto bg-zinc-950/95 surface-paper backdrop-blur-xl border border-zinc-800 surface-border rounded-3xl surface-rounded p-4 shadow-2xl surface-flat z-[100] ${dir === 'rtl' ? 'left-0' : 'right-0'}`}
         >
           {<div className="web-tour-settings">
             <h3>{c('help_tour')}</h3>
@@ -181,7 +181,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
           <AndroidWorkoutNotificationControl />
           <IOSRestNotificationControl />
           <div className="mb-6">
-            <h3 className="text-[0.625rem] font-black text-zinc-500 uppercase tracking-widest mb-3 px-2 flex items-center gap-2">
+            <h3 className="text-[0.625rem] font-black text-zinc-500 surface-muted surface-ink uppercase tracking-widest mb-3 px-2 flex items-center gap-2">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               {t('language')}
             </h3>
@@ -192,17 +192,17 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
                   aria-pressed={language === lang.code}
                   onClick={() => { setLanguage(lang.code); }}
                   whileTap={{ scale: 0.95 }}
-                  className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all ${language === lang.code ? 'bg-teal-500/10 text-teal-400' : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'}`}
+                  className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all ${language === lang.code ? 'bg-teal-500/10 surface-accent text-teal-400 surface-green' : 'text-zinc-400 surface-muted surface-ink hover:bg-zinc-900 surface-paper hover:text-zinc-200 surface-ink'}`}
                 >
                   <span className="text-xs font-bold">{lang.label}</span>
-                  {language === lang.code && <div className="w-1.5 h-1.5 rounded-full bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.6)]" />}
+                  {language === lang.code && <div className="w-1.5 h-1.5 rounded-full bg-teal-500 surface-accent shadow-[0_0_8px_rgba(20,184,166,0.6)] surface-flat" />}
                 </motion.button>
               ))}
             </div>
           </div>
 
           <div>
-            <h3 className="text-[0.625rem] font-black text-zinc-500 uppercase tracking-widest mb-3 px-2 flex items-center gap-2">
+            <h3 className="text-[0.625rem] font-black text-zinc-500 surface-muted surface-ink uppercase tracking-widest mb-3 px-2 flex items-center gap-2">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
               {t('font_size')}
             </h3>
@@ -213,7 +213,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
                   aria-pressed={fontSize === size.id}
                   onClick={() => setFontSize(size.id)}
                   whileTap={{ scale: 0.95 }}
-                  className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all ${fontSize === size.id ? 'bg-teal-500/10 border-teal-500/50 text-teal-400 shadow-sm' : 'bg-zinc-900/50 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300'}`}
+                  className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all ${fontSize === size.id ? 'bg-teal-500/10 surface-accent border-teal-500/50 text-teal-400 surface-green shadow-sm surface-flat' : 'bg-zinc-900/50 surface-paper border-zinc-800 surface-border text-zinc-500 surface-muted surface-ink hover:border-zinc-700 surface-border hover:text-zinc-300 surface-ink'}`}
                 >
                   <span className="text-[0.625rem] font-bold mb-1">{size.label}</span>
                   <span className="font-black" style={{ fontSize: size.id === 'small' ? '0.75rem' : size.id === 'medium' ? '0.875rem' : size.id === 'large' ? '1rem' : '1.125rem' }}>Aa</span>
@@ -223,8 +223,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
           </div>
 
           {/* Accent Color */}
-          <div className="mt-6 pt-6 border-t border-zinc-800">
-            <h3 className="text-[0.625rem] font-black text-zinc-500 uppercase tracking-widest mb-3 px-2 flex items-center gap-2">
+          <div className="mt-6 pt-6 border-t border-zinc-800 surface-border">
+            <h3 className="text-[0.625rem] font-black text-zinc-500 surface-muted surface-ink uppercase tracking-widest mb-3 px-2 flex items-center gap-2">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg>
               {t('profile_accent') as string || 'Accent Color'}
             </h3>
@@ -241,11 +241,11 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
                   onClick={() => setAccent(acc.id)}
                   whileTap={{ scale: 0.95 }}
                   className={`flex items-center justify-start gap-2 p-2.5 rounded-xl border transition-all ${accent === acc.id
-                    ? 'bg-zinc-800 border-zinc-600 text-white shadow-sm'
-                    : 'bg-zinc-900/50 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300'
+                    ? 'bg-zinc-800 surface-paper border-zinc-600 surface-border text-white surface-ink shadow-sm surface-flat'
+                    : 'bg-zinc-900/50 surface-paper border-zinc-800 surface-border text-zinc-500 surface-muted surface-ink hover:border-zinc-700 surface-border hover:text-zinc-300 surface-ink'
                     }`}
                 >
-                  <div className="w-4 h-4 rounded-full shadow-inner" style={{ backgroundColor: theme === 'light' ? acc.light : acc.dark }} />
+                  <div className="w-4 h-4 rounded-full shadow-inner surface-flat" style={{ backgroundColor: theme === 'light' ? acc.light : acc.dark }} />
                   <span className="text-[0.625rem] font-bold truncate">{acc.label}</span>
                 </motion.button>
               ))}
@@ -253,8 +253,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
           </div>
 
           {/* Theme Toggle */}
-          <div className="mt-6 pt-6 border-t border-zinc-800">
-            <h3 className="text-[0.625rem] font-black text-zinc-500 uppercase tracking-widest mb-3 px-2 flex items-center gap-2">
+          <div className="mt-6 pt-6 border-t border-zinc-800 surface-border">
+            <h3 className="text-[0.625rem] font-black text-zinc-500 surface-muted surface-ink uppercase tracking-widest mb-3 px-2 flex items-center gap-2">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
               {t('theme') as string || 'Theme'}
             </h3>
@@ -266,8 +266,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
                   onClick={() => setTheme(th.id)}
                   whileTap={{ scale: 0.95 }}
                   className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all ${theme === th.id
-                    ? 'bg-teal-500/10 border-teal-500/50 text-teal-400 shadow-sm'
-                    : 'bg-zinc-900/50 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300'
+                    ? 'bg-teal-500/10 surface-accent border-teal-500/50 text-teal-400 surface-green shadow-sm surface-flat'
+                    : 'bg-zinc-900/50 surface-paper border-zinc-800 surface-border text-zinc-500 surface-muted surface-ink hover:border-zinc-700 surface-border hover:text-zinc-300 surface-ink'
                     }`}
                 >
                   <span className="text-lg mb-1">{th.icon}</span>
@@ -277,8 +277,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
             </div>
           </div>
 
-          <div className="mt-6 pt-6 border-t border-zinc-800">
-            <h3 className="text-[0.625rem] font-black text-zinc-500 uppercase tracking-widest mb-3 px-2 flex items-center gap-2">
+          <div className="mt-6 pt-6 border-t border-zinc-800 surface-border">
+            <h3 className="text-[0.625rem] font-black text-zinc-500 surface-muted surface-ink uppercase tracking-widest mb-3 px-2 flex items-center gap-2">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
               {t('data_management')}
             </h3>
@@ -286,9 +286,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
               <button
                 onClick={handleExport}
                 disabled={isExporting}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-zinc-900 hover:border-teal-500/30 text-zinc-400 hover:text-white transition-all text-xs font-bold"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-zinc-900/50 surface-paper border border-zinc-800 surface-border hover:bg-zinc-900 surface-paper hover:border-teal-500/30 text-zinc-400 surface-muted surface-ink hover:text-white transition-all text-xs font-bold"
               >
-                <div className="p-1.5 bg-zinc-800 rounded-lg text-teal-500">
+                <div className="p-1.5 bg-zinc-800 surface-paper rounded-lg text-teal-500 surface-green">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
                 </div>
                 <span>{isExporting ? t('loading') : t('export_data')}</span>
@@ -296,9 +296,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
 
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-zinc-900 hover:border-teal-500/30 text-zinc-400 hover:text-white transition-all text-xs font-bold"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-zinc-900/50 surface-paper border border-zinc-800 surface-border hover:bg-zinc-900 surface-paper hover:border-teal-500/30 text-zinc-400 surface-muted surface-ink hover:text-white transition-all text-xs font-bold"
               >
-                <div className="p-1.5 bg-zinc-800 rounded-lg text-teal-500">
+                <div className="p-1.5 bg-zinc-800 surface-paper rounded-lg text-teal-500 surface-green">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                 </div>
                 <span>{t('import_data')}</span>
@@ -314,9 +314,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
               <a
                 href="#privacy"
                 onClick={settingsOnly ? (event) => { event.preventDefault(); setCurrentView('privacy'); setIsSettingsOpen(false); } : undefined}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-zinc-900 hover:border-teal-500/30 text-zinc-400 hover:text-white transition-all text-xs font-bold mt-2"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-zinc-900/50 surface-paper border border-zinc-800 surface-border hover:bg-zinc-900 surface-paper hover:border-teal-500/30 text-zinc-400 surface-muted surface-ink hover:text-white transition-all text-xs font-bold mt-2"
               >
-                <div className="p-1.5 bg-zinc-800 rounded-lg text-zinc-500">
+                <div className="p-1.5 bg-zinc-800 surface-paper rounded-lg text-zinc-500 surface-muted surface-ink">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                 </div>
                 <span>{t('privacy_policy')}</span>
@@ -332,7 +332,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
     <>
       {/* Top Navbar: Always visible, houses Logo and Settings Gear */}
       <nav
-        className={settingsOnly ? 'web-settings-nav' : `fixed top-0 z-[60] w-full transition-all duration-500 ${scrolled ? 'bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-zinc-800/50 shadow-xl' : 'bg-gradient-to-b from-[#0a0a0a]/80 to-transparent'}`}
+        className={settingsOnly ? 'web-settings-nav' : `fixed top-0 z-[60] w-full transition-all duration-500 ${scrolled ? 'bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-zinc-800/50 surface-border shadow-xl surface-flat' : 'bg-gradient-to-b from-[#0a0a0a]/80 to-transparent'}`}
         dir={dir}
         style={{
           paddingTop: settingsOnly ? 0 : 'env(safe-area-inset-top)',
@@ -346,24 +346,24 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
             onClick={() => setCurrentView('home')}
             whileTap={{ scale: 0.95 }}
           >
-            <img src="/logo.png" alt="NeuroLift" className="h-12 w-auto rounded-xl shadow-lg" />
-            <span className="text-white font-black tracking-tighter text-lg">NeuroLift</span>
+            <img src="/logo.png" alt="NeuroLift" className="h-12 w-auto rounded-xl shadow-lg surface-flat" />
+            <span className="text-white surface-ink font-black tracking-tighter text-lg">NeuroLift</span>
           </motion.div>}
 
           {/* Desktop Navigation Items - Hidden on Mobile */}
-          {!settingsOnly && <div className="hidden md:flex items-center gap-4 lg:gap-8 text-sm font-bold text-zinc-400 mx-8">
+          {!settingsOnly && <div className="hidden md:flex items-center gap-4 lg:gap-8 text-sm font-bold text-zinc-400 surface-muted surface-ink mx-8">
             {navItems.map((item) => (
               <motion.button
                 key={item.id}
                 onClick={() => setCurrentView(item.id)}
                 whileTap={{ y: 2 }}
-                className={`relative py-1 transition-colors hover:text-white shrink-0 uppercase tracking-widest text-[0.625rem] ${currentView === item.id ? 'text-teal-400' : 'text-zinc-300'}`}
+                className={`relative py-1 transition-colors hover:text-white shrink-0 uppercase tracking-widest text-[0.625rem] ${currentView === item.id ? 'text-teal-400 surface-green' : 'text-zinc-300 surface-ink'}`}
               >
                 <span className="relative z-10">{item.label}</span>
                 {currentView === item.id && (
                   <motion.div
                     layoutId="navbar-indicator-desktop"
-                    className="absolute bottom-[-4px] left-0 right-0 h-0.5 bg-teal-500 rounded-full shadow-[0_0_8px_rgba(20,184,166,0.6)]"
+                    className="absolute bottom-[-4px] left-0 right-0 h-0.5 bg-teal-500 surface-accent rounded-full shadow-[0_0_8px_rgba(20,184,166,0.6)] surface-flat"
                     transition={{ type: 'spring', bounce: 0.25, duration: 0.5 }}
                   />
                 )}
@@ -380,7 +380,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
               aria-expanded={isSettingsOpen}
               onClick={(e) => { e.stopPropagation(); setIsSettingsOpen(!isSettingsOpen); }}
               whileTap={{ scale: 0.9 }}
-              className={`flex items-center justify-center w-10 h-10 rounded-xl border transition-all shadow-sm ${isSettingsOpen ? 'bg-zinc-800 border-zinc-700 text-teal-400' : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700'}`}
+              className={`flex items-center justify-center w-10 h-10 rounded-xl border transition-all shadow-sm surface-flat ${isSettingsOpen ? 'bg-zinc-800 surface-paper border-zinc-700 surface-border text-teal-400 surface-green' : 'bg-zinc-900/50 surface-paper border-zinc-800 surface-border text-zinc-400 surface-muted surface-ink hover:text-white hover:border-zinc-700 surface-border'}`}
             >
               <motion.svg
                 className="w-5 h-5"
@@ -402,7 +402,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
       {/* Bottom Tab Bar: Visible only on smaller screens */}
       {!settingsOnly && <div className="md:hidden fixed bottom-0 left-0 right-0 z-[60] pointer-events-none">
         <div
-          className="w-full backdrop-blur-xl border-t shadow-2xl flex items-center justify-around p-2 pb-[calc(env(safe-area-inset-bottom)+8px)] pointer-events-auto relative overflow-hidden"
+          className="w-full backdrop-blur-xl border-t shadow-2xl surface-flat flex items-center justify-around p-2 pb-[calc(env(safe-area-inset-bottom)+8px)] pointer-events-auto relative overflow-hidden"
           style={{
             backgroundColor: theme === 'light' ? 'rgba(255,255,255,0.97)' : 'rgba(10,10,10,0.95)',
             borderColor: theme === 'light' ? '#e4e4e7' : '#27272a',
@@ -413,7 +413,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
               key={item.id}
               onClick={() => setCurrentView(item.id)}
               whileTap={{ scale: 0.9, y: 4 }}
-              className="relative flex flex-col items-center justify-center gap-1.5 py-2 px-1 rounded-2xl transition-all duration-300 min-w-0 flex-1"
+              className="relative flex flex-col items-center justify-center gap-1.5 py-2 px-1 rounded-2xl surface-rounded transition-all duration-300 min-w-0 flex-1"
               style={{
                 color: currentView === item.id
                   ? 'rgb(var(--accent-400))'
@@ -430,7 +430,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
               {currentView === item.id && (
                 <motion.div
                   layoutId="navbar-indicator-mobile"
-                  className="absolute inset-0 rounded-2xl -z-10"
+                  className="absolute inset-0 rounded-2xl surface-rounded -z-10"
                   style={{ backgroundColor: theme === 'light' ? 'rgba(66,99,235,0.08)' : 'rgba(45,212,191,0.1)' }}
                   initial={false}
                   transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
@@ -443,31 +443,31 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setCurrentView, set
 
       {/* Import Confirmation Modal */}
       {showImportConfirm && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-center justify-center p-6">
-          <div className="bg-zinc-950 border border-zinc-900 rounded-[2rem] p-8 max-w-sm w-full shadow-2xl relative overflow-hidden">
+        <div className="fixed inset-0 bg-black/80 surface-canvas backdrop-blur-sm z-[200] flex items-center justify-center p-6">
+          <div className="bg-zinc-950 surface-paper border border-zinc-900 surface-border rounded-[2rem] surface-rounded p-8 max-w-sm w-full shadow-2xl surface-flat relative overflow-hidden">
 
             <div className="w-12 h-12 rounded-full bg-rose-500/10 flex items-center justify-center mb-6 text-rose-500 mx-auto">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
             </div>
 
-            <h3 className="text-xl font-black text-white text-center mb-2 uppercase tracking-tight">
+            <h3 className="text-xl font-black text-white surface-ink text-center mb-2 uppercase tracking-tight">
               {t('import_warning_title')}
             </h3>
 
-            <p className="text-zinc-400 text-center text-sm font-medium leading-relaxed mb-8">
+            <p className="text-zinc-400 surface-muted surface-ink text-center text-sm font-medium leading-relaxed mb-8">
               {t('import_warning_desc')}
             </p>
 
             <div className="flex flex-col gap-3">
               <button
                 onClick={confirmImport}
-                className="w-full py-4 bg-rose-500 hover:bg-rose-600 active:scale-[0.98] transition-all rounded-2xl text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-rose-500/25"
+                className="w-full py-4 bg-rose-500 hover:bg-rose-600 active:scale-[0.98] transition-all rounded-2xl surface-rounded text-white surface-ink font-black uppercase tracking-widest text-xs shadow-lg surface-flat shadow-rose-500/25 surface-flat"
               >
                 {t('confirm_yes')}
               </button>
               <button
                 onClick={() => { setShowImportConfirm(false); setImportDataContent(null); }}
-                className="w-full py-4 bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] transition-all rounded-2xl text-zinc-400 font-black uppercase tracking-widest text-xs"
+                className="w-full py-4 bg-zinc-900 surface-paper hover:bg-zinc-800 surface-paper active:scale-[0.98] transition-all rounded-2xl surface-rounded text-zinc-400 surface-muted surface-ink font-black uppercase tracking-widest text-xs"
               >
                 {t('confirm_cancel')}
               </button>

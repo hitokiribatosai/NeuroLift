@@ -167,7 +167,7 @@ export function WebSession(p: Props) {
             void switchExercise(index + (dx < 0 ? 1 : -1) * (language === 'ar' ? -1 : 1));
           }}>
           {exerciseNavigation}
-          <div className="web-section-heading"><div><h2>{getExerciseTranslation(exercise.name, language)}</h2>{exercise.targetReps && <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{t('tracker_target_reps')}: {exercise.targetReps}</p>}</div><button className="web-secondary" onClick={() => p.demo(exercise.name)}>{t('library_view_details')}</button></div>
+          <div className="web-section-heading"><div><h2>{getExerciseTranslation(exercise.name, language)}</h2>{exercise.targetReps && <p className="mt-1 text-sm text-zinc-600 surface-muted surface-ink dark:text-zinc-400 surface-ink">{t('tracker_target_reps')}: {exercise.targetReps}</p>}</div><button className="web-secondary" onClick={() => p.demo(exercise.name)}>{t('library_view_details')}</button></div>
           <details className="web-previous-disclosure" key={exercise.name}>
             <summary>{c('previous_session')}</summary>
             <div className="web-previous-content">

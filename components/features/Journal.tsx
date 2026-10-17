@@ -263,8 +263,8 @@ export const Journal: React.FC = () => {
 
   const WorkoutHistory = () => {
     if (history.length === 0) return (
-      <div className="text-zinc-400 dark:text-zinc-600 text-center py-20 border-2 border-dashed border-zinc-100 dark:border-zinc-800 rounded-[3rem] bg-zinc-50/50 dark:bg-zinc-900/10">
-        <div className="text-[10px] font-black uppercase tracking-[0.4em] mb-2 text-zinc-300 dark:text-zinc-800">{t('journal_no_history')}</div>
+      <div className="text-zinc-400 surface-muted surface-ink dark:text-zinc-600 surface-ink text-center py-20 border-2 border-dashed border-zinc-100 surface-border dark:border-zinc-800 surface-border rounded-[3rem] surface-rounded bg-zinc-50/50 surface-paper dark:bg-zinc-900/10 surface-paper">
+        <div className="text-[10px] font-black uppercase tracking-[0.4em] mb-2 text-zinc-300 surface-ink dark:text-zinc-800 surface-ink">{t('journal_no_history')}</div>
         <p className="text-xs font-bold px-10">{t('journal_complete_workout')}</p>
       </div>
     );
@@ -272,8 +272,8 @@ export const Journal: React.FC = () => {
     return (
       <div className="space-y-6">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight flex items-center gap-3">
-            <span className="w-2 h-6 bg-teal-500 rounded-full"></span>
+          <h3 className="text-xl font-black text-zinc-900 surface-ink dark:text-white uppercase tracking-tight flex items-center gap-3">
+            <span className="w-2 h-6 bg-teal-500 surface-accent rounded-full"></span>
             {t('journal_workout_sessions')}
           </h3>
           {hasDemoData() && (
@@ -286,11 +286,11 @@ export const Journal: React.FC = () => {
           )}
         </div>
         {history.map((workout) => (
-          <Card key={workout.id} className="p-8 bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+          <Card key={workout.id} className="p-8 bg-white dark:bg-zinc-900/60 surface-paper border-zinc-200 surface-border dark:border-zinc-800 surface-border rounded-[2.5rem] surface-rounded shadow-sm surface-flat hover:shadow-md surface-flat transition-all group overflow-hidden relative">
             <div className="absolute top-1 right-4 flex gap-2 md:opacity-0 md:group-hover:opacity-100 opacity-100 transition-all z-10">
               <button
                 onClick={() => setEditingWorkoutId(editingWorkoutId === workout.id ? null : workout.id)}
-                className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 text-zinc-400 hover:text-teal-500 transition-colors shadow-sm backdrop-blur-sm"
+                className="p-2.5 rounded-xl bg-zinc-100 surface-paper dark:bg-zinc-800/80 surface-paper text-zinc-400 surface-muted surface-ink hover:text-teal-500 surface-green transition-colors shadow-sm surface-flat backdrop-blur-sm"
                 style={{ WebkitBackdropFilter: 'blur(8px)' }}
                 title="Edit workout"
               >
@@ -303,7 +303,7 @@ export const Journal: React.FC = () => {
                   setWorkoutToTemplate(workout);
                   setShowSaveTemplateModal(true);
                 }}
-                className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 text-zinc-400 hover:text-teal-500 transition-colors shadow-sm backdrop-blur-sm"
+                className="p-2.5 rounded-xl bg-zinc-100 surface-paper dark:bg-zinc-800/80 surface-paper text-zinc-400 surface-muted surface-ink hover:text-teal-500 surface-green transition-colors shadow-sm surface-flat backdrop-blur-sm"
                 style={{ WebkitBackdropFilter: 'blur(8px)' }}
                 title="Save as template"
               >
@@ -313,7 +313,7 @@ export const Journal: React.FC = () => {
               </button>
               <button
                 onClick={() => handleDeleteWorkout(workout.id)}
-                className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 text-zinc-400 hover:text-rose-500 transition-colors shadow-sm backdrop-blur-sm"
+                className="p-2.5 rounded-xl bg-zinc-100 surface-paper dark:bg-zinc-800/80 surface-paper text-zinc-400 surface-muted surface-ink hover:text-rose-500 transition-colors shadow-sm surface-flat backdrop-blur-sm"
                 style={{ WebkitBackdropFilter: 'blur(8px)' }}
                 title="Delete workout"
               >
@@ -323,34 +323,34 @@ export const Journal: React.FC = () => {
               </button>
             </div>
 
-            <div className="flex justify-between items-start mb-6 pb-4 border-b border-zinc-100 dark:border-zinc-800">
+            <div className="flex justify-between items-start mb-6 pb-4 border-b border-zinc-100 surface-border dark:border-zinc-800 surface-border">
               <div>
-                <h4 className="text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tighter mb-1 pr-20">
+                <h4 className="text-2xl font-black text-zinc-900 surface-ink dark:text-white uppercase tracking-tighter mb-1 pr-20">
                   {workout.name || t('tracker_summary')}
                 </h4>
                 <div className="flex gap-4 items-center">
-                  <span className="text-teal-600 dark:text-teal-400 font-black text-[10px] uppercase tracking-widest">{new Date(workout.date).toLocaleDateString(language)}</span>
+                  <span className="text-teal-600 surface-green dark:text-teal-400 surface-green font-black text-[10px] uppercase tracking-widest">{new Date(workout.date).toLocaleDateString(language)}</span>
                   {workout.isDemo && (
-                    <span className="px-2 py-0.5 bg-zinc-700 text-zinc-300 text-[9px] font-black uppercase tracking-widest rounded">
+                    <span className="px-2 py-0.5 bg-zinc-700 surface-paper text-zinc-300 surface-ink text-[9px] font-black uppercase tracking-widest rounded">
                       {t('demo_workout_label')}
                     </span>
                   )}
-                  <span className="text-zinc-200 dark:text-zinc-200 font-bold text-[10px] uppercase tracking-widest">
+                  <span className="text-zinc-200 surface-ink dark:text-zinc-200 surface-ink font-bold text-[10px] uppercase tracking-widest">
                     {Math.floor(workout.durationSeconds / 60)}{t('unit_min_short')} {workout.durationSeconds % 60}{t('unit_sec_short')}
                   </span>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-[10px] text-zinc-300 uppercase tracking-widest mb-1 font-black">{t('journal_total_volume')}</div>
-                <div className="text-2xl font-black font-mono text-zinc-900 dark:text-white">{workout.totalVolume} <span className="text-xs font-bold text-teal-600 uppercase">{t('unit_kg')}</span></div>
+                <div className="text-[10px] text-zinc-300 surface-ink uppercase tracking-widest mb-1 font-black">{t('journal_total_volume')}</div>
+                <div className="text-2xl font-black font-mono text-zinc-900 surface-ink dark:text-white">{workout.totalVolume} <span className="text-xs font-bold text-teal-600 surface-green uppercase">{t('unit_kg')}</span></div>
               </div>
             </div>
 
             <div className="space-y-6 mb-8">
               {workout.exercises.map((ex, exIdx) => (
-                <div key={exIdx} className="bg-zinc-50 dark:bg-zinc-950/40 p-5 rounded-3xl border border-zinc-100 dark:border-zinc-800/50">
-                  <div className="text-xs font-black text-teal-600 dark:text-teal-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <span className="w-1 h-1 bg-teal-500 rounded-full"></span>
+                <div key={exIdx} className="bg-zinc-50 surface-paper dark:bg-zinc-950/40 surface-paper p-5 rounded-3xl surface-rounded border border-zinc-100 surface-border dark:border-zinc-800/50 surface-border">
+                  <div className="text-xs font-black text-teal-600 surface-green dark:text-teal-400 surface-green uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <span className="w-1 h-1 bg-teal-500 surface-accent rounded-full"></span>
                     {getExerciseTranslation(ex.name, language)}
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -358,8 +358,8 @@ export const Journal: React.FC = () => {
                       const isCardio = getMuscleForExercise(ex.name) === 'Cardio';
 
                       return (
-                        <div key={set.id} className="px-3 py-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-[10px] font-bold shadow-sm flex items-center gap-1">
-                          <span className="text-zinc-300 dark:text-zinc-600 mr-1">{t('unit_set_prefix')}{sIdx + 1}:</span>
+                        <div key={set.id} className="px-3 py-1.5 bg-white dark:bg-zinc-900 surface-paper border border-zinc-200 surface-border dark:border-zinc-800 surface-border rounded-xl text-[10px] font-bold shadow-sm surface-flat flex items-center gap-1">
+                          <span className="text-zinc-300 surface-ink dark:text-zinc-600 surface-ink mr-1">{t('unit_set_prefix')}{sIdx + 1}:</span>
                           {editingWorkoutId === workout.id ? (
                             <div className="flex items-center gap-1">
                               {isCardio ? (
@@ -368,7 +368,7 @@ export const Journal: React.FC = () => {
                                     type="number"
                                     inputMode="decimal"
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-10 bg-zinc-100 dark:bg-black rounded px-1 outline-none text-teal-500"
+                                    className="w-10 bg-zinc-100 surface-paper dark:bg-black surface-canvas rounded px-1 outline-none text-teal-500 surface-green"
                                     value={set.durationSeconds ? Math.floor(set.durationSeconds / 60) : 0}
                                     onChange={(e) => {
                                       const mins = parseInt(e.target.value) || 0;
@@ -382,7 +382,7 @@ export const Journal: React.FC = () => {
                                     inputMode="decimal"
                                     step="0.1"
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-10 bg-zinc-100 dark:bg-black rounded px-1 outline-none text-teal-500"
+                                    className="w-10 bg-zinc-100 surface-paper dark:bg-black surface-canvas rounded px-1 outline-none text-teal-500 surface-green"
                                     value={set.distanceKm || 0}
                                     onChange={(e) => handleUpdateWorkoutSet(workout.id, exIdx, set.id, 'distanceKm', parseFloat(e.target.value) || 0)}
                                   />
@@ -394,7 +394,7 @@ export const Journal: React.FC = () => {
                                     type="number"
                                     inputMode="decimal"
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-10 bg-zinc-100 dark:bg-black rounded px-1 outline-none text-teal-500"
+                                    className="w-10 bg-zinc-100 surface-paper dark:bg-black surface-canvas rounded px-1 outline-none text-teal-500 surface-green"
                                     value={set.weight}
                                     onChange={(e) => handleUpdateWorkoutSet(workout.id, exIdx, set.id, 'weight', parseFloat(e.target.value) || 0)}
                                   />
@@ -403,7 +403,7 @@ export const Journal: React.FC = () => {
                                     type="number"
                                     inputMode="decimal"
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-8 bg-zinc-100 dark:bg-black rounded px-1 outline-none text-teal-500"
+                                    className="w-8 bg-zinc-100 surface-paper dark:bg-black surface-canvas rounded px-1 outline-none text-teal-500 surface-green"
                                     value={set.reps}
                                     onChange={(e) => handleUpdateWorkoutSet(workout.id, exIdx, set.id, 'reps', parseInt(e.target.value) || 0)}
                                   />
@@ -411,13 +411,13 @@ export const Journal: React.FC = () => {
                               )}
                               <button
                                 onClick={() => handleDeleteSet(workout.id, exIdx, set.id)}
-                                className="ml-1 p-1 text-zinc-400 hover:text-rose-500 transition-colors"
+                                className="ml-1 p-1 text-zinc-400 surface-muted surface-ink hover:text-rose-500 transition-colors"
                               >
                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
                               </button>
                             </div>
                           ) : (
-                            <span className="text-zinc-900 dark:text-white">
+                            <span className="text-zinc-900 surface-ink dark:text-white">
                               {isCardio
                                 ? `${set.durationSeconds ? Math.floor(set.durationSeconds / 60) : 0}${t('unit_min_short')} | ${set.distanceKm || 0}${t('unit_km')}`
                                 : `${set.weight}${t('unit_kg')} × ${set.reps}`
@@ -434,7 +434,7 @@ export const Journal: React.FC = () => {
 
             <SpotlightButton
               onClick={() => handleShareWorkout(workout.exercises)}
-              className="w-full justify-center py-4 text-[10px] font-black uppercase tracking-[0.3em] bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20 shadow-lg shadow-teal-500/5"
+              className="w-full justify-center py-4 text-[10px] font-black uppercase tracking-[0.3em] bg-teal-500/10 surface-accent text-teal-600 surface-green dark:text-teal-400 surface-green border-teal-500/20 shadow-lg surface-flat shadow-teal-500/5 surface-flat"
             >
               Share This Plan
             </SpotlightButton>
@@ -446,7 +446,7 @@ export const Journal: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-6xl px-6 pt-4 pb-32">
-      <h2 className="text-4xl font-black text-zinc-900 dark:text-white mb-8 uppercase tracking-tight">{t('journal_title')}</h2>
+      <h2 className="text-4xl font-black text-zinc-900 surface-ink dark:text-white mb-8 uppercase tracking-tight">{t('journal_title')}</h2>
 
       {<div className="web-journal-tabs" role="group" aria-label={t('journal_title')}>
         <button aria-pressed={journalView === 'workouts'} onClick={() => setJournalView('workouts')}>{t('nav_workout')}</button>
@@ -457,9 +457,9 @@ export const Journal: React.FC = () => {
           { label: t('journal_sessions_week'), value: recentTraining.length },
           { label: t('journal_minutes_week'), value: recentTrainingMinutes },
           { label: t('journal_sets_week'), value: recentCompletedSets }
-        ].map(metric => <Card key={metric.label} className="min-w-0 rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/70 sm:p-5">
-          <p className="text-[9px] font-bold uppercase leading-snug tracking-wider text-zinc-600 dark:text-zinc-400 sm:text-xs">{metric.label}</p>
-          <p className="mt-2 text-2xl font-black tabular-nums text-zinc-950 dark:text-white sm:text-3xl">{metric.value}</p>
+        ].map(metric => <Card key={metric.label} className="min-w-0 rounded-2xl surface-rounded border border-zinc-200 surface-border bg-white p-3 shadow-sm surface-flat dark:border-zinc-800 surface-border dark:bg-zinc-900/70 surface-paper sm:p-5">
+          <p className="text-[9px] font-bold uppercase leading-snug tracking-wider text-zinc-600 surface-muted surface-ink dark:text-zinc-400 surface-ink sm:text-xs">{metric.label}</p>
+          <p className="mt-2 text-2xl font-black tabular-nums text-zinc-950 surface-ink dark:text-white sm:text-3xl">{metric.value}</p>
         </Card>)}
       </section>}
       {(journalView === 'workouts') && <VolumeChart
@@ -472,22 +472,22 @@ export const Journal: React.FC = () => {
 
       <div className={`web-journal-layout web-journal-${journalView}`}>
         <div hidden={journalView !== 'measurements'} className="lg:col-span-1 space-y-8">
-          <Card className={`p-8 space-y-6 rounded-[2.5rem] shadow-sm transition-all duration-300 ${editingId ? 'bg-teal-500/5 border-teal-500 shadow-teal-500/10' : 'bg-white dark:bg-zinc-900/80 border-zinc-200 dark:border-zinc-800'}`}>
+          <Card className={`p-8 space-y-6 rounded-[2.5rem] surface-rounded shadow-sm surface-flat transition-all duration-300 ${editingId ? 'bg-teal-500/5 surface-accent border-teal-500 shadow-teal-500/10 surface-flat' : 'bg-white dark:bg-zinc-900/80 surface-paper border-zinc-200 surface-border dark:border-zinc-800 surface-border'}`}>
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">
+                <h3 className="text-xl font-black text-zinc-900 surface-ink dark:text-white uppercase tracking-tight">
                   {editingId ? t('journal_edit_entry') : t('journal_add_entry')}
                 </h3>
                 {editingId && (
                   <button
                     onClick={resetFormContent}
-                    className="text-[10px] text-teal-600 dark:text-teal-400 hover:underline font-black uppercase tracking-widest mt-1"
+                    className="text-[10px] text-teal-600 surface-green dark:text-teal-400 surface-green hover:underline font-black uppercase tracking-widest mt-1"
                   >
                     + Create New
                   </button>
                 )}
               </div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-300 dark:text-zinc-200">
+              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-300 surface-ink dark:text-zinc-200 surface-ink">
                 {editingId ? entries.find(e => e.id === editingId)?.date : new Date().toLocaleDateString()}
               </span>
             </div>
@@ -508,15 +508,15 @@ export const Journal: React.FC = () => {
             </div>
 
             {customFields.length > 0 && (
-              <div className="space-y-3 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+              <div className="space-y-3 pt-4 border-t border-zinc-100 surface-border dark:border-zinc-800 surface-border">
                 {customFields.map(f => (
-                  <div key={f.id} className="flex justify-between items-center text-xs text-zinc-300 dark:text-zinc-200 bg-zinc-50 dark:bg-zinc-900 p-3 rounded-xl border border-zinc-100 dark:border-zinc-800 group">
+                  <div key={f.id} className="flex justify-between items-center text-xs text-zinc-300 surface-ink dark:text-zinc-200 surface-ink bg-zinc-50 surface-paper dark:bg-zinc-900 surface-paper p-3 rounded-xl border border-zinc-100 surface-border dark:border-zinc-800 surface-border group">
                     <span className="font-bold uppercase tracking-widest text-[9px]">{f.name}</span>
                     <div className="flex items-center gap-3">
-                      <span className="font-black text-zinc-900 dark:text-white">{f.value} {f.unit}</span>
+                      <span className="font-black text-zinc-900 surface-ink dark:text-white">{f.value} {f.unit}</span>
                       <button
                         onClick={() => setCustomFields(customFields.filter(cf => cf.id !== f.id))}
-                        className="text-zinc-300 hover:text-rose-500 transition-colors"
+                        className="text-zinc-300 surface-ink hover:text-rose-500 transition-colors"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
@@ -529,12 +529,12 @@ export const Journal: React.FC = () => {
             )}
 
             {showCustomInput ? (
-              <div className="p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-3xl space-y-4 border border-zinc-200 dark:border-zinc-700 shadow-inner">
+              <div className="p-6 bg-zinc-50 surface-paper dark:bg-zinc-800/50 surface-paper rounded-3xl surface-rounded space-y-4 border border-zinc-200 surface-border dark:border-zinc-700 surface-border shadow-inner surface-flat">
                 <input
                   placeholder="Measure Name (e.g. Wrist)"
                   value={newCustomField.name}
                   onChange={e => setNewCustomField({ ...newCustomField, name: e.target.value })}
-                  className="w-full bg-white dark:bg-black text-xs p-3 rounded-xl border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white outline-none focus:border-teal-500 font-bold"
+                  className="w-full bg-white dark:bg-black surface-canvas text-xs p-3 rounded-xl border border-zinc-200 surface-border dark:border-zinc-700 surface-border text-zinc-900 surface-ink dark:text-white outline-none focus:border-teal-500 font-bold"
                 />
                 <div className="flex gap-2">
                   <input
@@ -542,12 +542,12 @@ export const Journal: React.FC = () => {
                     type="number"
                     value={newCustomField.value}
                     onChange={e => setNewCustomField({ ...newCustomField, value: e.target.value })}
-                    className="w-2/3 bg-white dark:bg-black text-xs p-3 rounded-xl border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white outline-none focus:border-teal-500 font-bold"
+                    className="w-2/3 bg-white dark:bg-black surface-canvas text-xs p-3 rounded-xl border border-zinc-200 surface-border dark:border-zinc-700 surface-border text-zinc-900 surface-ink dark:text-white outline-none focus:border-teal-500 font-bold"
                   />
                   <select
                     value={newCustomField.unit}
                     onChange={e => setNewCustomField({ ...newCustomField, unit: e.target.value })}
-                    className="w-1/3 bg-white dark:bg-black text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white font-bold outline-none"
+                    className="w-1/3 bg-white dark:bg-black surface-canvas text-xs rounded-xl border border-zinc-200 surface-border dark:border-zinc-700 surface-border text-zinc-900 surface-ink dark:text-white font-bold outline-none"
                   >
                     <option value="cm">cm</option>
                     <option value="kg">kg</option>
@@ -555,14 +555,14 @@ export const Journal: React.FC = () => {
                   </select>
                 </div>
                 <div className="flex gap-2 pt-2">
-                  <button onClick={addCustomField} className="flex-1 bg-teal-600 text-white text-[10px] font-black uppercase tracking-widest py-3 rounded-xl shadow-lg shadow-teal-500/20 active:scale-95 transition-all">Add</button>
-                  <button onClick={() => setShowCustomInput(false)} className="flex-1 bg-white dark:bg-zinc-700 text-zinc-300 dark:text-white text-[10px] font-black uppercase tracking-widest py-3 rounded-xl border border-zinc-200 dark:border-zinc-600 active:scale-95 transition-all">Cancel</button>
+                  <button onClick={addCustomField} className="flex-1 bg-teal-600 surface-accent text-white surface-ink text-[10px] font-black uppercase tracking-widest py-3 rounded-xl shadow-lg surface-flat shadow-teal-500/20 surface-flat active:scale-95 transition-all">Add</button>
+                  <button onClick={() => setShowCustomInput(false)} className="flex-1 bg-white dark:bg-zinc-700 surface-paper text-zinc-300 surface-ink dark:text-white text-[10px] font-black uppercase tracking-widest py-3 rounded-xl border border-zinc-200 surface-border dark:border-zinc-600 surface-border active:scale-95 transition-all">Cancel</button>
                 </div>
               </div>
             ) : (
               <button
                 onClick={() => setShowCustomInput(true)}
-                className="w-full py-4 border-2 border-dashed border-zinc-100 dark:border-zinc-800 text-zinc-300 dark:text-zinc-200 text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:border-teal-500/50 hover:text-teal-600 transition-all flex items-center justify-center gap-2"
+                className="w-full py-4 border-2 border-dashed border-zinc-100 surface-border dark:border-zinc-800 surface-border text-zinc-300 surface-ink dark:text-zinc-200 surface-ink text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl surface-rounded hover:border-teal-500/50 hover:text-teal-600 surface-green transition-all flex items-center justify-center gap-2"
               >
                 <span>+</span> {t('add_custom')}
               </button>
@@ -571,7 +571,7 @@ export const Journal: React.FC = () => {
             <div className="flex justify-center pt-4">
               <SpotlightButton
                 onClick={handleSave}
-                className="px-12 py-4 text-xs font-black uppercase tracking-widest shadow-xl shadow-teal-500/20"
+                className="px-12 py-4 text-xs font-black uppercase tracking-widest shadow-xl surface-flat shadow-teal-500/20 surface-flat"
               >
                 {editingId ? t('journal_update_entry') : t('save')}
               </SpotlightButton>
@@ -582,15 +582,15 @@ export const Journal: React.FC = () => {
         <div className="lg:col-span-2 space-y-12">
           {(journalView === 'workouts') && <WorkoutHistory />}
 
-          <div hidden={journalView !== 'measurements'} className="pt-8 border-t border-zinc-100 dark:border-zinc-800">
-            <h3 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight mb-8 flex items-center gap-3">
-              <span className="w-2 h-6 bg-teal-500 rounded-full"></span>
+          <div hidden={journalView !== 'measurements'} className="pt-8 border-t border-zinc-100 surface-border dark:border-zinc-800 surface-border">
+            <h3 className="text-xl font-black text-zinc-900 surface-ink dark:text-white uppercase tracking-tight mb-8 flex items-center gap-3">
+              <span className="w-2 h-6 bg-teal-500 surface-accent rounded-full"></span>
               {t('journal_body_metrics')}
             </h3>
             <div className="space-y-6">
               {entries.length === 0 ? (
-                <div className="text-zinc-300 dark:text-zinc-200 text-center py-32 border-2 border-dashed border-zinc-100 dark:border-zinc-800 rounded-[3rem] bg-zinc-50/50 dark:bg-zinc-900/10">
-                  <div className="text-[10px] font-black uppercase tracking-[0.4em] mb-2 text-zinc-200 dark:text-zinc-100">{t('journal_no_entries')}</div>
+                <div className="text-zinc-300 surface-ink dark:text-zinc-200 surface-ink text-center py-32 border-2 border-dashed border-zinc-100 surface-border dark:border-zinc-800 surface-border rounded-[3rem] surface-rounded bg-zinc-50/50 surface-paper dark:bg-zinc-900/10 surface-paper">
+                  <div className="text-[10px] font-black uppercase tracking-[0.4em] mb-2 text-zinc-200 surface-ink dark:text-zinc-100 surface-ink">{t('journal_no_entries')}</div>
                   <p className="text-xs font-bold px-10">{t('journal_start_tracking')}</p>
                 </div>
               ) : (
@@ -598,14 +598,14 @@ export const Journal: React.FC = () => {
                   <div
                     key={entry.id}
                     onClick={() => handleSelectEntry(entry)}
-                    className={`p-8 rounded-[2.5rem] border transition-all duration-500 cursor-pointer group relative shadow-sm ${editingId === entry.id
-                      ? 'border-teal-500 bg-teal-500/5 shadow-teal-500/10'
-                      : 'border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900/30 hover:bg-white dark:hover:bg-zinc-900 hover:border-zinc-200 dark:hover:border-zinc-700 hover:shadow-md'
+                    className={`p-8 rounded-[2.5rem] surface-rounded border transition-all duration-500 cursor-pointer group relative shadow-sm surface-flat ${editingId === entry.id
+                      ? 'border-teal-500 bg-teal-500/5 surface-accent shadow-teal-500/10 surface-flat'
+                      : 'border-zinc-100 surface-border dark:border-zinc-800 surface-border bg-white dark:bg-zinc-900/30 surface-paper hover:bg-white dark:hover:bg-zinc-900 surface-paper hover:border-zinc-200 surface-border dark:hover:border-zinc-700 surface-border hover:shadow-md surface-flat'
                       }`}
                   >
                     <button
                       onClick={(e) => handleDeleteEntry(e, entry.id)}
-                      className="absolute top-1 right-4 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/80 text-zinc-400 hover:bg-rose-500 hover:text-white md:opacity-0 group-hover:opacity-100 opacity-100 transition-all z-10 shadow-sm border border-zinc-100 dark:border-zinc-700 backdrop-blur-sm"
+                      className="absolute top-1 right-4 p-3 rounded-2xl surface-rounded bg-zinc-50 surface-paper dark:bg-zinc-800/80 surface-paper text-zinc-400 surface-muted surface-ink hover:bg-rose-500 hover:text-white md:opacity-0 group-hover:opacity-100 opacity-100 transition-all z-10 shadow-sm surface-flat border border-zinc-100 surface-border dark:border-zinc-700 surface-border backdrop-blur-sm"
                       style={{ WebkitBackdropFilter: 'blur(8px)' }}
                       title="Delete entry"
                     >
@@ -616,7 +616,7 @@ export const Journal: React.FC = () => {
 
                     <button
                       onClick={(e) => { e.stopPropagation(); handleShareEntry(entry); }}
-                      className="absolute top-1 right-16 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/80 text-zinc-400 hover:bg-teal-500 hover:text-white md:opacity-0 group-hover:opacity-100 opacity-100 transition-all z-10 shadow-sm border border-zinc-100 dark:border-zinc-700 backdrop-blur-sm"
+                      className="absolute top-1 right-16 p-3 rounded-2xl surface-rounded bg-zinc-50 surface-paper dark:bg-zinc-800/80 surface-paper text-zinc-400 surface-muted surface-ink hover:bg-teal-500 surface-accent hover:text-white md:opacity-0 group-hover:opacity-100 opacity-100 transition-all z-10 shadow-sm surface-flat border border-zinc-100 surface-border dark:border-zinc-700 surface-border backdrop-blur-sm"
                       style={{ WebkitBackdropFilter: 'blur(8px)' }}
                       title="Share entry"
                     >
@@ -625,27 +625,27 @@ export const Journal: React.FC = () => {
                       </svg>
                     </button>
 
-                    <div className="flex justify-between items-center mb-6 border-b border-zinc-50 dark:border-zinc-800 pb-4">
-                      <span className="text-teal-600 dark:text-teal-400 font-black text-xs uppercase tracking-widest">{entry.date}</span>
-                      {entry.weight && <span className="text-zinc-900 dark:text-white font-black text-xl font-mono tracking-tighter">{entry.weight} <span className="text-[10px] text-zinc-200 dark:text-zinc-300">KG</span></span>}
+                    <div className="flex justify-between items-center mb-6 border-b border-zinc-50 surface-border dark:border-zinc-800 surface-border pb-4">
+                      <span className="text-teal-600 surface-green dark:text-teal-400 surface-green font-black text-xs uppercase tracking-widest">{entry.date}</span>
+                      {entry.weight && <span className="text-zinc-900 surface-ink dark:text-white font-black text-xl font-mono tracking-tighter">{entry.weight} <span className="text-[10px] text-zinc-200 surface-ink dark:text-zinc-300 surface-ink">KG</span></span>}
                     </div>
                     {<button className="web-secondary" onClick={event => { event.stopPropagation(); handleSelectEntry(entry); }}>{t('journal_edit_entry')}</button>}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-xs text-zinc-300 dark:text-zinc-200">
-                      {entry.chest && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">{t('journal_chest')}</span> <span className="text-zinc-900 dark:text-zinc-200 font-bold">{entry.chest} cm</span></div>}
-                      {entry.waist && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">{t('journal_waist')}</span> <span className="text-zinc-900 dark:text-zinc-200 font-bold">{entry.waist} cm</span></div>}
-                      {entry.biceps_right && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">{t('journal_arms')}</span> <span className="text-zinc-900 dark:text-zinc-200 font-bold">{entry.biceps_right} cm</span></div>}
-                      {entry.thigh_right && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">{t('journal_legs')}</span> <span className="text-zinc-900 dark:text-zinc-200 font-bold">{entry.thigh_right} cm</span></div>}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-xs text-zinc-300 surface-ink dark:text-zinc-200 surface-ink">
+                      {entry.chest && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400 surface-muted surface-ink">{t('journal_chest')}</span> <span className="text-zinc-900 surface-ink dark:text-zinc-200 surface-ink font-bold">{entry.chest} cm</span></div>}
+                      {entry.waist && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400 surface-muted surface-ink">{t('journal_waist')}</span> <span className="text-zinc-900 surface-ink dark:text-zinc-200 surface-ink font-bold">{entry.waist} cm</span></div>}
+                      {entry.biceps_right && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400 surface-muted surface-ink">{t('journal_arms')}</span> <span className="text-zinc-900 surface-ink dark:text-zinc-200 surface-ink font-bold">{entry.biceps_right} cm</span></div>}
+                      {entry.thigh_right && <div className="flex flex-col gap-1"><span className="text-[8px] font-black uppercase tracking-widest text-zinc-400 surface-muted surface-ink">{t('journal_legs')}</span> <span className="text-zinc-900 surface-ink dark:text-zinc-200 surface-ink font-bold">{entry.thigh_right} cm</span></div>}
 
                       {entry.customMeasurements?.map(c => (
                         <div key={c.id} className="flex flex-col gap-1">
-                          <span className="text-[8px] font-black uppercase tracking-widest text-teal-600/50 dark:text-teal-500/50">{c.name}</span>
-                          <span className="text-teal-600 dark:text-teal-400 font-bold">{c.value} {c.unit}</span>
+                          <span className="text-[8px] font-black uppercase tracking-widest text-teal-600/50 surface-green dark:text-teal-500/50 surface-green">{c.name}</span>
+                          <span className="text-teal-600 surface-green dark:text-teal-400 surface-green font-bold">{c.value} {c.unit}</span>
                         </div>
                       ))}
                     </div>
                     {editingId === entry.id && (
-                      <div className="mt-6 flex items-center justify-center gap-3 text-[9px] text-teal-600 dark:text-teal-400 font-black uppercase tracking-[0.4em] bg-teal-500/5 py-2 rounded-xl">
-                        <div className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse"></div>
+                      <div className="mt-6 flex items-center justify-center gap-3 text-[9px] text-teal-600 surface-green dark:text-teal-400 surface-green font-black uppercase tracking-[0.4em] bg-teal-500/5 surface-accent py-2 rounded-xl">
+                        <div className="w-1.5 h-1.5 rounded-full bg-teal-500 surface-accent animate-pulse"></div>
                         {t('journal_currently_editing')}
                       </div>
                     )}
@@ -683,9 +683,9 @@ export const Journal: React.FC = () => {
 
       {/* Save Template Modal */}
       {showSaveTemplateModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowSaveTemplateModal(false)}>
-          <div className="bg-zinc-950 border border-zinc-800 rounded-[3rem] p-8 max-w-md w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-6">
+        <div className="fixed inset-0 bg-black/60 surface-canvas backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowSaveTemplateModal(false)}>
+          <div className="bg-zinc-950 surface-paper border border-zinc-800 surface-border rounded-[3rem] surface-rounded p-8 max-w-md w-full shadow-2xl surface-flat" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-2xl font-black text-white surface-ink uppercase tracking-tight mb-6">
               {t('tracker_save_template')}
             </h3>
             <input
@@ -693,20 +693,20 @@ export const Journal: React.FC = () => {
               value={templateName}
               onChange={(e) => setTemplateName(e.target.value)}
               placeholder={t('tracker_template_name')}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white placeholder-zinc-600 outline-none focus:border-teal-500 transition-colors mb-6"
+              className="w-full bg-zinc-900 surface-paper border border-zinc-800 surface-border rounded-2xl surface-rounded px-6 py-4 text-white surface-ink placeholder-zinc-600 outline-none focus:border-teal-500 transition-colors mb-6"
               autoFocus
             />
             <div className="flex gap-3">
               <button
                 onClick={() => setShowSaveTemplateModal(false)}
-                className="flex-1 py-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-zinc-400 hover:text-white font-black uppercase tracking-widest transition-colors"
+                className="flex-1 py-4 bg-zinc-900 surface-paper border border-zinc-800 surface-border rounded-2xl surface-rounded text-zinc-400 surface-muted surface-ink hover:text-white font-black uppercase tracking-widest transition-colors"
               >
                 {t('tracker_cancel')}
               </button>
               <button
                 onClick={handleSaveAsTemplate}
                 disabled={!templateName.trim()}
-                className="flex-1 py-4 bg-teal-500 hover:bg-teal-600 disabled:bg-zinc-800 disabled:text-zinc-600 text-white font-black uppercase tracking-widest rounded-2xl transition-colors"
+                className="flex-1 py-4 bg-teal-500 surface-accent hover:bg-teal-600 surface-accent disabled:bg-zinc-800 surface-paper disabled:text-zinc-600 surface-ink text-white surface-ink font-black uppercase tracking-widest rounded-2xl surface-rounded transition-colors"
               >
                 {t('save')}
               </button>
@@ -719,7 +719,7 @@ export const Journal: React.FC = () => {
       <AnimatePresence>
         {shareFeedback && (
           <div className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[300] pointer-events-none">
-            <div className="bg-teal-500 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-2xl shadow-teal-500/40 animate-in fade-in slide-in-from-bottom-4">
+            <div className="bg-teal-500 surface-accent text-white surface-ink px-8 py-4 rounded-2xl surface-rounded font-black uppercase tracking-widest text-[10px] shadow-2xl surface-flat shadow-teal-500/40 surface-flat animate-in fade-in slide-in-from-bottom-4">
               {t('save')}!
             </div>
           </div>
@@ -771,14 +771,14 @@ const VolumeChart = ({ history, t, selectedMuscle, onMuscleChange, language }: {
   const pathData = `M ${points.map(p => `${p.x},${p.y}`).join(' L ')}`;
 
   return (
-    <Card className="p-8 bg-zinc-900/40 border-zinc-800 rounded-[2.5rem] shadow-sm mb-12 backdrop-blur-xl" style={{ WebkitBackdropFilter: 'blur(24px)' }}>
+    <Card className="p-8 bg-zinc-900/40 surface-paper border-zinc-800 surface-border rounded-[2.5rem] surface-rounded shadow-sm surface-flat mb-12 backdrop-blur-xl" style={{ WebkitBackdropFilter: 'blur(24px)' }}>
       <div className="flex flex-col sm:flex-row gap-3 justify-between sm:items-center min-w-0 mb-8">
-        <h3 className="text-[10px] font-black text-zinc-300 uppercase tracking-[0.3em]">{trackedExercise ? t('journal_load_progression') : t('journal_volume_progression')}</h3>
+        <h3 className="text-[10px] font-black text-zinc-300 surface-ink uppercase tracking-[0.3em]">{trackedExercise ? t('journal_load_progression') : t('journal_volume_progression')}</h3>
         <select
           aria-label={t('journal_volume_progression')}
           value={selectedMuscle}
           onChange={(e) => onMuscleChange(e.target.value)}
-          className="w-full sm:w-auto min-w-0 max-w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest text-teal-400 outline-none focus:border-teal-500 transition-all"
+          className="w-full sm:w-auto min-w-0 max-w-full bg-black/40 surface-canvas border border-zinc-800 surface-border rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest text-teal-400 surface-green outline-none focus:border-teal-500 transition-all"
         >
           {muscleGroups.map(m => (
             <option key={m} value={m}>{m === 'Total' ? t('journal_overall_volume') : getLocalizedMuscleName(m, language)}</option>
@@ -790,7 +790,7 @@ const VolumeChart = ({ history, t, selectedMuscle, onMuscleChange, language }: {
       </div>
 
       <div className="relative w-full overflow-hidden">
-        <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-32 drop-shadow-[0_0_8px_rgba(20,184,166,0.2)]">
+        <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-32 drop-shadow-[0_0_8px_rgba(20,184,166,0.2)] surface-flat">
           {[0, 0.5, 1].map(v => (
             <line
               key={v}
@@ -823,7 +823,7 @@ const VolumeChart = ({ history, t, selectedMuscle, onMuscleChange, language }: {
             />
           ))}
         </svg>
-        <div className="flex justify-between mt-6 text-[10px] text-zinc-300 font-black uppercase tracking-widest opacity-70">
+        <div className="flex justify-between mt-6 text-[10px] text-zinc-300 surface-ink font-black uppercase tracking-widest opacity-70">
           <span>{data[0] && new Date(data[0].date).toLocaleDateString(language)}</span>
           <span>{data.length > 1 && new Date(data[data.length - 1].date).toLocaleDateString(language)}</span>
         </div>
@@ -834,7 +834,7 @@ const VolumeChart = ({ history, t, selectedMuscle, onMuscleChange, language }: {
 
 const InputField = ({ label, field, formData, handleChange }: { label: string, field: Exclude<keyof JournalEntry, 'id' | 'date' | 'notes' | 'isDemo' | 'customMeasurements'>, formData: Partial<JournalEntry>, handleChange: (field: keyof JournalEntry, value: string) => void }) => (
   <div>
-    <label className="text-xs text-zinc-200 block mb-1">{label}</label>
+    <label className="text-xs text-zinc-200 surface-ink block mb-1">{label}</label>
     <input
       aria-label={label}
       type="number"
@@ -842,7 +842,7 @@ const InputField = ({ label, field, formData, handleChange }: { label: string, f
       value={formData[field] || ''}
       onChange={e => handleChange(field, e.target.value)}
       onClick={(e) => e.stopPropagation()}
-      className="w-full bg-black border border-zinc-700 rounded px-3 py-2 text-white focus:border-teal-500 outline-none"
+      className="w-full bg-black surface-canvas border border-zinc-700 surface-border rounded px-3 py-2 text-white surface-ink focus:border-teal-500 outline-none"
     />
   </div>
 );

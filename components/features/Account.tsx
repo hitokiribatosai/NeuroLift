@@ -30,11 +30,11 @@ export function Account() {
   finally { setBusy(false); setPassword(''); }
  }
  const flow = link.get('flow');
- const fieldClass = 'w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-3';
- const buttonClass = 'rounded-xl border border-zinc-300 dark:border-zinc-700 px-4 py-3 disabled:opacity-50';
+ const fieldClass = 'w-full rounded-xl border border-zinc-300 surface-border dark:border-zinc-700 surface-border bg-white dark:bg-zinc-900 surface-paper p-3';
+ const buttonClass = 'rounded-xl border border-zinc-300 surface-border dark:border-zinc-700 surface-border px-4 py-3 disabled:opacity-50';
  return <section className="mx-auto max-w-xl px-6 py-8 space-y-5">
   <h1 className="text-3xl font-bold">{c.account}</h1>
-  <p className="text-sm text-zinc-500">{c.cache}</p>
+  <p className="text-sm text-zinc-500 surface-muted surface-ink">{c.cache}</p>
   {(flow === 'verify' || flow === 'reset') && <form className="space-y-3" onSubmit={e => { e.preventDefault(); void run(async () => {
    const result = await authService.confirmLink(flow, link.get('uid') || '', link.get('token') || '', password);
    window.history.replaceState(null, '', '/#account'); setLink(new URLSearchParams()); return result;
@@ -66,7 +66,7 @@ export function Account() {
   });}}>
    <label className="block">{c.email}<input className={fieldClass} type="email" required autoComplete="email" maxLength={254} value={email} onChange={e => setEmail(e.target.value)} /></label>
    <label className="block">{c.password}<input className={fieldClass} type="password" required minLength={mode === 'signup' ? 10 : 1} maxLength={256} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} value={password} onChange={e => setPassword(e.target.value)} /></label>
-   <p className="text-sm text-zinc-500">{c.notice}</p>
+   <p className="text-sm text-zinc-500 surface-muted surface-ink">{c.notice}</p>
    <div className="flex flex-wrap gap-3">
     <button className={`${buttonClass} account-primary`} disabled={busy}>{mode === 'login' ? c.login : c.signup}</button>
     <button className={buttonClass} type="button" onClick={() => setMode(m => m === 'login' ? 'signup' : 'login')}>{mode === 'login' ? c.signup : c.login}</button>
@@ -77,7 +77,7 @@ export function Account() {
   <p role="status" className="text-sm whitespace-pre-wrap">{message}</p>
   <button className={buttonClass} onClick={() => void run(async () => {if (!(await DataManager.exportData())) throw new Error('Export failed.');})}>{c.export}</button>
   {!user && scope() !== 'guest' && <button className={buttonClass} onClick={() => changeScope('guest')}>{c.guest}</button>}
-  <p className="text-xs text-zinc-500">{c.credentials}</p>
+  <p className="text-xs text-zinc-500 surface-muted surface-ink">{c.credentials}</p>
   <p className="text-sm">Guest data remains separate. To move it to an account, export it while in guest mode, then sign in and import from Settings.</p>
  </section>;
 }

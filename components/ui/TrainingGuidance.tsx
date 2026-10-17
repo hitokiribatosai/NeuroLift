@@ -29,9 +29,9 @@ const copy = {
 export function TrainingGuidance() {
   const { language } = useLanguage();
   const content = copy[language];
-  return <section className="mx-auto max-w-5xl px-6 py-8 text-zinc-800 dark:text-zinc-200">
+  return <section className="mx-auto max-w-5xl px-6 py-8 text-zinc-800 surface-ink dark:text-zinc-200 surface-ink">
     <h2 className="text-xl font-bold mb-4">{content.title}</h2>
     <ul className="list-disc ps-5 space-y-3 text-sm leading-relaxed">{content.points.map(p => <li key={p}>{p}</li>)}</ul>
-    <div className="flex flex-wrap gap-4 mt-5">{TRAINING_SOURCES.map(s => <a className="text-teal-600 dark:text-teal-400 underline" key={s.url} href={s.url} target="_blank" rel="noreferrer">{s.name}</a>)}</div>
+    <div className="flex flex-wrap gap-4 mt-5">{TRAINING_SOURCES.map(s => <a className="text-teal-600 surface-green dark:text-teal-400 surface-green underline" key={s.url} href={s.url} target="_blank" rel="noreferrer">{s.name}</a>)}</div>
   </section>;
 }

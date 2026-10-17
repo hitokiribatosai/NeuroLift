@@ -80,10 +80,10 @@ export const Tooltip: React.FC<TooltipProps> = ({
           }}
           className="w-72"
         >
-          <div className="relative bg-teal-500 border border-teal-400 rounded-2xl p-4 shadow-2xl shadow-teal-500/30">
+          <div className="relative bg-teal-500 surface-accent border border-teal-400 rounded-2xl surface-rounded p-4 shadow-2xl surface-flat shadow-teal-500/30 surface-flat">
             {/* Arrow */}
             <div
-              className={`absolute w-3 h-3 bg-teal-500 border-teal-400 transform rotate-45 ${
+              className={`absolute w-3 h-3 bg-teal-500 surface-accent border-teal-400 transform rotate-45 ${
                 position === 'top' ? 'bottom-[-6px] left-1/2 -translate-x-1/2 border-b border-r' :
                 position === 'bottom' ? 'top-[-6px] left-1/2 -translate-x-1/2 border-t border-l' :
                 position === 'left' ? 'right-[-6px] top-1/2 -translate-y-1/2 border-t border-r' :
@@ -91,7 +91,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
               }`}
             />
 
-            <div className="relative z-10 text-white">
+            <div className="relative z-10 text-white surface-ink">
               {children}
             </div>
 

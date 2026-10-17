@@ -76,19 +76,19 @@ export function TrackerSelection({
     <div
       className={`web-workout-picker mx-auto max-w-6xl px-5 pb-32 pt-5 sm:px-8 lg:pt-10`}
     >
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-zinc-200 pb-5 dark:border-zinc-800">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-zinc-200 surface-border pb-5 dark:border-zinc-800 surface-border">
         <div>
-          <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-teal-700 dark:text-teal-300">
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-teal-700 surface-green dark:text-teal-300 surface-green">
             {t("tracker_exercises_step")}
           </p>
-          <h2 className="mb-2 text-3xl font-black tracking-tight text-zinc-950 dark:text-white">
+          <h2 className="mb-2 text-3xl font-black tracking-tight text-zinc-950 surface-ink dark:text-white">
             {t("tracker_add_to_workout")}
           </h2>
           <div className="flex flex-wrap gap-2">
             {selectedMuscles.map((m) => (
               <span
                 key={m}
-                className="rounded-lg bg-teal-500/10 px-2.5 py-1 text-xs font-bold text-teal-800 dark:text-teal-200"
+                className="rounded-lg bg-teal-500/10 surface-accent px-2.5 py-1 text-xs font-bold text-teal-800 surface-green dark:text-teal-200 surface-green"
               >
                 {getLocalizedMuscleName(m, language)}
               </span>
@@ -101,7 +101,7 @@ export function TrackerSelection({
           <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <svg
-                className="h-5 w-5 text-zinc-500 group-focus-within:text-teal-500 transition-colors"
+                className="h-5 w-5 text-zinc-500 surface-muted surface-ink group-focus-within:text-teal-500 surface-green transition-colors"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -121,7 +121,7 @@ export function TrackerSelection({
               placeholder={
                 t("planner_search_placeholder") || "Search exercises..."
               }
-              className="block w-full rounded-xl border border-zinc-300 bg-white py-3 pl-11 pr-4 text-sm text-zinc-950 placeholder-zinc-500 transition-all focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+              className="block w-full rounded-xl border border-zinc-300 surface-border bg-white py-3 pl-11 pr-4 text-sm text-zinc-950 surface-ink placeholder-zinc-500 transition-all focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/50 dark:border-zinc-700 surface-border dark:bg-zinc-900 surface-paper dark:text-white"
             />
           </div>
         </div>
@@ -129,10 +129,10 @@ export function TrackerSelection({
         <div className="order-3 flex w-full flex-wrap gap-2">
           <button
             onClick={() => setPhase("setup")}
-            className="text-xs text-zinc-400 hover:text-white uppercase tracking-widest font-black flex items-center gap-2 transition-colors"
+            className="text-xs text-zinc-400 surface-muted surface-ink hover:text-white uppercase tracking-widest font-black flex items-center gap-2 transition-colors"
           >
             <svg
-              className="w-4 h-4 text-teal-700 dark:text-teal-300"
+              className="w-4 h-4 text-teal-700 surface-green dark:text-teal-300 surface-green"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -152,12 +152,12 @@ export function TrackerSelection({
             disabled={selectedExercises.length === 0}
             className={`text-xs uppercase tracking-widest font-black flex items-center gap-2 transition-all px-3 py-1.5 rounded-xl border ${
               shareFeedback
-                ? "bg-teal-500/20 border-teal-500 text-teal-400"
-                : "text-zinc-500 hover:text-white border-zinc-800 hover:border-teal-500/50"
+                ? "bg-teal-500/20 surface-accent border-teal-500 text-teal-400 surface-green"
+                : "text-zinc-500 surface-muted surface-ink hover:text-white border-zinc-800 surface-border hover:border-teal-500/50"
             }`}
           >
             <svg
-              className={`w-4 h-4 ${shareFeedback ? "text-teal-500" : "text-zinc-500"}`}
+              className={`w-4 h-4 ${shareFeedback ? "text-teal-500 surface-green" : "text-zinc-500 surface-muted surface-ink"}`}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -184,10 +184,10 @@ export function TrackerSelection({
           {templates.length > 0 && (
             <button
               onClick={() => setShowLoadTemplateModal(true)}
-              className="text-xs text-zinc-400 hover:text-white uppercase tracking-widest font-black flex items-center gap-2 transition-colors px-3 py-1.5 rounded-xl border border-zinc-800 hover:border-teal-500/50"
+              className="text-xs text-zinc-400 surface-muted surface-ink hover:text-white uppercase tracking-widest font-black flex items-center gap-2 transition-colors px-3 py-1.5 rounded-xl border border-zinc-800 surface-border hover:border-teal-500/50"
             >
               <svg
-                className="w-4 h-4 text-teal-500"
+                className="w-4 h-4 text-teal-500 surface-green"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -206,7 +206,7 @@ export function TrackerSelection({
           {selectedExercises.length > 0 && (
             <button
               onClick={() => setShowSaveTemplateModal(true)}
-              className="text-xs text-teal-400 hover:text-teal-300 uppercase tracking-widest font-black flex items-center gap-2 transition-colors px-3 py-1.5 rounded-xl border border-teal-500/20 hover:border-teal-500/50 bg-teal-500/5"
+              className="text-xs text-teal-400 surface-green hover:text-teal-300 surface-green uppercase tracking-widest font-black flex items-center gap-2 transition-colors px-3 py-1.5 rounded-xl border border-teal-500/20 hover:border-teal-500/50 bg-teal-500/5 surface-accent"
             >
               <svg
                 className="w-4 h-4"
@@ -227,7 +227,7 @@ export function TrackerSelection({
 
           <button
             onClick={() => setShowResetSessionConfirm(true)}
-            className="text-xs text-zinc-400 hover:text-rose-500 uppercase tracking-widest font-black flex items-center gap-2 transition-colors px-3 py-1.5 rounded-xl border border-zinc-800 hover:border-rose-500/50"
+            className="text-xs text-zinc-400 surface-muted surface-ink hover:text-rose-500 uppercase tracking-widest font-black flex items-center gap-2 transition-colors px-3 py-1.5 rounded-xl border border-zinc-800 surface-border hover:border-rose-500/50"
           >
             <svg
               className="w-4 h-4"
@@ -257,7 +257,7 @@ export function TrackerSelection({
         </button>
       }
       <div className="web-picker-grid mb-10 grid gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
-        <div className="web-picker-groups h-fit rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950/80 sm:p-5 lg:sticky lg:top-24">
+        <div className="web-picker-groups h-fit rounded-2xl surface-rounded border border-zinc-200 surface-border bg-white p-4 dark:border-zinc-800 surface-border dark:bg-zinc-950/80 surface-paper sm:p-5 lg:sticky lg:top-24">
           <ExerciseGroupSelector
             database={exercisesByMuscle}
             stacked
@@ -326,9 +326,9 @@ export function TrackerSelection({
               if (allMatches.length === 0) {
                 return (
                   <div className="text-center py-20">
-                    <div className="w-16 h-16 bg-zinc-900 rounded-full mx-auto flex items-center justify-center mb-6">
+                    <div className="w-16 h-16 bg-zinc-900 surface-paper rounded-full mx-auto flex items-center justify-center mb-6">
                       <svg
-                        className="w-8 h-8 text-zinc-600"
+                        className="w-8 h-8 text-zinc-600 surface-muted surface-ink"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -341,10 +341,10 @@ export function TrackerSelection({
                         />
                       </svg>
                     </div>
-                    <h3 className="text-zinc-400 font-bold">
+                    <h3 className="text-zinc-400 surface-muted surface-ink font-bold">
                       No exercises found
                     </h3>
-                    <p className="text-zinc-600 text-sm mt-2">
+                    <p className="text-zinc-600 surface-muted surface-ink text-sm mt-2">
                       Try searching for a different name
                     </p>
                   </div>
@@ -364,12 +364,12 @@ export function TrackerSelection({
                               : "rgba(24,24,27,0.6)",
                           color: isLight ? "#18181b" : "#ffffff",
                         }}
-                        className={`flex items-center gap-4 p-5 border-2 rounded-2xl cursor-pointer transition-all duration-300 focus-within:outline focus-within:outline-2 focus-within:outline-teal-400 ${
+                        className={`flex items-center gap-4 p-5 border-2 rounded-2xl surface-rounded cursor-pointer transition-all duration-300 focus-within:outline focus-within:outline-2 focus-within:outline-teal-400 ${
                           selectedExercises.includes(name)
-                            ? "border-teal-500 shadow-md"
+                            ? "border-teal-500 shadow-md surface-flat"
                             : isLight
-                              ? "border-zinc-200 hover:border-zinc-300"
-                              : "border-zinc-800 hover:border-zinc-700"
+                              ? "border-zinc-200 surface-border hover:border-zinc-300 surface-border"
+                              : "border-zinc-800 surface-border hover:border-zinc-700 surface-border"
                         }`}
                       >
                         <input
@@ -383,10 +383,10 @@ export function TrackerSelection({
                         <div
                           className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
                             selectedExercises.includes(name)
-                              ? "bg-teal-500 border-teal-500 text-white shadow-lg shadow-teal-500/20"
+                              ? "bg-teal-500 surface-accent border-teal-500 text-white surface-ink shadow-lg surface-flat shadow-teal-500/20 surface-flat"
                               : isLight
-                                ? "border-zinc-300"
-                                : "border-zinc-700"
+                                ? "border-zinc-300 surface-border"
+                                : "border-zinc-700 surface-border"
                           }`}
                         >
                           {selectedExercises.includes(name) && (
@@ -409,7 +409,7 @@ export function TrackerSelection({
                           <span className="block text-sm font-black tracking-wide uppercase pr-10 rtl:pr-0 rtl:pl-10">
                             {getExerciseTranslation(name, language)}
                           </span>
-                          <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
+                          <span className="text-[10px] text-zinc-500 surface-muted surface-ink font-bold uppercase tracking-widest">
                             {getLocalizedMuscleName(muscle, language)} ·{" "}
                             {categoryMeta[category]?.icon}{" "}
                             {categoryMeta[category]
@@ -425,7 +425,7 @@ export function TrackerSelection({
                           e.stopPropagation();
                           setTutorialExercise(name);
                         }}
-                        className="absolute right-4 rtl:right-auto rtl:left-4 top-1/2 -translate-y-1/2 p-2 text-zinc-600 hover:text-teal-400 opacity-100 transition-all z-10"
+                        className="absolute right-4 rtl:right-auto rtl:left-4 top-1/2 -translate-y-1/2 p-2 text-zinc-600 surface-muted surface-ink hover:text-teal-400 surface-green opacity-100 transition-all z-10"
                         title={t("modal_watch_video")}
                       >
                         <svg
@@ -452,8 +452,8 @@ export function TrackerSelection({
           [currentPickerMuscle].map((majorMuscle) => (
             <div key={majorMuscle} className="space-y-6">
               {/* Show Major Group Header */}
-              <h3 className="flex items-center gap-3 text-2xl font-black text-zinc-950 dark:text-white">
-                <span className="h-8 w-1 rounded-full bg-teal-500"></span>
+              <h3 className="flex items-center gap-3 text-2xl font-black text-zinc-950 surface-ink dark:text-white">
+                <span className="h-8 w-1 rounded-full bg-teal-500 surface-accent"></span>
                 {getLocalizedMuscleName(majorMuscle, language)}
               </h3>
 
@@ -490,12 +490,12 @@ export function TrackerSelection({
                               : "rgba(24,24,27,0.6)",
                           color: isLight ? "#18181b" : "#ffffff",
                         }}
-                        className={`flex items-center gap-4 p-5 border-2 rounded-2xl cursor-pointer transition-all duration-300 focus-within:outline focus-within:outline-2 focus-within:outline-teal-400 ${
+                        className={`flex items-center gap-4 p-5 border-2 rounded-2xl surface-rounded cursor-pointer transition-all duration-300 focus-within:outline focus-within:outline-2 focus-within:outline-teal-400 ${
                           selectedExercises.includes(ex)
-                            ? "border-teal-500 shadow-md"
+                            ? "border-teal-500 shadow-md surface-flat"
                             : isLight
-                              ? "border-zinc-200 hover:border-zinc-300"
-                              : "border-zinc-800 hover:border-zinc-700"
+                              ? "border-zinc-200 surface-border hover:border-zinc-300 surface-border"
+                              : "border-zinc-800 surface-border hover:border-zinc-700 surface-border"
                         }`}
                       >
                         <input
@@ -507,10 +507,10 @@ export function TrackerSelection({
                         <div
                           className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
                             selectedExercises.includes(ex)
-                              ? "bg-teal-500 border-teal-500 text-white shadow-lg shadow-teal-500/20"
+                              ? "bg-teal-500 surface-accent border-teal-500 text-white surface-ink shadow-lg surface-flat shadow-teal-500/20 surface-flat"
                               : isLight
-                                ? "border-zinc-300"
-                                : "border-zinc-700"
+                                ? "border-zinc-300 surface-border"
+                                : "border-zinc-700 surface-border"
                           }`}
                         >
                           {selectedExercises.includes(ex) && (
@@ -542,7 +542,7 @@ export function TrackerSelection({
                           e.stopPropagation();
                           setTutorialExercise(ex);
                         }}
-                        className="absolute right-4 rtl:right-auto rtl:left-4 top-1/2 -translate-y-1/2 p-2 text-zinc-600 hover:text-teal-400 opacity-100 transition-all z-10"
+                        className="absolute right-4 rtl:right-auto rtl:left-4 top-1/2 -translate-y-1/2 p-2 text-zinc-600 surface-muted surface-ink hover:text-teal-400 surface-green opacity-100 transition-all z-10"
                         title={t("modal_watch_video")}
                       >
                         <svg
@@ -567,8 +567,8 @@ export function TrackerSelection({
                       key={subGroup}
                       className="animate-in fade-in slide-in-from-bottom-4 duration-500"
                     >
-                      <h4 className="mb-5 flex items-center gap-3 text-lg font-black text-zinc-950 dark:text-zinc-200">
-                        <span className="w-1.5 h-6 bg-teal-500/50 rounded-full"></span>
+                      <h4 className="mb-5 flex items-center gap-3 text-lg font-black text-zinc-950 surface-ink dark:text-zinc-200 surface-ink">
+                        <span className="w-1.5 h-6 bg-teal-500/50 surface-accent rounded-full"></span>
                         {getLocalizedMuscleName(subGroup, language)}
                       </h4>
 
@@ -598,7 +598,7 @@ export function TrackerSelection({
                                       : "rgba(255,255,255,0.1)",
                                   }}
                                 ></div>
-                                <span className="text-zinc-600 font-medium">
+                                <span className="text-zinc-600 surface-muted surface-ink font-medium">
                                   {exercises.length}
                                 </span>
                               </h5>
@@ -645,9 +645,9 @@ export function TrackerSelection({
         }
       </div>
 
-      <div className="web-selection-actions sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-white/95 p-3 shadow-2xl backdrop-blur dark:border-zinc-700 dark:bg-zinc-950/95 md:bottom-6 md:p-4">
+      <div className="web-selection-actions sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 flex items-center justify-between gap-3 rounded-2xl surface-rounded border border-zinc-200 surface-border bg-white/95 p-3 shadow-2xl surface-flat backdrop-blur dark:border-zinc-700 surface-border dark:bg-zinc-950/95 surface-paper md:bottom-6 md:p-4">
         <div className="min-w-0">
-          <div className="text-xs font-black text-zinc-900 dark:text-white">
+          <div className="text-xs font-black text-zinc-900 surface-ink dark:text-white">
             {t("picker_selected_count")}: {selectedExercises.length}
           </div>
           {
@@ -658,7 +658,7 @@ export function TrackerSelection({
               {c("review")}
             </button>
           }
-          <div className="hidden max-w-[400px] truncate text-xs text-zinc-600 dark:text-zinc-400 md:block">
+          <div className="hidden max-w-[400px] truncate text-xs text-zinc-600 surface-muted surface-ink dark:text-zinc-400 surface-ink md:block">
             {selectedExercises.join(", ")}
           </div>
         </div>
@@ -666,7 +666,7 @@ export function TrackerSelection({
           {activeExercises.length > 0 && (
             <button
               onClick={() => setPhase("active")}
-              className="flex-1 md:flex-none px-8 py-5 text-xs font-black uppercase tracking-widest text-zinc-300 hover:text-white transition-colors border border-zinc-800 rounded-2xl"
+              className="flex-1 md:flex-none px-8 py-5 text-xs font-black uppercase tracking-widest text-zinc-300 surface-ink hover:text-white transition-colors border border-zinc-800 surface-border rounded-2xl surface-rounded"
             >
               {t("tracker_back")}
             </button>
@@ -674,7 +674,7 @@ export function TrackerSelection({
           <SpotlightButton
             onClick={handleStartWorkout}
             disabled={selectedExercises.length === 0}
-            className="flex-1 md:flex-none px-6 md:px-16 py-5 text-sm md:text-lg font-black uppercase tracking-widest shadow-lg shadow-teal-500/20 flex items-center justify-center !rounded-2xl"
+            className="flex-1 md:flex-none px-6 md:px-16 py-5 text-sm md:text-lg font-black uppercase tracking-widest shadow-lg surface-flat shadow-teal-500/20 surface-flat flex items-center justify-center !rounded-2xl surface-rounded"
           >
             {activeExercises.length > 0
               ? t("tracker_resume")

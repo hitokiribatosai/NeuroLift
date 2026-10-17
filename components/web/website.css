@@ -225,21 +225,22 @@ html.dark .website-redesign { --web-bg:#111a20; --web-paper:#1a262d; --web-ink:#
 .website-redesign .web-sources { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; padding-top: 35px; margin-top: 35px; border-top: 1px solid var(--web-line); }
 .website-redesign .web-sources h2 { font-size: 1.2rem; font-weight: 650; margin: 8px 0; }
 .website-redesign .web-sources a { display: flex; justify-content: space-between; gap: 15px; padding: 15px 0; font-size: .76rem; font-weight: 650; border-bottom: 1px solid var(--web-line); }
-/* Shared feature surfaces: retain the feature logic and apply the browser visual language. */
+/* Explicit shared surface roles. Keep priority over existing utility colors during
+   migration; new components should use these roles without competing color utilities. */
 .website-redesign:not(.web-modal-theme) .web-surface > div > div:not(.web-dashboard), .website-redesign:not(.web-modal-theme) .web-surface > div > section { padding: 12px 0 32px; max-width: 1400px; width: 100%; margin-inline: auto; }
-.website-redesign .web-surface [class*="bg-zinc-"], .website-redesign .web-settings-nav [class*="bg-zinc-"] { background-color: var(--web-paper) !important; }
-.website-redesign .web-surface [class*="bg-black"] { background-color: var(--web-bg) !important; }
-.website-redesign .web-surface [class*="border-zinc-"], .website-redesign .web-settings-nav [class*="border-zinc-"] { border-color: var(--web-line) !important; }
-.website-redesign .web-surface [class*="text-zinc-"], .website-redesign .web-surface .text-white, .website-redesign .web-settings-nav [class*="text-zinc-"], .website-redesign .web-settings-nav .text-white { color: var(--web-ink) !important; }
-.website-redesign .web-surface .text-zinc-400, .website-redesign .web-surface .text-zinc-500, .website-redesign .web-surface .text-zinc-600 { color: var(--web-muted) !important; }
-.website-redesign .web-surface [class*="text-teal-"], .website-redesign .web-settings-nav [class*="text-teal-"] { color: var(--web-green) !important; }
-.website-redesign .web-surface [class*="bg-teal-"], .website-redesign .web-settings-nav [class*="bg-teal-"] { background-color: var(--web-accent) !important; color: #17242a !important; }
+.website-redesign .web-surface .surface-paper, .website-redesign .web-settings-nav .surface-paper { background-color: var(--web-paper) !important; }
+.website-redesign .web-surface .surface-canvas { background-color: var(--web-bg) !important; }
+.website-redesign .web-surface .surface-border, .website-redesign .web-settings-nav .surface-border { border-color: var(--web-line) !important; }
+.website-redesign .web-surface .surface-ink, .website-redesign .web-settings-nav .surface-ink { color: var(--web-ink) !important; }
+.website-redesign .web-surface .surface-muted { color: var(--web-muted) !important; }
+.website-redesign .web-surface .surface-green, .website-redesign .web-settings-nav .surface-green { color: var(--web-green) !important; }
+.website-redesign .web-surface .surface-accent, .website-redesign .web-settings-nav .surface-accent { background-color: var(--web-accent) !important; color: #17242a !important; }
 #root .website-redesign :is(.web-surface, .web-settings-nav) :is([class~="border-teal-500"], [class~="border-teal-600"], [class~="border-teal-500/50"]) { border-color: #749d44 !important; }
-.website-redesign .web-surface [class*="bg-teal-"] *, .website-redesign .web-settings-nav [class*="bg-teal-"] * { color: inherit !important; }
+.website-redesign .web-surface .surface-accent *, .website-redesign .web-settings-nav .surface-accent * { color: inherit !important; }
 .website-redesign .web-surface h1 { color: var(--web-ink) !important; font-size: clamp(2rem, 3.5vw, 3.6rem); font-weight: 700; line-height: 1.1; letter-spacing: -.055em; text-transform: none; }
 .website-redesign .web-surface h2, .website-redesign .web-surface h3 { text-transform: none; letter-spacing: -.025em; }
-.website-redesign .web-surface [class*="shadow-"], .website-redesign .web-settings-nav [class*="shadow-"] { box-shadow: none !important; }
-.website-redesign .web-surface [class*="rounded-3xl"], .website-redesign .web-surface [class*="rounded-2xl"], .website-redesign .web-surface [class*="rounded-["] { border-radius: 12px; }
+.website-redesign .web-surface .surface-flat, .website-redesign .web-settings-nav .surface-flat { box-shadow: none !important; }
+.website-redesign .web-surface .surface-rounded { border-radius: 12px; }
 .website-redesign .web-surface input:not([type="checkbox"]), .website-redesign .web-surface select, .website-redesign .web-surface textarea { background: var(--web-paper) !important; color: var(--web-ink) !important; border: 1px solid var(--web-line); border-radius: 8px; }
 .website-redesign .web-surface input::placeholder, .website-redesign .web-surface textarea::placeholder { color: var(--web-muted) !important; }
 .website-redesign .web-surface .fixed.inset-0 { background: #101c25b8 !important; backdrop-filter: blur(6px); z-index: 100; }

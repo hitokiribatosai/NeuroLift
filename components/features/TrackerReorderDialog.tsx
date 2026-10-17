@@ -43,10 +43,10 @@ export function TrackerReorderDialog({
       onClose={() => setShowReorderModal(false)}
       label={t("tracker_reorder_title")}
     >
-      <div className="p-8 bg-zinc-950 border border-zinc-900 rounded-[3rem] max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
-        <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-6 flex items-center gap-3">
+      <div className="p-8 bg-zinc-950 surface-paper border border-zinc-900 surface-border rounded-[3rem] surface-rounded max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
+        <h3 className="text-2xl font-black text-white surface-ink uppercase tracking-tight mb-6 flex items-center gap-3">
           <svg
-            className="w-6 h-6 text-teal-500"
+            className="w-6 h-6 text-teal-500 surface-green"
             fill="currentColor"
             viewBox="0 0 24 24"
           >
@@ -82,10 +82,10 @@ export function TrackerReorderDialog({
               }
               label={`${c("drag")}: ${getExerciseTranslation(ex.name, language)}`}
             >
-              <span className="text-2xl font-black text-teal-500 w-8">
+              <span className="text-2xl font-black text-teal-500 surface-green w-8">
                 {idx + 1}
               </span>
-              <span className="flex-1 text-white font-bold">
+              <span className="flex-1 text-white surface-ink font-bold">
                 {getExerciseTranslation(ex.name, language)}
               </span>
               <div className="flex flex-col gap-1">
@@ -93,7 +93,7 @@ export function TrackerReorderDialog({
                   onClick={() => moveReorderExercise(idx, -1)}
                   aria-label={`${c("move_up")}: ${getExerciseTranslation(ex.name, language)}`}
                   disabled={idx === 0}
-                  className="p-3 bg-zinc-800 hover:bg-teal-500 text-zinc-400 hover:text-white disabled:opacity-30 disabled:hover:bg-zinc-800 disabled:hover:text-zinc-400 rounded-lg transition-colors"
+                  className="p-3 bg-zinc-800 surface-paper hover:bg-teal-500 surface-accent text-zinc-400 surface-muted surface-ink hover:text-white disabled:opacity-30 disabled:hover:bg-zinc-800 surface-paper disabled:hover:text-zinc-400 surface-ink rounded-lg transition-colors"
                 >
                   <svg
                     className="w-4 h-4"
@@ -113,7 +113,7 @@ export function TrackerReorderDialog({
                   onClick={() => moveReorderExercise(idx, 1)}
                   aria-label={`${c("move_down")}: ${getExerciseTranslation(ex.name, language)}`}
                   disabled={idx === tempReorderList.length - 1}
-                  className="p-3 bg-zinc-800 hover:bg-teal-500 text-zinc-400 hover:text-white disabled:opacity-30 disabled:hover:bg-zinc-800 disabled:hover:text-zinc-400 rounded-lg transition-colors"
+                  className="p-3 bg-zinc-800 surface-paper hover:bg-teal-500 surface-accent text-zinc-400 surface-muted surface-ink hover:text-white disabled:opacity-30 disabled:hover:bg-zinc-800 surface-paper disabled:hover:text-zinc-400 surface-ink rounded-lg transition-colors"
                 >
                   <svg
                     className="w-4 h-4"
@@ -147,7 +147,7 @@ export function TrackerReorderDialog({
         <div className="flex gap-3">
           <button
             onClick={() => setShowReorderModal(false)}
-            className="flex-1 py-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-zinc-400 hover:text-white font-black uppercase tracking-widest transition-colors text-xs"
+            className="flex-1 py-4 bg-zinc-900 surface-paper border border-zinc-800 surface-border rounded-2xl surface-rounded text-zinc-400 surface-muted surface-ink hover:text-white font-black uppercase tracking-widest transition-colors text-xs"
           >
             {t("confirm_cancel")}
           </button>
@@ -160,7 +160,7 @@ export function TrackerReorderDialog({
               );
               setShowReorderModal(false);
             }}
-            className="flex-1 py-4 bg-teal-500 hover:bg-teal-600 text-white font-black uppercase tracking-widest rounded-2xl transition-colors text-xs"
+            className="flex-1 py-4 bg-teal-500 surface-accent hover:bg-teal-600 surface-accent text-white surface-ink font-black uppercase tracking-widest rounded-2xl surface-rounded transition-colors text-xs"
           >
             {t("tracker_reorder_apply")}
           </button>

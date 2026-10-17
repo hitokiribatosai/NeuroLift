@@ -43,7 +43,7 @@ export function ReorderExercise({ exercise, selected, select, label, children }:
     onPointerDownCapture={select} data-exercise={exercise.name} data-moved={selected ? 'true' : undefined}
     data-dragging={dragging ? 'true' : undefined}
     transition={{ layout: { duration: reduced ? 0 : 0.2 } }}
-    className="web-reorder-item flex items-center gap-3 p-4 border rounded-2xl">
+    className="web-reorder-item flex items-center gap-3 p-4 border rounded-2xl surface-rounded">
     <button type="button" className="web-drag-handle" aria-label={label}
       onPointerDown={event => { pointerY.current = event.clientY; controls.start(event); }}><span aria-hidden="true">⠿</span></button>
     {children}

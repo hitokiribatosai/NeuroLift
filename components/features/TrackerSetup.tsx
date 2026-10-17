@@ -40,13 +40,13 @@ export function TrackerSetup({
     >
       <div className="mb-6 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-teal-700 dark:text-teal-300">
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-teal-700 surface-green dark:text-teal-300 surface-green">
             {t("tracker_setup_step")}
           </p>
-          <h2 className="text-3xl font-black tracking-tight text-zinc-950 dark:text-white sm:text-4xl">
+          <h2 className="text-3xl font-black tracking-tight text-zinc-950 surface-ink dark:text-white sm:text-4xl">
             {t("tracker_select_muscle")}
           </h2>
-          <p className="mt-2 max-w-xl text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mt-2 max-w-xl text-sm text-zinc-600 surface-muted surface-ink dark:text-zinc-400 surface-ink">
             {t("tracker_setup_hint")}
           </p>
         </div>
@@ -55,17 +55,17 @@ export function TrackerSetup({
 
       {nextScheduledWorkout && (
         <section
-          className="mb-6 flex flex-col gap-3 rounded-2xl border border-teal-700/30 bg-teal-500/5 p-4 sm:flex-row sm:items-center sm:justify-between"
+          className="mb-6 flex flex-col gap-3 rounded-2xl surface-rounded border border-teal-700/30 bg-teal-500/5 surface-accent p-4 sm:flex-row sm:items-center sm:justify-between"
           aria-label={t("tracker_next_planned")}
         >
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-700 dark:text-teal-300">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-700 surface-green dark:text-teal-300 surface-green">
               {t("tracker_next_planned")}
             </p>
-            <h3 className="mt-1 text-lg font-black text-zinc-950 dark:text-white">
+            <h3 className="mt-1 text-lg font-black text-zinc-950 surface-ink dark:text-white">
               {nextScheduledWorkout.template.name}
             </h3>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="text-sm text-zinc-600 surface-muted surface-ink dark:text-zinc-400 surface-ink">
               {new Intl.DateTimeFormat(
                 language === "fr" ? "fr-FR" : language === "ar" ? "ar" : "en",
                 { weekday: "long", month: "short", day: "numeric" },
@@ -99,7 +99,7 @@ export function TrackerSetup({
             aria-pressed={selectedMuscles.includes(muscle)}
             whileTap={{ scale: 0.95 }}
             onClick={() => toggleMuscle(muscle)}
-            className="group relative flex min-h-24 items-center justify-center rounded-2xl border p-4 transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400"
+            className="group relative flex min-h-24 items-center justify-center rounded-2xl surface-rounded border p-4 transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400"
             style={{
               backgroundColor: selectedMuscles.includes(muscle)
                 ? "rgb(var(--accent-500))"
@@ -133,8 +133,8 @@ export function TrackerSetup({
         ))}
       </div>
 
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/60">
-        <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl surface-rounded border border-zinc-200 surface-border bg-zinc-50 surface-paper p-4 dark:border-zinc-800 surface-border dark:bg-zinc-900/60 surface-paper">
+        <p className="text-sm font-semibold text-zinc-700 surface-ink dark:text-zinc-300 surface-ink">
           {selectedMuscles.length}{" "}
           {t(
             selectedMuscles.length === 1
@@ -147,7 +147,7 @@ export function TrackerSetup({
             <button
               type="button"
               onClick={() => setShowResetSessionConfirm(true)}
-              className="text-xs font-bold text-zinc-600 hover:text-rose-500 dark:text-zinc-400"
+              className="text-xs font-bold text-zinc-600 surface-muted surface-ink hover:text-rose-500 dark:text-zinc-400 surface-ink"
             >
               {t("tracker_reset_session")}
             </button>
@@ -156,7 +156,7 @@ export function TrackerSetup({
             type="button"
             disabled={selectedMuscles.length === 0}
             onClick={() => handleSetPhase("selection")}
-            className="min-h-11 rounded-xl bg-teal-600 px-5 py-3 text-sm font-black text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-teal-400 dark:text-zinc-950 dark:hover:bg-teal-300"
+            className="min-h-11 rounded-xl bg-teal-600 surface-accent px-5 py-3 text-sm font-black text-white surface-ink transition hover:bg-teal-700 surface-accent disabled:cursor-not-allowed disabled:opacity-40 dark:bg-teal-400 surface-accent dark:text-zinc-950 surface-ink dark:hover:bg-teal-300 surface-accent"
           >
             {t("tracker_select_exercises")} <span aria-hidden="true">→</span>
           </button>

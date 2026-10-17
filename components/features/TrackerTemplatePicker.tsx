@@ -34,8 +34,8 @@ export function TrackerTemplatePicker({
       isOpen={showLoadTemplateModal}
       onClose={() => setShowLoadTemplateModal(false)}
     >
-      <div className="relative w-full rounded-[3rem] border border-zinc-800 bg-zinc-950 p-8 shadow-3xl overflow-hidden max-h-[80vh] flex flex-col">
-        <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-8 flex items-center gap-3 flex-shrink-0">
+      <div className="relative w-full rounded-[3rem] surface-rounded border border-zinc-800 surface-border bg-zinc-950 surface-paper p-8 shadow-3xl surface-flat overflow-hidden max-h-[80vh] flex flex-col">
+        <h3 className="text-xl font-black text-white surface-ink uppercase tracking-tighter mb-8 flex items-center gap-3 flex-shrink-0">
           {t("tracker_templates_title")}
         </h3>
 
@@ -43,16 +43,16 @@ export function TrackerTemplatePicker({
           {templates.map((template) => (
             <div
               key={template.id}
-              className="group flex flex-col gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4 transition-all hover:border-teal-500/50"
+              className="group flex flex-col gap-3 rounded-2xl surface-rounded border border-zinc-800 surface-border bg-zinc-900/50 surface-paper p-4 transition-all hover:border-teal-500/50"
             >
               <button
                 onClick={() => loadTemplate(template)}
                 className="flex-1 text-left"
               >
-                <div className="text-sm font-black text-white uppercase tracking-tight mb-1">
+                <div className="text-sm font-black text-white surface-ink uppercase tracking-tight mb-1">
                   {template.name}
                 </div>
-                <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
+                <div className="text-[10px] text-zinc-500 surface-muted surface-ink font-bold uppercase tracking-widest">
                   {template.exercises.length} {t("tracker_exercises")} •{" "}
                   {t("tracker_created")}{" "}
                   {new Date(template.createdAt).toLocaleDateString()}
@@ -61,7 +61,7 @@ export function TrackerTemplatePicker({
               <div className="flex gap-1">
                 <button
                   onClick={() => editTemplate(template)}
-                  className="p-2 text-zinc-500 hover:text-teal-500 transition-colors"
+                  className="p-2 text-zinc-500 surface-muted surface-ink hover:text-teal-500 surface-green transition-colors"
                   title="Edit template"
                 >
                   <svg
@@ -80,7 +80,7 @@ export function TrackerTemplatePicker({
                 </button>
                 <button
                   onClick={() => deleteTemplate(template.id)}
-                  className="p-2 text-zinc-500 hover:text-rose-500 transition-colors"
+                  className="p-2 text-zinc-500 surface-muted surface-ink hover:text-rose-500 transition-colors"
                   title="Delete template"
                 >
                   <svg
@@ -98,8 +98,8 @@ export function TrackerTemplatePicker({
                   </svg>
                 </button>
               </div>
-              <div className="border-t border-zinc-800 pt-3">
-                <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+              <div className="border-t border-zinc-800 surface-border pt-3">
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 surface-muted surface-ink">
                   {t("tracker_schedule_days")}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
@@ -113,7 +113,7 @@ export function TrackerTemplatePicker({
                         aria-pressed={assigned}
                         aria-label={`${dayLabel} · ${template.name}`}
                         onClick={() => assignTemplateDay(day, template.id)}
-                        className={`min-h-9 min-w-10 rounded-lg border px-2 text-xs font-bold transition ${assigned ? "border-teal-500 bg-teal-500 text-zinc-950" : "border-zinc-700 bg-zinc-950 text-zinc-300 hover:border-teal-500/60"}`}
+                        className={`min-h-9 min-w-10 rounded-lg border px-2 text-xs font-bold transition ${assigned ? "border-teal-500 bg-teal-500 surface-accent text-zinc-950 surface-ink" : "border-zinc-700 surface-border bg-zinc-950 surface-paper text-zinc-300 surface-ink hover:border-teal-500/60"}`}
                       >
                         {dayLabel}
                       </button>
@@ -127,7 +127,7 @@ export function TrackerTemplatePicker({
 
         <button
           onClick={() => setShowLoadTemplateModal(false)}
-          className="w-full py-4 mt-6 text-[10px] text-zinc-600 hover:text-white font-black uppercase tracking-widest transition-all border-t border-zinc-900 flex-shrink-0"
+          className="w-full py-4 mt-6 text-[10px] text-zinc-600 surface-muted surface-ink hover:text-white font-black uppercase tracking-widest transition-all border-t border-zinc-900 surface-border flex-shrink-0"
         >
           {t("modal_close")}
         </button>

@@ -58,16 +58,16 @@ export const Nutrition: React.FC = () => {
   return (
     <div className="mx-auto max-w-4xl px-6 py-24 min-h-[70vh] flex flex-col items-center">
       <div className="w-full max-w-md">
-        <Card className="p-8 bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 mb-8 shadow-sm">
-          <h3 className="text-2xl font-black text-zinc-900 dark:text-white mb-8 flex items-center justify-center gap-3">
-            <span className="text-teal-600 dark:text-teal-400">🔥</span> {t('cal_title')}
+        <Card className="p-8 bg-white dark:bg-zinc-900/80 surface-paper border border-zinc-200 surface-border dark:border-zinc-800 surface-border mb-8 shadow-sm surface-flat">
+          <h3 className="text-2xl font-black text-zinc-900 surface-ink dark:text-white mb-8 flex items-center justify-center gap-3">
+            <span className="text-teal-600 surface-green dark:text-teal-400 surface-green">🔥</span> {t('cal_title')}
           </h3>
 
           <div className="relative flex items-center justify-center py-10">
-            <div className="absolute inset-0 bg-teal-500/10 rounded-full blur-3xl"></div>
+            <div className="absolute inset-0 bg-teal-500/10 surface-accent rounded-full blur-3xl"></div>
             <div className="relative text-center">
-              <div className="text-7xl font-mono font-black text-zinc-900 dark:text-white tracking-tighter">{dailyCalories}</div>
-              <div className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.3em] mt-2">{t('cal_consumed')}</div>
+              <div className="text-7xl font-mono font-black text-zinc-900 surface-ink dark:text-white tracking-tighter">{dailyCalories}</div>
+              <div className="text-[10px] text-zinc-500 surface-muted surface-ink font-black uppercase tracking-[0.3em] mt-2">{t('cal_consumed')}</div>
             </div>
           </div>
 
@@ -78,11 +78,11 @@ export const Nutrition: React.FC = () => {
                 value={caloriesInput}
                 onChange={(e) => setCaloriesInput(e.target.value)}
                 placeholder="0"
-                className="min-w-0 flex-1 bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-zinc-900 dark:text-white font-bold focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none transition-all"
+                className="min-w-0 flex-1 bg-zinc-50 surface-paper dark:bg-black surface-canvas border border-zinc-200 surface-border dark:border-zinc-700 surface-border rounded-xl px-4 py-3 text-zinc-900 surface-ink dark:text-white font-bold focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none transition-all"
               />
               <button
                 onClick={addCalories}
-                className="shrink-0 bg-teal-600 hover:bg-teal-500 text-white px-6 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 shadow-lg shadow-teal-500/20"
+                className="shrink-0 bg-teal-600 surface-accent hover:bg-teal-500 surface-accent text-white surface-ink px-6 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 shadow-lg surface-flat shadow-teal-500/20 surface-flat"
               >
                 {t('cal_add')}
               </button>
@@ -90,7 +90,7 @@ export const Nutrition: React.FC = () => {
 
             <button
               onClick={resetDay}
-              className="w-full text-[10px] text-zinc-400 hover:text-rose-500 transition-colors uppercase tracking-[0.3em] font-black"
+              className="w-full text-[10px] text-zinc-400 surface-muted surface-ink hover:text-rose-500 transition-colors uppercase tracking-[0.3em] font-black"
             >
               {t('cal_reset')}
             </button>
@@ -98,16 +98,16 @@ export const Nutrition: React.FC = () => {
         </Card>
 
         {history.length > 0 && (
-          <Card className="p-8 bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 animate-in fade-in slide-in-from-bottom-4 shadow-sm">
-            <h4 className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.4em] mb-6 flex items-center gap-4">
+          <Card className="p-8 bg-white dark:bg-zinc-900/50 surface-paper border border-zinc-200 surface-border dark:border-zinc-800 surface-border animate-in fade-in slide-in-from-bottom-4 shadow-sm surface-flat">
+            <h4 className="text-[10px] font-black text-zinc-400 surface-muted surface-ink dark:text-zinc-500 surface-ink uppercase tracking-[0.4em] mb-6 flex items-center gap-4">
               {t('nutrition_history')}
-              <div className="h-px flex-1 bg-zinc-100 dark:bg-zinc-800"></div>
+              <div className="h-px flex-1 bg-zinc-100 surface-paper dark:bg-zinc-800 surface-paper"></div>
             </h4>
             <div className="space-y-4">
               {history.map((h, i) => (
                 <div key={i} className="flex justify-between items-center text-sm">
-                  <span className="text-zinc-500 dark:text-zinc-400 font-mono text-xs">{h.date}</span>
-                  <span className="text-zinc-900 dark:text-zinc-200 font-black">{h.calories} <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-black ml-1 uppercase">{t('nutrition_calories_unit')}</span></span>
+                  <span className="text-zinc-500 surface-muted surface-ink dark:text-zinc-400 surface-ink font-mono text-xs">{h.date}</span>
+                  <span className="text-zinc-900 surface-ink dark:text-zinc-200 surface-ink font-black">{h.calories} <span className="text-[10px] text-zinc-400 surface-muted surface-ink dark:text-zinc-500 surface-ink font-black ml-1 uppercase">{t('nutrition_calories_unit')}</span></span>
                 </div>
               ))}
             </div>

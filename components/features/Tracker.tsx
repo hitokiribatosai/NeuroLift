@@ -822,7 +822,7 @@ export const Tracker: React.FC = () => {
             <button
               key={muscle}
               onClick={() => toggleMuscle(muscle)}
-              className="group relative flex items-center justify-center p-6 rounded-3xl border transition-all duration-300"
+              className="group relative flex items-center justify-center p-6 rounded-3xl surface-rounded border transition-all duration-300"
               style={{
                 backgroundColor: selectedMuscles.includes(muscle)
                   ? "rgb(var(--accent-500))"
@@ -950,10 +950,10 @@ export const Tracker: React.FC = () => {
             onClose={() => setTutorialExercise(null)}
           >
             {tutorialExercise && (
-              <div className="relative w-full rounded-[3rem] border border-zinc-800 bg-zinc-950 p-6 md:p-10 shadow-3xl overflow-hidden">
+              <div className="relative w-full rounded-[3rem] surface-rounded border border-zinc-800 surface-border bg-zinc-950 surface-paper p-6 md:p-10 shadow-3xl surface-flat overflow-hidden">
                 <button
                   onClick={() => setTutorialExercise(null)}
-                  className="absolute right-6 top-6 md:right-8 md:top-8 text-zinc-400 hover:text-white transition-colors z-10"
+                  className="absolute right-6 top-6 md:right-8 md:top-8 text-zinc-400 surface-muted surface-ink hover:text-white transition-colors z-10"
                   title={t("modal_close")}
                 >
                   <svg
@@ -972,8 +972,8 @@ export const Tracker: React.FC = () => {
                 </button>
 
                 <div className="flex items-center gap-4 mb-8 md:mb-10 pr-10">
-                  <div className="w-2 md:w-3 h-8 md:h-10 bg-teal-500 rounded-full flex-shrink-0"></div>
-                  <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter leading-tight">
+                  <div className="w-2 md:w-3 h-8 md:h-10 bg-teal-500 surface-accent rounded-full flex-shrink-0"></div>
+                  <h3 className="text-xl md:text-2xl font-black text-white surface-ink uppercase tracking-tighter leading-tight">
                     {getExerciseTranslation(tutorialExercise, language)}
                   </h3>
                 </div>
@@ -984,7 +984,7 @@ export const Tracker: React.FC = () => {
                     href={`https://www.youtube.com/results?search_query=${encodeURIComponent(tutorialExercise + " exercise tutorial short")}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="w-full flex items-center justify-center gap-3 py-5 bg-red-600 hover:bg-red-500 text-white font-black text-sm uppercase tracking-widest rounded-2xl transition-all shadow-lg shadow-red-600/30"
+                    className="w-full flex items-center justify-center gap-3 py-5 bg-red-600 hover:bg-red-500 text-white surface-ink font-black text-sm uppercase tracking-widest rounded-2xl surface-rounded transition-all shadow-lg surface-flat shadow-red-600/30 surface-flat"
                   >
                     <svg
                       className="w-6 h-6"
@@ -998,7 +998,7 @@ export const Tracker: React.FC = () => {
 
                   <button
                     onClick={() => setTutorialExercise(null)}
-                    className="w-full py-4 text-xs text-zinc-500 hover:text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-2xl font-black uppercase tracking-[0.3em] transition-all"
+                    className="w-full py-4 text-xs text-zinc-500 surface-muted surface-ink hover:text-white bg-zinc-900 surface-paper hover:bg-zinc-800 surface-paper border border-zinc-800 surface-border rounded-2xl surface-rounded font-black uppercase tracking-[0.3em] transition-all"
                   >
                     {t("modal_close")}
                   </button>
@@ -1008,15 +1008,15 @@ export const Tracker: React.FC = () => {
           </Modal>
           {activeSetInfo && (
             <Modal isOpen={true} onClose={() => setActiveSetInfo(null)}>
-              <div className="relative w-full rounded-[3rem] border border-zinc-800 bg-zinc-950 p-8 shadow-3xl overflow-hidden">
-                <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-8 flex items-center gap-3">
-                  <span className="w-2 h-6 bg-teal-500 rounded-full"></span>
+              <div className="relative w-full rounded-[3rem] surface-rounded border border-zinc-800 surface-border bg-zinc-950 surface-paper p-8 shadow-3xl surface-flat overflow-hidden">
+                <h3 className="text-xl font-black text-white surface-ink uppercase tracking-tighter mb-8 flex items-center gap-3">
+                  <span className="w-2 h-6 bg-teal-500 surface-accent rounded-full"></span>
                   {t("tracker_plate_calc_title")}
                 </h3>
 
                 <div className="space-y-6">
                   <div>
-                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-2 px-1">
+                    <label className="text-[10px] font-black text-zinc-500 surface-muted surface-ink uppercase tracking-widest block mb-2 px-1">
                       {t("tracker_plate_one_side")}
                     </label>
                     <input
@@ -1026,12 +1026,12 @@ export const Tracker: React.FC = () => {
                         setPlateCalcWeight(parseFloat(e.target.value) || 0)
                       }
                       placeholder="e.g., 20"
-                      className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-teal-500 transition-all"
+                      className="w-full bg-zinc-900 surface-paper border border-zinc-800 surface-border rounded-2xl surface-rounded px-6 py-4 text-white surface-ink font-bold outline-none focus:border-teal-500 transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-2 px-1">
+                    <label className="text-[10px] font-black text-zinc-500 surface-muted surface-ink uppercase tracking-widest block mb-2 px-1">
                       {t("tracker_bar_weight")}
                     </label>
                     <div className="grid grid-cols-4 gap-2">
@@ -1041,8 +1041,8 @@ export const Tracker: React.FC = () => {
                           onClick={() => setBarWeight(w)}
                           className={`py-3 rounded-xl border font-bold transition-all ${
                             barWeight === w
-                              ? "bg-teal-500 border-teal-500 text-white"
-                              : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700"
+                              ? "bg-teal-500 surface-accent border-teal-500 text-white surface-ink"
+                              : "bg-zinc-900 surface-paper border-zinc-800 surface-border text-zinc-400 surface-muted surface-ink hover:border-zinc-700 surface-border"
                           }`}
                         >
                           {w}kg
@@ -1051,13 +1051,13 @@ export const Tracker: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="bg-teal-500/5 border border-teal-500/20 rounded-2xl p-6 text-center">
-                    <div className="text-[10px] font-black text-teal-500 uppercase tracking-[0.2em] mb-1">
+                  <div className="bg-teal-500/5 surface-accent border border-teal-500/20 rounded-2xl surface-rounded p-6 text-center">
+                    <div className="text-[10px] font-black text-teal-500 surface-green uppercase tracking-[0.2em] mb-1">
                       {t("tracker_total_weight")}
                     </div>
-                    <div className="text-4xl font-black text-white">
+                    <div className="text-4xl font-black text-white surface-ink">
                       {(plateCalcWeight || 0) * 2 + barWeight}{" "}
-                      <span className="text-sm text-zinc-500">kg</span>
+                      <span className="text-sm text-zinc-500 surface-muted surface-ink">kg</span>
                     </div>
                   </div>
 
@@ -1080,7 +1080,7 @@ export const Tracker: React.FC = () => {
 
                   <button
                     onClick={() => setActiveSetInfo(null)}
-                    className="w-full py-2 text-[10px] text-zinc-600 hover:text-rose-500 font-black uppercase tracking-widest transition-all"
+                    className="w-full py-2 text-[10px] text-zinc-600 surface-muted surface-ink hover:text-rose-500 font-black uppercase tracking-widest transition-all"
                   >
                     {t("tracker_cancel")}
                   </button>
@@ -1124,9 +1124,9 @@ export const Tracker: React.FC = () => {
 
           {phase === "summary" && completedWorkout && (
             <div className="mx-auto max-w-4xl px-6 pt-10 pb-32 text-center">
-              <div className="w-24 h-24 bg-teal-500 rounded-full mx-auto flex items-center justify-center mb-8 shadow-2xl shadow-teal-500/30 animate-in zoom-in duration-500">
+              <div className="w-24 h-24 bg-teal-500 surface-accent rounded-full mx-auto flex items-center justify-center mb-8 shadow-2xl surface-flat shadow-teal-500/30 surface-flat animate-in zoom-in duration-500">
                 <svg
-                  className="w-12 h-12 text-white"
+                  className="w-12 h-12 text-white surface-ink"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -1139,10 +1139,10 @@ export const Tracker: React.FC = () => {
                   />
                 </svg>
               </div>
-              <h2 className="text-4xl md:text-6xl font-black text-white mb-4 uppercase tracking-tighter">
+              <h2 className="text-4xl md:text-6xl font-black text-white surface-ink mb-4 uppercase tracking-tighter">
                 {t("tracker_summary")}
               </h2>
-              <p className="text-zinc-400 text-lg mb-12 max-w-lg mx-auto">
+              <p className="text-zinc-400 surface-muted surface-ink text-lg mb-12 max-w-lg mx-auto">
                 {t("tracker_quote")}
               </p>
 
@@ -1151,21 +1151,21 @@ export const Tracker: React.FC = () => {
                 previous={summaryPrevious}
               />
               <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto mb-12">
-                <div className="bg-zinc-900/50 rounded-3xl p-6 border border-zinc-800">
-                  <div className="text-xs text-zinc-500 font-black uppercase tracking-widest mb-2">
+                <div className="bg-zinc-900/50 surface-paper rounded-3xl surface-rounded p-6 border border-zinc-800 surface-border">
+                  <div className="text-xs text-zinc-500 surface-muted surface-ink font-black uppercase tracking-widest mb-2">
                     {t("tracker_duration")}
                   </div>
-                  <div className="text-3xl font-black text-white text-mono">
+                  <div className="text-3xl font-black text-white surface-ink text-mono">
                     {formatTime(completedWorkout.durationSeconds)}
                   </div>
                 </div>
-                <div className="bg-zinc-900/50 rounded-3xl p-6 border border-zinc-800">
-                  <div className="text-xs text-zinc-500 font-black uppercase tracking-widest mb-2">
+                <div className="bg-zinc-900/50 surface-paper rounded-3xl surface-rounded p-6 border border-zinc-800 surface-border">
+                  <div className="text-xs text-zinc-500 surface-muted surface-ink font-black uppercase tracking-widest mb-2">
                     {t("tracker_volume")}
                   </div>
-                  <div className="text-3xl font-black text-white text-mono">
+                  <div className="text-3xl font-black text-white surface-ink text-mono">
                     {completedWorkout.totalVolume.toLocaleString()}{" "}
-                    <span className="text-sm text-zinc-500">
+                    <span className="text-sm text-zinc-500 surface-muted surface-ink">
                       {t("unit_kg")}
                     </span>
                   </div>
@@ -1175,7 +1175,7 @@ export const Tracker: React.FC = () => {
               <div className="flex flex-col gap-4 items-center">
                 <button
                   onClick={() => setShowSaveCompletedModal(true)}
-                  className="px-8 py-3 bg-zinc-900/50 hover:bg-zinc-800 border border-zinc-800 hover:border-teal-500/50 text-zinc-400 hover:text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all flex items-center gap-2"
+                  className="px-8 py-3 bg-zinc-900/50 surface-paper hover:bg-zinc-800 surface-paper border border-zinc-800 surface-border hover:border-teal-500/50 text-zinc-400 surface-muted surface-ink hover:text-white rounded-2xl surface-rounded font-black uppercase tracking-widest text-xs transition-all flex items-center gap-2"
                 >
                   <svg
                     className="w-4 h-4"
@@ -1195,7 +1195,7 @@ export const Tracker: React.FC = () => {
 
                 <SpotlightButton
                   onClick={reset}
-                  className="px-12 py-5 text-lg font-black uppercase tracking-widest shadow-xl mx-auto"
+                  className="px-12 py-5 text-lg font-black uppercase tracking-widest shadow-xl surface-flat mx-auto"
                 >
                   {t("tracker_start_new")}
                 </SpotlightButton>
@@ -1238,13 +1238,13 @@ export const Tracker: React.FC = () => {
         isOpen={showSaveTemplateModal}
         onClose={() => setShowSaveTemplateModal(false)}
       >
-        <div className="relative w-full rounded-[3rem] border border-zinc-800 bg-zinc-950 p-8 shadow-3xl overflow-hidden">
-          <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-8 flex items-center gap-3">
+        <div className="relative w-full rounded-[3rem] surface-rounded border border-zinc-800 surface-border bg-zinc-950 surface-paper p-8 shadow-3xl surface-flat overflow-hidden">
+          <h3 className="text-xl font-black text-white surface-ink uppercase tracking-tighter mb-8 flex items-center gap-3">
             {t("tracker_save_template")}
           </h3>
           <div className="space-y-6">
             <div>
-              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-2 px-1">
+              <label className="text-[10px] font-black text-zinc-500 surface-muted surface-ink uppercase tracking-widest block mb-2 px-1">
                 {t("tracker_template_name")}
               </label>
               <input
@@ -1253,7 +1253,7 @@ export const Tracker: React.FC = () => {
                 onChange={(e) => setTemplateName(e.target.value)}
                 placeholder="e.g., Push Day A"
                 autoFocus
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-teal-500 transition-all"
+                className="w-full bg-zinc-900 surface-paper border border-zinc-800 surface-border rounded-2xl surface-rounded px-6 py-4 text-white surface-ink font-bold outline-none focus:border-teal-500 transition-all"
               />
             </div>
             <SpotlightButton
@@ -1265,7 +1265,7 @@ export const Tracker: React.FC = () => {
             </SpotlightButton>
             <button
               onClick={() => setShowSaveTemplateModal(false)}
-              className="w-full py-2 text-[10px] text-zinc-600 hover:text-rose-500 font-black uppercase tracking-widest transition-all"
+              className="w-full py-2 text-[10px] text-zinc-600 surface-muted surface-ink hover:text-rose-500 font-black uppercase tracking-widest transition-all"
             >
               {t("tracker_cancel")}
             </button>
@@ -1278,13 +1278,13 @@ export const Tracker: React.FC = () => {
         isOpen={showSaveCompletedModal}
         onClose={() => setShowSaveCompletedModal(false)}
       >
-        <div className="relative w-full rounded-[3rem] border border-zinc-800 bg-zinc-950 p-8 shadow-3xl overflow-hidden">
-          <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-8 flex items-center gap-3">
+        <div className="relative w-full rounded-[3rem] surface-rounded border border-zinc-800 surface-border bg-zinc-950 surface-paper p-8 shadow-3xl surface-flat overflow-hidden">
+          <h3 className="text-xl font-black text-white surface-ink uppercase tracking-tighter mb-8 flex items-center gap-3">
             {t("tracker_save_template")}
           </h3>
           <div className="space-y-6">
             <div>
-              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-2 px-1">
+              <label className="text-[10px] font-black text-zinc-500 surface-muted surface-ink uppercase tracking-widest block mb-2 px-1">
                 {t("tracker_template_name")}
               </label>
               <input
@@ -1293,7 +1293,7 @@ export const Tracker: React.FC = () => {
                 onChange={(e) => setCompletedTemplateName(e.target.value)}
                 placeholder="e.g., Push Day A"
                 autoFocus
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-teal-500 transition-all"
+                className="w-full bg-zinc-900 surface-paper border border-zinc-800 surface-border rounded-2xl surface-rounded px-6 py-4 text-white surface-ink font-bold outline-none focus:border-teal-500 transition-all"
               />
             </div>
             <SpotlightButton
@@ -1305,7 +1305,7 @@ export const Tracker: React.FC = () => {
             </SpotlightButton>
             <button
               onClick={() => setShowSaveCompletedModal(false)}
-              className="w-full py-2 text-[10px] text-zinc-600 hover:text-rose-500 font-black uppercase tracking-widest transition-all"
+              className="w-full py-2 text-[10px] text-zinc-600 surface-muted surface-ink hover:text-rose-500 font-black uppercase tracking-widest transition-all"
             >
               {t("tracker_cancel")}
             </button>
@@ -1353,7 +1353,7 @@ export const Tracker: React.FC = () => {
         isOpen={templateDeleteConfirm !== null}
         onClose={() => setTemplateDeleteConfirm(null)}
       >
-        <div className="p-8 bg-zinc-950 border border-zinc-900 rounded-[3rem] text-center space-y-6 relative overflow-hidden">
+        <div className="p-8 bg-zinc-950 surface-paper border border-zinc-900 surface-border rounded-[3rem] surface-rounded text-center space-y-6 relative overflow-hidden">
           <div className="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto text-rose-500 mb-4">
             <svg
               className="w-8 h-8"
@@ -1369,23 +1369,23 @@ export const Tracker: React.FC = () => {
               />
             </svg>
           </div>
-          <h3 className="text-2xl font-black text-white uppercase italic tracking-tight">
+          <h3 className="text-2xl font-black text-white surface-ink uppercase italic tracking-tight">
             {t("confirm_delete_workout")}
           </h3>
-          <p className="text-zinc-400 font-bold text-sm leading-relaxed">
+          <p className="text-zinc-400 surface-muted surface-ink font-bold text-sm leading-relaxed">
             Are you sure you want to delete "{templateDeleteConfirm?.name}"?
             This action cannot be undone.
           </p>
           <div className="flex gap-3">
             <button
               onClick={() => setTemplateDeleteConfirm(null)}
-              className="flex-1 py-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-zinc-400 hover:text-white font-black uppercase tracking-widest transition-colors"
+              className="flex-1 py-4 bg-zinc-900 surface-paper border border-zinc-800 surface-border rounded-2xl surface-rounded text-zinc-400 surface-muted surface-ink hover:text-white font-black uppercase tracking-widest transition-colors"
             >
               {t("confirm_cancel")}
             </button>
             <button
               onClick={confirmDeleteTemplate}
-              className="flex-1 py-4 bg-rose-500 hover:bg-rose-600 text-white font-black uppercase tracking-widest rounded-2xl transition-colors"
+              className="flex-1 py-4 bg-rose-500 hover:bg-rose-600 text-white surface-ink font-black uppercase tracking-widest rounded-2xl surface-rounded transition-colors"
             >
               {t("confirm_yes")}
             </button>
@@ -1398,7 +1398,7 @@ export const Tracker: React.FC = () => {
         isOpen={showResetSessionConfirm}
         onClose={() => setShowResetSessionConfirm(false)}
       >
-        <div className="p-8 bg-zinc-950 border border-zinc-900 rounded-[3rem] text-center space-y-6 relative overflow-hidden">
+        <div className="p-8 bg-zinc-950 surface-paper border border-zinc-900 surface-border rounded-[3rem] surface-rounded text-center space-y-6 relative overflow-hidden">
           <div className="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto text-rose-500 mb-4">
             <svg
               className="w-8 h-8"
@@ -1414,22 +1414,22 @@ export const Tracker: React.FC = () => {
               />
             </svg>
           </div>
-          <h3 className="text-2xl font-black text-white uppercase italic tracking-tight">
+          <h3 className="text-2xl font-black text-white surface-ink uppercase italic tracking-tight">
             {t("tracker_reset_session_title")}
           </h3>
-          <p className="text-zinc-400 font-bold text-sm leading-relaxed">
+          <p className="text-zinc-400 surface-muted surface-ink font-bold text-sm leading-relaxed">
             {t("tracker_reset_session_desc")}
           </p>
           <div className="flex gap-3">
             <button
               onClick={() => setShowResetSessionConfirm(false)}
-              className="flex-1 py-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-zinc-400 hover:text-white font-black uppercase tracking-widest transition-colors"
+              className="flex-1 py-4 bg-zinc-900 surface-paper border border-zinc-800 surface-border rounded-2xl surface-rounded text-zinc-400 surface-muted surface-ink hover:text-white font-black uppercase tracking-widest transition-colors"
             >
               {t("confirm_cancel")}
             </button>
             <button
               onClick={resetSession}
-              className="flex-1 py-4 bg-rose-500 hover:bg-rose-600 text-white font-black uppercase tracking-widest rounded-2xl transition-colors"
+              className="flex-1 py-4 bg-rose-500 hover:bg-rose-600 text-white surface-ink font-black uppercase tracking-widest rounded-2xl surface-rounded transition-colors"
             >
               {t("confirm_yes")}
             </button>
