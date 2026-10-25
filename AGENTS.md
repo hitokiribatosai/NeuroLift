@@ -19,6 +19,8 @@ Read `docs/FRONTEND-ARCHITECTURE.md` when changing shared workout UI, persistenc
 
 For persistence/session/sync changes also read `docs/DATA-ARCHITECTURE.md`. Follow its staged migration gates: no storage-format switch without fixtures and recovery tests, no success before durable commit, no legacy snapshot writes over migrated records. Keep pending stages explicit; source checkpoints are not data backups.
 
+Run `npm run test:persistence` for IndexedDB changes (real Chromium/WebKit transactions, not only mocks). The staged training database is not canonical until every runtime mutation path and migration recovery flow is integrated and tested; do not activate it by merely adding an app import.
+
 - Preserve the approved shared UI and platform-specific native behavior. Do not add parallel legacy implementations or select presentation by platform unless the design actually differs.
 - Keep screen components focused on composition. Extract cohesive dialogs, selection controls and template workflows; put persistence and session transitions behind typed helpers/hooks. Avoid giant hooks or untyped prop bags that merely relocate complexity.
 - Share reset/cleanup rules, but keep finish (save + summary) distinct from discard. Preserve workspace keys and saved-data formats unless a tested migration is explicitly required.

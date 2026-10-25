@@ -19,6 +19,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:browser": "playwright test",
+    "test:persistence": "playwright test --config playwright.persistence.config.ts",
     "check": "npm run typecheck && npm run lint && npm test && npm run build"
   },
   "dependencies": {

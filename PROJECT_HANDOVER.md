@@ -2,6 +2,43 @@
 
 Last reviewed: **2026-10-25**. Read `AGENTS.md` first on recovery.
 
+### IndexedDB migration foundation — 2026-10-25
+
+Stage 3a implemented, NOT activated in the running app: pure validated migration
+candidate builder plus typed IndexedDB adapter with account-keyed records, drafts
+and metadata. Keeps an immutable copy of the source workspace in the transaction,
+leaves localStorage/legacy IndexedDB untouched, preserves existing IDs and values,
+assigns deterministic missing exercise/set IDs, and rejects corrupt data. A repeat
+of the same migration is a no-op; changed source requires explicit reconciliation.
+Draft writes use revision checks; two tabs cannot silently overwrite the same
+revision. Completion is transactional across history/draft/clocks/metadata and
+idempotent across connections. Shared completion normalization preserves the
+existing production path without duplicating validation rules.
+
+The migration candidate is only exercised by tests; there is no app import or
+activation flag yet. Canonical data remains localStorage and cloud sync remains
+snapshots. No outbox, hosted schema/API, native binary or personal data changed.
+Do NOT describe stage 3 or the whole architecture as complete. Next is stage 3b:
+all async runtime mutation paths and initialization/subscription/error handling,
+including journal, schedules, preferences, backup restore, account deletion and
+snapshot application, followed by complete upgrade/rollback acceptance. Candidate
+source reconciliation and IndexedDB-unavailable/upgrade-blocked UX remain to wire.
+
+Checks: `npm run check` passed (61 unit tests, types, lint, build); all **16** real
+Chromium/mobile-WebKit persistence checks passed. Cases include reload durability,
+account isolation, source preservation, migration abort/retry, changed-source
+rejection, two-tab revision races, completion retries and rollback after history
+insertion. Quota/abort failures were injected, not actual device-disk exhaustion.
+Added `npm run test:persistence`, a separate Vite harness/config, and CI coverage
+with Chromium/WebKit. Initial test-run fixture-import and lint issues were fixed
+before the passing run. Current UI completion/refinement recheck: **40/40 passed**
+across Chromium and mobile WebKit. The full suite was not repeated this stage;
+the previously recorded WebKit offline-reload limitation remains unresolved.
+
+Checkpoint: `checkpoint-2026-10-25-indexeddb-foundation` (verify remote refs on
+recovery). APK 23/iOS simulator 21 remain unchanged; no physical-device, hosted
+deployment, live account or native compilation acceptance claimed in this stage.
+
 ### Data architecture migration started — 2026-10-25
 
 **First implementation checkpoint complete; overall architecture migration is NOT

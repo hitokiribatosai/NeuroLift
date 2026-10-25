@@ -79,6 +79,25 @@ migration, export/import round trip, and upgrade from the previous installed app
   IndexedDB migration matrix is still pending.
 - Canonical storage remains localStorage; snapshots remain the only cloud sync
   protocol. No record-level outbox or local database switch is enabled yet.
+- Stage 3a: `utils/persistence/legacyMigration.ts` prepares a validated, pure
+  migration candidate. `trainingDatabase.ts` stores records, drafts and metadata
+  transactionally in a separate `neurolift-training-v1` database. Explicit account
+  keys, draft revision checks, idempotent completion and immutable original-source
+  copies are implemented. These modules are deliberately NOT imported by the app.
+  A failed transaction aborts all its writes; returned promises await `tx.done`.
+  Missing legacy exercise/set IDs are assigned deterministically, while existing
+  IDs and values are retained. Unsupported/corrupt source stops migration.
+- Run `npm run test:persistence` for real Chromium and mobile-WebKit IndexedDB
+  checks, including competing connections, two tabs and injected aborts. The
+  isolated Vite test page does not bootstrap the app. CI runs this suite too.
+- Stage 3b remains: route all runtime mutations through async repository APIs,
+  finish settings/collection CRUD, backup/restore/cache deletion and snapshot
+  compatibility, add initialization/error/conflict UI and cross-tab refresh.
+  Validate full migration/recovery before marking the database canonical. Do not
+  enable a candidate opportunistically or use it as a write-behind mirror.
+- Re-running migration with a different legacy source is explicitly rejected.
+  Integration must reconcile/discard an obsolete candidate with informed recovery
+  handling; it must not overwrite candidate edits or silently accept stale data.
 - localStorage setItem is atomic for one value, not a multi-tab transaction.
   Stage 2 narrows the crash window but does not claim to solve simultaneous tabs.
 

@@ -33,6 +33,18 @@ function readHistory(raw: string | undefined): CompletedWorkout[] {
   return value;
 }
 
+/** Shared rules for the current workspace and the staged IndexedDB repository. */
+export function normalizeCompletedWorkout(record: CompletedWorkout): CompletedWorkout {
+  validateBackup({ version: 1, data: { [HISTORY]: [record] } });
+  if (!record.exercises.some(exercise => exercise.sets.some(set => set.completed && hasSetEffort(set)))) {
+    throw new Error('Workout has no completed effort');
+  }
+  const totalVolume = record.exercises.reduce((total, exercise) => total + exercise.sets.reduce(
+    (sum, set) => sum + (set.completed && hasSetEffort(set) ? set.weight * set.reps : 0), 0), 0);
+  if (!Number.isFinite(totalVolume)) throw new Error('Invalid workout volume');
+  return { ...record, totalVolume };
+}
+
 /**
  * Current-storage transaction boundary. One setItem commits history, cleanup and
  * the snapshot dirty marker together. No await or UI/native side effects here.
@@ -46,14 +58,7 @@ export function commitCompletedWorkout(record: CompletedWorkout, owner: string):
   // Retry is a no-op, including when a different session has since started.
   if (existing) return existing;
   if (!record.id || state.data[SESSION_ID] !== record.id) throw new Error('Session changed while finishing');
-  validateBackup({ version: 1, data: { [HISTORY]: [record] } });
-  if (!record.exercises.some(exercise => exercise.sets.some(set => set.completed && hasSetEffort(set)))) {
-    throw new Error('Workout has no completed effort');
-  }
-  const totalVolume = record.exercises.reduce((total, exercise) => total + exercise.sets.reduce(
-    (sum, set) => sum + (set.completed && hasSetEffort(set) ? set.weight * set.reps : 0), 0), 0);
-  if (!Number.isFinite(totalVolume)) throw new Error('Invalid workout volume');
-  const completed = { ...record, totalVolume };
+  const completed = normalizeCompletedWorkout(record);
   state.data[HISTORY] = JSON.stringify([completed, ...history]);
   removeSessionData(state.data);
   state.dirty = true;
