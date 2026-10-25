@@ -3,6 +3,190 @@ import fixture from '../fixtures/legacy-workspace.json' with { type: 'json' };
 
 test.beforeEach(async ({ page }) => { await page.goto('/tests/persistence/blank.html'); });
 
+test('failed initialization never exposes an unhydrated database and permits recovery', async ({ page }) => {
+  const result = await page.evaluate(async () => {
+    localStorage.setItem('neuroLift_workspace_guest', 'broken');
+    const path = '/utils/workspace.ts';
+    const workspace = await import(path) as typeof import('../../utils/workspace');
+    let failure = '';
+    try { await workspace.initializeWorkspace(); } catch (error) { failure = String(error); }
+    const enabledAfterFailure = workspace.databaseEnabled();
+    const preserved = localStorage.getItem('neuroLift_workspace_guest');
+    // Explicit test recovery, not automatic deletion of unreadable user data.
+    localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({ data: {}, version: 0, dirty: false }));
+    await workspace.initializeWorkspace();
+    return { failure, enabledAfterFailure, preserved, recovered: workspace.readWorkspace() };
+  });
+  expect(result.failure).toBeTruthy();
+  expect(result.enabledAfterFailure).toBe(false);
+  expect(result.preserved).toBe('broken');
+  expect(result.recovered.data).toEqual({});
+});
+
+test('remote application rejects stale account ownership', async ({ page }) => {
+  const result = await page.evaluate(async () => {
+    const path = '/utils/workspace.ts';
+    const workspace = await import(path) as typeof import('../../utils/workspace');
+    await workspace.initializeWorkspace();
+    await workspace.changeScope('1');
+    let failure = '';
+    try { await workspace.applyRemote({ neuroLift_templates: '[]' }, 3, 'guest'); }
+    catch (error) { failure = String(error); }
+    return { failure, current: workspace.readWorkspace() };
+  });
+  expect(result.failure).toContain('Account changed');
+  expect(result.current).toEqual({ data: {}, version: 0, dirty: false });
+});
+
+test('completion retry waits for the first durable save and both reject on rollback', async ({ page }) => {
+  const result = await page.evaluate(async source => {
+    localStorage.setItem('neuroLift_workspace_guest', JSON.stringify(source));
+    const path = '/utils/workspace.ts';
+    const workspace = await import(path) as typeof import('../../utils/workspace');
+    await workspace.initializeWorkspace();
+    const completionPath = '/utils/workoutCompletion.ts';
+    const { commitCompletedWorkout } = await import(completionPath) as typeof import('../../utils/workoutCompletion');
+    const before = workspace.readWorkspace();
+    const record = { id: before.data.neuroLift_tracker_session_id, date: '2026-10-25', durationSeconds: 120,
+      totalVolume: 0, exercises: JSON.parse(before.data.neuroLift_tracker_active_exercises) };
+    const put = IDBObjectStore.prototype.put;
+    IDBObjectStore.prototype.put = function (value, key) {
+      if (this.name === 'metadata') throw new DOMException('Injected completion queue failure', 'QuotaExceededError');
+      return put.call(this, value, key);
+    };
+    const results = await Promise.allSettled([commitCompletedWorkout(record, 'guest'), commitCompletedWorkout(record, 'guest')]);
+    IDBObjectStore.prototype.put = put;
+    const dbPath = '/utils/persistence/trainingDatabase.ts';
+    const { openTrainingDatabase } = await import(dbPath) as typeof import('../../utils/persistence/trainingDatabase');
+    const db = await openTrainingDatabase();
+    const after = db.workspaceFrom((await db.read('guest'))!);
+    db.close(); return { statuses: results.map(result => result.status), before, after };
+  }, fixture);
+  expect(result.statuses).toEqual(['rejected', 'rejected']);
+  expect(result.after).toEqual(result.before);
+});
+
+test('active patches preserve empty collections, removals and unrelated concurrent edits', async ({ page }) => {
+  const result = await page.evaluate(async () => {
+    const path = '/utils/persistence/trainingDatabase.ts';
+    const { openTrainingDatabase } = await import(path) as typeof import('../../utils/persistence/trainingDatabase');
+    const db = await openTrainingDatabase('patch-test');
+    const source = { data: {}, version: 0, dirty: false };
+    const before = await db.activate('guest', source);
+    await db.patchWorkspace('guest', before, { ...before, dirty: true, data: { neuroLift_templates: '[]' } });
+    const merged = await db.patchWorkspace('guest', before, { ...before, dirty: true, data: { language: 'fr' } });
+    const next = structuredClone(merged);
+    delete next.data.neuroLift_templates;
+    const removed = await db.patchWorkspace('guest', merged, next);
+    const reopened = await db.activate('guest', source);
+    db.close();
+    return { merged, removed, reopened };
+  });
+  expect(result.merged.data).toEqual({ neuroLift_templates: '[]', language: 'fr' });
+  expect(result.removed.data).toEqual({ language: 'fr' });
+  expect(result.reopened).toEqual(result.removed);
+});
+
+test('stale sync acknowledgement and same-key edits cannot overwrite another tab', async ({ page }) => {
+  const result = await page.evaluate(async () => {
+    const path = '/utils/persistence/trainingDatabase.ts';
+    const { openTrainingDatabase } = await import(path) as typeof import('../../utils/persistence/trainingDatabase');
+    const db = await openTrainingDatabase('ack-test');
+    const before = await db.activate('guest', { data: {}, version: 0, dirty: false });
+    const saved = await db.patchWorkspace('guest', before, { ...before, dirty: true, data: { neuroLift_templates: '[]' } });
+    const failures: string[] = [];
+    for (const next of [{ ...before, version: 1 }, { ...before, dirty: true, data: { neuroLift_templates: '[{"id":"t","name":"A","exercises":[]}]' } }]) {
+      try { await db.patchWorkspace('guest', before, next); } catch (error) { failures.push(String(error)); }
+    }
+    const after = db.workspaceFrom((await db.read('guest'))!);
+    db.close(); return { saved, after, failures };
+  });
+  expect(result.failures[0]).toContain('during synchronization');
+  expect(result.failures[1]).toContain('another tab');
+  expect(result.after).toEqual(result.saved);
+  expect(result.after.dirty).toBe(true);
+});
+
+test('active patch abort rolls back records, draft and metadata together', async ({ page }) => {
+  const result = await page.evaluate(async source => {
+    const path = '/utils/persistence/trainingDatabase.ts';
+    const { openTrainingDatabase } = await import(path) as typeof import('../../utils/persistence/trainingDatabase');
+    const db = await openTrainingDatabase('patch-abort-test');
+    const before = await db.activate('guest', source);
+    const snapshot = await db.read('guest');
+    const put = IDBObjectStore.prototype.put;
+    IDBObjectStore.prototype.put = function (value, key) {
+      if (this.name === 'metadata') throw new DOMException('Injected patch failure', 'QuotaExceededError');
+      return put.call(this, value, key);
+    };
+    let failure = '';
+    try { await db.patchWorkspace('guest', before, { ...before, data: { language: 'en' } }); }
+    catch (error) { failure = String(error); }
+    finally { IDBObjectStore.prototype.put = put; }
+    const after = await db.read('guest');
+    db.close(); return { snapshot, after, failure };
+  }, fixture);
+  expect(result.failure).toContain('Injected patch failure');
+  expect(result.after).toEqual(result.snapshot);
+});
+
+test('workspace queue normalizes IDs before consecutive draft writes and waits before account switch', async ({ page }) => {
+  const result = await page.evaluate(async source => {
+    localStorage.setItem('neuroLift_workspace_guest', JSON.stringify(source));
+    const path = '/utils/workspace.ts';
+    const workspace = await import(path) as typeof import('../../utils/workspace');
+    await workspace.initializeWorkspace();
+    const first = workspace.readWorkspace();
+    first.data.neuroLift_tracker_active_exercises = JSON.stringify([{ name: 'Bench Press', sets: [{ id: 's', weight: 10, reps: 5, completed: false }] }]);
+    const save1 = workspace.writeWorkspace(first);
+    const second = workspace.readWorkspace();
+    const exercises = JSON.parse(second.data.neuroLift_tracker_active_exercises);
+    exercises[0].sets[0].reps = 6;
+    second.data.neuroLift_tracker_active_exercises = JSON.stringify(exercises);
+    const save2 = workspace.writeWorkspace(second);
+    await workspace.changeScope('1');
+    await Promise.all([save1, save2]);
+    const member = workspace.readWorkspace();
+    await workspace.changeScope('guest');
+    return { guest: workspace.readWorkspace(), member, status: workspace.persistenceState(), source: localStorage.getItem('neuroLift_workspace_guest') };
+  }, fixture);
+  const exercises = JSON.parse(result.guest.data.neuroLift_tracker_active_exercises);
+  expect(exercises[0].id).toBeTruthy();
+  expect(exercises[0].sets[0].reps).toBe(6);
+  expect(result.member.data).toEqual({});
+  expect(result.status).toEqual({ pending: 0, failure: '' });
+  expect(result.source).toBe(JSON.stringify(fixture));
+});
+
+test('failed queued write blocks following writes and flush without changing durable data', async ({ page }) => {
+  const result = await page.evaluate(async () => {
+    const path = '/utils/workspace.ts';
+    const workspace = await import(path) as typeof import('../../utils/workspace');
+    await workspace.initializeWorkspace();
+    const put = IDBObjectStore.prototype.put;
+    IDBObjectStore.prototype.put = function (value, key) {
+      if (this.name === 'metadata') throw new DOMException('Injected queue failure', 'QuotaExceededError');
+      return put.call(this, value, key);
+    };
+    const first = workspace.writeWorkspace({ data: { language: 'fr' }, version: 0, dirty: false });
+    const second = workspace.writeWorkspace({ data: { language: 'ar' }, version: 0, dirty: false });
+    const results = await Promise.allSettled([first, second]);
+    let failure = '';
+    try { await workspace.flushWorkspace(); } catch (error) { failure = String(error); }
+    IDBObjectStore.prototype.put = put;
+    const dbPath = '/utils/persistence/trainingDatabase.ts';
+    const { openTrainingDatabase } = await import(dbPath) as typeof import('../../utils/persistence/trainingDatabase');
+    const db = await openTrainingDatabase();
+    const saved = db.workspaceFrom((await db.read('guest'))!);
+    db.close();
+    return { statuses: results.map(result => result.status), saved, failure, status: workspace.persistenceState() };
+  });
+  expect(result.statuses).toEqual(['rejected', 'rejected']);
+  expect(result.saved.data).toEqual({});
+  expect(result.failure).toContain('Injected queue failure');
+  expect(result.status.pending).toBe(0);
+});
+
 test('migration is durable, idempotent, account isolated and retains rollback source', async ({ page }) => {
   const result = await page.evaluate(async source => {
     const path = '/utils/persistence/trainingDatabase.ts';

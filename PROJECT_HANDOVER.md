@@ -2,6 +2,40 @@
 
 Last reviewed: **2026-10-25**. Read `AGENTS.md` first on recovery.
 
+### Async storage integration checkpoint — 2026-10-25
+
+Stage 3b is in progress, NOT fully enabled. The workspace facade now offers an
+explicit IndexedDB initialization path, normalized hydrated reads, serialized
+durable-write promises, failure state and flush barriers. Production bootstrap
+does not invoke it: current apps still use localStorage and snapshot sync.
+Finish/reset, storage CRUD, backup import/export, scope switches and sync callers
+now await persistence where integrated. Sign-in changes the workspace before
+publishing the new authentication state. Remote application checks captured owner.
+
+Added atomic workspace patches with same-key conflict rejection, unrelated-key
+merge, explicit empty/deleted collection tracking and immutable legacy source.
+Normalized queued views prevent migration-generated IDs causing false conflicts.
+Stale sync acknowledgements cannot clear other-tab changes. Failed initialization
+does not expose an unhydrated database; queued failure blocks subsequent writes.
+Duplicate completion cannot report success from an optimistic, uncommitted record.
+
+Verification: types/lint/build and 61 unit tests passed; 32 real IndexedDB tests
+passed across Chromium/WebKit. All 40 targeted completion/refinement browser
+tests passed after correcting an intermediate render introduced by the async
+conversion: UI cleanup and summary transition must remain synchronous together
+after the durable commit. Initial run caught eight reopen failures; the corrected
+run passed without weakening assertions. No native build, hosted schema migration or physical-device
+acceptance performed. Android APK 23 and iOS simulator build 21 remain unchanged.
+
+Next: finish direct UI mutations (Journal, nutrition, schedules, preferences,
+onboarding and draft/timer effects), saving/recovery UI, pending cross-tab refresh,
+full migration/import fixtures and end-to-end acceptance BEFORE activation.
+Then record-level Django sync/outbox/tombstones, operational recovery and native
+rebuilds. The whole architecture request remains incomplete. Never interpret this
+checkpoint as permission to enable incomplete persistence or claim all stages done.
+
+Checkpoint: `checkpoint-2026-10-25-async-storage-adapter` (verify remote on recovery).
+
 ### IndexedDB migration foundation — 2026-10-25
 
 Stage 3a implemented, NOT activated in the running app: pure validated migration

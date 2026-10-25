@@ -83,7 +83,8 @@ migration, export/import round trip, and upgrade from the previous installed app
   migration candidate. `trainingDatabase.ts` stores records, drafts and metadata
   transactionally in a separate `neurolift-training-v1` database. Explicit account
   keys, draft revision checks, idempotent completion and immutable original-source
-  copies are implemented. These modules are deliberately NOT imported by the app.
+  copies are implemented. Runtime imports now exist, but bootstrap activation is
+  deliberately disabled pending the remaining stage 3b acceptance gates.
   A failed transaction aborts all its writes; returned promises await `tx.done`.
   Missing legacy exercise/set IDs are assigned deterministically, while existing
   IDs and values are retained. Unsupported/corrupt source stops migration.
@@ -100,6 +101,26 @@ migration, export/import round trip, and upgrade from the previous installed app
   handling; it must not overwrite candidate edits or silently accept stale data.
 - localStorage setItem is atomic for one value, not a multi-tab transaction.
   Stage 2 narrows the crash window but does not claim to solve simultaneous tabs.
+
+### Stage 3b adapter progress (not activation)
+
+The workspace facade now supports an explicitly hydrated IndexedDB view, serialized
+write promises, owner-scoped patch transactions, failure status and flush barriers.
+Finish, reset, storage CRUD, import/export, account switches and snapshot operations
+are prepared to await persistence. Production startup does not call
+`initializeWorkspace`; localStorage is still authoritative for installed clients.
+
+Tests cover normalized IDs across consecutive queued writes, empty collection
+presence/removal, rollback, failed initialization, stale account responses, and
+stale sync acknowledgements. Same-key concurrent edits reject rather than silently
+overwrite; different keys can merge. This is not yet per-record cloud merging.
+Repeated Finish calls must wait for pending persistence, even when their ID is
+already visible in the optimistic read view. Failed writes block following writes.
+
+Activation blockers: remaining direct UI save handlers/effects, durable-save and
+recovery UI, full upgrade/import acceptance, cross-tab refresh while a write is
+pending, and supported legacy format fixtures. An optimistic view is not evidence
+of a saved write. Do not activate this adapter merely because its tests pass.
 
 ### Stage 3 call-site inventory
 

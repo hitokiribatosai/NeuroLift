@@ -26,19 +26,19 @@ export async function api<T>(path: string, method = 'GET', data?: unknown): Prom
 export const authService = {
  async signIn(email: string, password: string) {
   const result = await api<{ user: AuthUser; token: string }>('/auth/login/', 'POST', { email, password });
-  accessToken = result.token; currentUser = result.user;
-  changeScope(result.user.id); announce();
+  await changeScope(result.user.id);
+  accessToken = result.token; currentUser = result.user; announce();
   return result.user;
  },
  async signUp(email: string, password: string) { return api<{message:string}>('/auth/register/', 'POST', { email, password }); },
  async signOut() {
   try { if (accessToken) await api('/auth/logout/', 'POST', {}); }
-  finally { accessToken = ''; currentUser = null; changeScope('guest'); announce(); }
+  finally { accessToken = ''; currentUser = null; await changeScope('guest'); announce(); }
  },
  requestLink(flow: 'verify' | 'reset', email: string) { return api<{message:string}>('/auth/' + flow + '/request/', 'POST', { email }); },
  confirmLink(flow: 'verify' | 'reset', uid: string, token: string, password?: string) { return api<{message:string}>('/auth/' + flow + '/confirm/', 'POST', { uid, token, password }); },
  async deleteAccount(password: string) {
   await api('/account/delete/', 'POST', { password });
-  accessToken = ''; currentUser = null; discardCurrentCache(); announce();
+  accessToken = ''; currentUser = null; await discardCurrentCache(); announce();
  },
 };

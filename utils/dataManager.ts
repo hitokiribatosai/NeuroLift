@@ -2,7 +2,7 @@ import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 import { safeStorage } from './storage';
-import { SYNC_KEYS, readWorkspace, writeWorkspace } from './workspace';
+import { SYNC_KEYS, flushWorkspace, readWorkspace, writeWorkspace } from './workspace';
 import { validateBackup } from './validateBackup';
 
 const BACKUP_VERSION = 1;
@@ -21,6 +21,7 @@ export const DataManager = {
      */
     exportData: async (): Promise<boolean> => {
         try {
+            await flushWorkspace();
             // 1. Collect all data keys
             const keysToExport = [...SYNC_KEYS];
 
@@ -101,7 +102,7 @@ export const DataManager = {
             const state = readWorkspace();
             const next = { ...state.data };
             for (const [key, value] of Object.entries(data)) next[key] = value;
-            writeWorkspace({ ...state, data: next, dirty: true });
+            await writeWorkspace({ ...state, data: next, dirty: true });
             const entries = Object.entries(data);
             return { success: true, message: `Successfully restored ${entries.length} data categories.` };
         } catch (error) {

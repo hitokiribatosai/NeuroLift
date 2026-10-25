@@ -1,5 +1,5 @@
 import { api, signedIn, ApiError } from './authService';
-import { readWorkspace, writeWorkspace, syncedData, applyRemote, scope } from './workspace';
+import { flushWorkspace, readWorkspace, writeWorkspace, syncedData, applyRemote, scope } from './workspace';
 export type ServerSnapshot = { version: number; data: Record<string, string> };
 export type SyncStatus = 'signed-out' | 'idle' | 'syncing' | 'saved' | 'offline' | 'conflict' | 'error';
 let status: SyncStatus = 'signed-out';
@@ -18,18 +18,20 @@ export async function syncNow(resolution?: 'local' | 'remote', pushOnly = false)
  const owner = scope();
  busy = true; announce('syncing');
  try {
+  await flushWorkspace();
+  if (owner !== scope()) return;
   const remote = await api<ServerSnapshot>('/snapshot/');
   if (owner !== scope()) return;
   const local = readWorkspace();
   if (resolution === 'remote') {
    // Preserve overwritten local data as a recovery copy before an explicit choice.
    localStorage.setItem('neuroLift_conflict_backup_' + owner, JSON.stringify(local));
-   applyRemote(remote.data, remote.version); conflict = null; announce('saved'); return;
+   await applyRemote(remote.data, remote.version, owner); conflict = null; announce('saved'); return;
   }
   const data = syncedData(local.data);
   if (!local.dirty && !resolution) {
-   if (!pushOnly && JSON.stringify(data) !== JSON.stringify(syncedData(remote.data))) applyRemote(remote.data, remote.version);
-   else if (local.version !== remote.version && !pushOnly) writeWorkspace({ ...local, version: remote.version }, false);
+   if (!pushOnly && JSON.stringify(data) !== JSON.stringify(syncedData(remote.data))) await applyRemote(remote.data, remote.version, owner);
+   else if (local.version !== remote.version && !pushOnly) await writeWorkspace({ ...local, version: remote.version }, false);
    announce('saved'); return;
   }
   if (local.version !== remote.version && resolution !== 'local') {
@@ -41,7 +43,7 @@ export async function syncNow(resolution?: 'local' | 'remote', pushOnly = false)
   // Edits made while the request was running remain dirty for the next sync.
   const latest = readWorkspace();
   const dirty = JSON.stringify(syncedData(latest.data)) !== JSON.stringify(data);
-  writeWorkspace({ ...latest, version: result.version, dirty }, false);
+  await writeWorkspace({ ...latest, version: result.version, dirty }, false);
   conflict = null; announce(dirty ? 'idle' : 'saved');
  } catch (e) {
   if (owner !== scope()) return;

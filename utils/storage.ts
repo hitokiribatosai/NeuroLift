@@ -4,19 +4,19 @@ import { readWorkspace, writeWorkspace, SYNC_KEYS, scope } from './workspace';
 
 export const safeStorage = {
  getItem(key: string): string | null { return readWorkspace().data[key] ?? null; },
- setItem(key: string, value: string): void {
+ setItem(key: string, value: string): Promise<void> | void {
   const state = readWorkspace();
   if (state.data[key] === value) return;
   state.data[key] = value;
   state.dirty ||= (SYNC_KEYS as readonly string[]).includes(key);
-  writeWorkspace(state);
+  return writeWorkspace(state);
  },
- removeItem(key: string): void {
+ removeItem(key: string): Promise<void> | void {
   const state = readWorkspace();
   if (!(key in state.data)) return;
   delete state.data[key];
   state.dirty ||= (SYNC_KEYS as readonly string[]).includes(key);
-  writeWorkspace(state);
+  return writeWorkspace(state);
  },
  getParsed<T>(key: string, fallback: T): T {
   const item = safeStorage.getItem(key);
@@ -24,20 +24,20 @@ export const safeStorage = {
   try { return JSON.parse(item) ?? fallback; } catch { return fallback; }
  },
  async getWorkout(id: string) { return (await safeStorage.getAllWorkouts()).find(w => w.id === id); },
- async saveWorkout(id: string, workout: CompletedWorkout) { upsert('neuroLift_history', id, workout); },
+ async saveWorkout(id: string, workout: CompletedWorkout) { await upsert('neuroLift_history', id, workout); },
  async getAllWorkouts(): Promise<CompletedWorkout[]> { return safeStorage.getParsed('neuroLift_history', []); },
  async getJournalEntry(id: string) { return (await safeStorage.getAllJournalEntries()).find(e => e.id === id); },
- async saveJournalEntry(id: string, entry: JournalEntry) { upsert('neuroLift_journal', id, entry); },
+ async saveJournalEntry(id: string, entry: JournalEntry) { await upsert('neuroLift_journal', id, entry); },
  async getAllJournalEntries(): Promise<JournalEntry[]> { return safeStorage.getParsed('neuroLift_journal', []); },
- async saveTemplate(id: string, template: WorkoutTemplate) { upsert('neuroLift_templates', id, template); },
+ async saveTemplate(id: string, template: WorkoutTemplate) { await upsert('neuroLift_templates', id, template); },
  async getTemplates(): Promise<WorkoutTemplate[]> { return safeStorage.getParsed('neuroLift_templates', []); },
  async deleteTemplate(id: string) {
-  safeStorage.setItem('neuroLift_templates', JSON.stringify((await safeStorage.getTemplates()).filter(t => t.id !== id)));
+  await safeStorage.setItem('neuroLift_templates', JSON.stringify((await safeStorage.getTemplates()).filter(t => t.id !== id)));
  },
 };
 function upsert<T extends { id: string }>(key: string, id: string, value: T) {
  const values = safeStorage.getParsed<T[]>(key, []);
- safeStorage.setItem(key, JSON.stringify([value, ...values.filter(v => v.id !== id)]));
+ return safeStorage.setItem(key, JSON.stringify([value, ...values.filter(v => v.id !== id)]));
 }
 export async function migrateLegacyStorage() {
  if (scope() !== 'guest' || localStorage.getItem('neuroLift_workspace_guest')) return;

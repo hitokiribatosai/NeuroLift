@@ -34,7 +34,7 @@ import {
   commitCompletedWorkout,
   ensureSessionIdentity,
 } from "../../utils/workoutCompletion";
-import { scope } from "../../utils/workspace";
+import { flushWorkspace, scope } from "../../utils/workspace";
 import {
   findNextScheduledWorkout,
   WeeklyWorkoutSchedule,
@@ -552,6 +552,7 @@ export const Tracker: React.FC = () => {
     setFinishError(false);
     const owner = scope();
     try {
+      await flushWorkspace();
       const muscleNames = selectedMuscles.map((m) =>
         getLocalizedMuscleName(m, language),
       );
@@ -578,10 +579,10 @@ export const Tracker: React.FC = () => {
         const history = await exerciseHistoryService.getExerciseHistory(exercise.name);
         if (history) references.set(exercise.name, history);
       }
-      const saved = commitCompletedWorkout(record, owner);
+      const saved = await commitCompletedWorkout(record, owner);
       setSummaryPrevious(references);
       setCompletedWorkout(saved);
-      clearCurrentSession(false);
+      clearCurrentSession();
       handleSetPhase("summary");
       hapticFeedback.success();
     } catch {
@@ -592,9 +593,8 @@ export const Tracker: React.FC = () => {
     }
   };
 
-  // Shared cleanup intentionally excludes saving, summary and phase navigation.
-  const clearCurrentSession = (persist = true) => {
-    if (persist) clearSessionDraft();
+  // Keep UI cleanup and phase transition in the same render after durable commit.
+  const clearCurrentSession = () => {
     setSearchQuery("");
     setPickerMuscle("Chest");
     setPickerSubgroup("");
@@ -609,7 +609,8 @@ export const Tracker: React.FC = () => {
     resetClock();
   };
 
-  const resetSession = () => {
+  const resetSession = async () => {
+    await clearSessionDraft();
     clearCurrentSession();
     setPhase("setup");
     setCompletedWorkout(null);

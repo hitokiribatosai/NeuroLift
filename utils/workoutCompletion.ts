@@ -3,7 +3,7 @@ import { generateId } from './id';
 import { removeSessionData } from './sessionDraft';
 import { validateBackup } from './validateBackup';
 import { hasSetEffort } from './workoutValidation';
-import { readWorkspace, scope, writeWorkspace } from './workspace';
+import { databaseEnabled, flushWorkspace, readWorkspace, scope, writeWorkspace } from './workspace';
 
 const SESSION_ID = 'neuroLift_tracker_session_id';
 const HISTORY = 'neuroLift_history';
@@ -47,21 +47,21 @@ export function normalizeCompletedWorkout(record: CompletedWorkout): CompletedWo
 
 /**
  * Current-storage transaction boundary. One setItem commits history, cleanup and
- * the snapshot dirty marker together. No await or UI/native side effects here.
- * This is not a multi-tab lock; IndexedDB transactions replace it in stage 3.
+ * the snapshot dirty marker together. UI/native side effects belong to the caller.
+ * Callers must await the result: the staged database path commits asynchronously.
  */
-export function commitCompletedWorkout(record: CompletedWorkout, owner: string): CompletedWorkout {
+export function commitCompletedWorkout(record: CompletedWorkout, owner: string): CompletedWorkout | Promise<CompletedWorkout> {
   if (scope() !== owner) throw new Error('Account changed while finishing');
   const state = readWorkspace();
   const history = readHistory(state.data[HISTORY]);
   const existing = history.find(workout => workout.id === record.id);
   // Retry is a no-op, including when a different session has since started.
-  if (existing) return existing;
+  if (existing) return databaseEnabled() ? flushWorkspace().then(() => existing) : existing;
   if (!record.id || state.data[SESSION_ID] !== record.id) throw new Error('Session changed while finishing');
   const completed = normalizeCompletedWorkout(record);
   state.data[HISTORY] = JSON.stringify([completed, ...history]);
   removeSessionData(state.data);
   state.dirty = true;
-  writeWorkspace(state);
-  return completed;
+  const saved = writeWorkspace(state);
+  return databaseEnabled() ? saved.then(() => completed) : completed;
 }

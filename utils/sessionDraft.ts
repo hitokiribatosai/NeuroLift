@@ -29,5 +29,5 @@ export function clearSessionDraft() {
   const state = readWorkspace();
   if (![...SESSION_DRAFT_KEYS, ...SESSION_CLOCK_KEYS].some(key => key in state.data)) return;
   removeSessionData(state.data);
-  writeWorkspace(state);
+  return writeWorkspace(state);
 }

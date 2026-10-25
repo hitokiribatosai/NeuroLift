@@ -19,10 +19,10 @@ test('legacy draft gets a persistent identity without altering sets or existing 
   expect(readWorkspace().data).toEqual({ ...before.data, neuroLift_tracker_session_id: id });
 });
 
-test('completion commits history, dirty marker and draft/clock removal in one write', () => {
+test('completion commits history, dirty marker and draft/clock removal in one write', async () => {
   const record = workout();
   const write = vi.spyOn(Storage.prototype, 'setItem');
-  const saved = commitCompletedWorkout(record, 'guest');
+  const saved = await commitCompletedWorkout(record, 'guest');
   expect(write).toHaveBeenCalledTimes(1);
   expect(saved.totalVolume).toBe(550);
   const state = readWorkspace();
