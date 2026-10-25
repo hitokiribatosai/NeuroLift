@@ -70,7 +70,26 @@ migration, export/import round trip, and upgrade from the previous installed app
 
 ## Implementation status
 
-- Contract recorded. Stable completion and migration fixtures are the first code
-  stage; later gates remain pending until recorded as verified in the handover.
+- Contract recorded. `workoutCompletion.ts` implements stable completion IDs,
+  owner/session guards, strict history parsing and one-write completion on the
+  existing workspace format. Shared cleanup includes workout/rest timestamps.
+- `tests/fixtures/legacy-workspace.json` is synthetic, not exported personal data.
+  It preserves old workout/set/template IDs and a live draft without a session ID;
+  tests cover additive ID assignment and backup compatibility. The complete
+  IndexedDB migration matrix is still pending.
+- Canonical storage remains localStorage; snapshots remain the only cloud sync
+  protocol. No record-level outbox or local database switch is enabled yet.
 - localStorage setItem is atomic for one value, not a multi-tab transaction.
   Stage 2 narrows the crash window but does not claim to solve simultaneous tabs.
+
+### Stage 3 call-site inventory
+
+Before activation, convert `safeStorage` history/journal/template methods,
+`useSessionDraft`, `useWorkoutTemplates`, direct Journal history/journal/template
+edits, planner schedule mutations, account cache deletion, `DataManager` restore,
+and snapshot application. Read-only screens must await initialization or use a
+repository subscription; a stale synchronous cache must not overwrite new writes.
+The existing `utils/db.ts` database is legacy import-only, not the new canonical
+store. Preserve it until migration verification; do not reuse its unscoped stores
+as an account-aware database. Inventory nutrition/profile settings as well before
+changing the account sync envelope. Every exported category must remain covered.

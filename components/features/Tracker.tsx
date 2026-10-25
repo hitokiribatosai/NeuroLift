@@ -31,6 +31,11 @@ import { copyPreviousSets } from "../../utils/repeatWorkout";
 import { clearSessionDraft } from "../../utils/sessionDraft";
 import { safeStorage } from "../../utils/storage";
 import {
+  commitCompletedWorkout,
+  ensureSessionIdentity,
+} from "../../utils/workoutCompletion";
+import { scope } from "../../utils/workspace";
+import {
   findNextScheduledWorkout,
   WeeklyWorkoutSchedule,
 } from "../../utils/workoutSchedule";
@@ -98,6 +103,8 @@ export const Tracker: React.FC = () => {
   } | null>(null);
   const [shareFeedback, setShareFeedback] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const finishing = useRef(false);
+  const [finishError, setFinishError] = useState(false);
   const [exerciseHistory, setExerciseHistory] = useState<
     Map<string, ExerciseHistory>
   >(new Map());
@@ -410,6 +417,8 @@ export const Tracker: React.FC = () => {
   };
 
   const handleStartWorkout = () => {
+    ensureSessionIdentity();
+    setFinishError(false);
     void offerWorkoutNotification();
     void offerIOSRestNotifications();
     handleSetPhase("active");
@@ -532,61 +541,60 @@ export const Tracker: React.FC = () => {
   };
 
   const finishWorkout = async () => {
+    if (finishing.current) return;
     if (
       !activeExercises.some((ex) =>
         ex.sets.some((set) => set.completed && hasSetEffort(set)),
       )
     )
       return;
-    hapticFeedback.success();
-    setTimerActive(false);
-    stopRestTimer();
-    const volume = activeExercises.reduce((acc, ex) => {
-      return (
-        acc +
-        ex.sets.reduce(
-          (sAcc, s) => (s.completed ? sAcc + s.weight * s.reps : sAcc),
-          0,
-        )
+    finishing.current = true;
+    setFinishError(false);
+    const owner = scope();
+    try {
+      const muscleNames = selectedMuscles.map((m) =>
+        getLocalizedMuscleName(m, language),
       );
-    }, 0);
+      const sessionName =
+        activeTemplateName ||
+        templates.find((template) => template.id === activeTemplateId)?.name ||
+        (muscleNames.length > 0 ? muscleNames.join(" & ") : t("tracker_summary"));
 
-    const muscleNames = selectedMuscles.map((m) =>
-      getLocalizedMuscleName(m, language),
-    );
-    const sessionName =
-      activeTemplateName ||
-      templates.find((template) => template.id === activeTemplateId)?.name ||
-      (muscleNames.length > 0 ? muscleNames.join(" & ") : t("tracker_summary"));
+      const record: CompletedWorkout = {
+        id: ensureSessionIdentity(),
+        date: new Date().toISOString(),
+        name: sessionName,
+        durationSeconds: duration,
+        exercises: activeExercises.map(exercise => ({
+          ...exercise, sets: exercise.sets.map(set => ({ ...set })),
+        })),
+        totalVolume: 0, // The completion service calculates the authoritative total.
+        ...(activeTemplateId ? { templateId: activeTemplateId } : {}),
+      };
 
-    const record: CompletedWorkout = {
-      id: generateId(),
-      date: new Date().toISOString(),
-      name: sessionName,
-      durationSeconds: duration,
-      exercises: activeExercises,
-      totalVolume: volume,
-      ...(activeTemplateId ? { templateId: activeTemplateId } : {}),
-    };
-
-    // Capture historical references before saving, so this workout never compares with itself.
-    const references = new Map<string, ExerciseHistory>();
-    for (const exercise of record.exercises) {
-      const history = await exerciseHistoryService.getExerciseHistory(
-        exercise.name,
-      );
-      if (history) references.set(exercise.name, history);
+      // Capture references before saving, so the workout never compares with itself.
+      const references = new Map<string, ExerciseHistory>();
+      for (const exercise of record.exercises) {
+        const history = await exerciseHistoryService.getExerciseHistory(exercise.name);
+        if (history) references.set(exercise.name, history);
+      }
+      const saved = commitCompletedWorkout(record, owner);
+      setSummaryPrevious(references);
+      setCompletedWorkout(saved);
+      clearCurrentSession(false);
+      handleSetPhase("summary");
+      hapticFeedback.success();
+    } catch {
+      // Persistence errors leave the session/timers intact; never report success.
+      if (owner === scope()) setFinishError(true);
+    } finally {
+      finishing.current = false;
     }
-    await safeStorage.saveWorkout(record.id, record);
-    setSummaryPrevious(references);
-
-    setCompletedWorkout(record);
-    clearCurrentSession();
-    handleSetPhase("summary");
   };
 
   // Shared cleanup intentionally excludes saving, summary and phase navigation.
-  const clearCurrentSession = () => {
+  const clearCurrentSession = (persist = true) => {
+    if (persist) clearSessionDraft();
     setSearchQuery("");
     setPickerMuscle("Chest");
     setPickerSubgroup("");
@@ -598,7 +606,6 @@ export const Tracker: React.FC = () => {
     setActiveTemplateName(null);
     stopRestTimer();
     setTimerActive(false);
-    clearSessionDraft();
     resetClock();
   };
 
@@ -876,6 +883,11 @@ export const Tracker: React.FC = () => {
 
   return (
     <div className={`relative w-full min-h-screen `}>
+      {finishError && (
+        <p role="alert" className="surface-paper surface-ink surface-border rounded-xl border p-4 mb-4">
+          {c("workout_save_failed")}
+        </p>
+      )}
       <WorkoutGuide
         phase={phase}
         selected={selectedExercises.length}

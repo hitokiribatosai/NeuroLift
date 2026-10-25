@@ -5,7 +5,7 @@
 - `Tracker.tsx` coordinates workout transitions and connects the screens. Keep new dialogs and picker UI in focused components, not inline in the coordinator.
 - `TrackerSetup`, `TrackerSelection`, `TrackerTemplatePicker`, `TrackerTemplateEditor`, and `TrackerReorderDialog` render their respective workflows. `WebSession` renders the active session on web, Android and iOS.
 - `useSessionDraft` owns device-local draft initialization and persistence. Keep existing keys compatible; schema changes require migration tests.
-- `clearSessionDraft` defines the persisted cleanup boundary. Finish saves first and shows a summary; reset discards the draft. Neither may delete history, routines or preferences.
+- `workoutCompletion.ts` owns the stable session identity and completion write. Finish commits history, draft/clock removal and the sync dirty marker in one workspace write before stopping UI timers or showing success. Repeated completion IDs are no-ops. `clearSessionDraft` uses the same removal rules for discard. Neither path may delete existing history, routines or preferences. See `DATA-ARCHITECTURE.md` for migration gates and remaining multi-tab limitations.
 - `useWorkoutTemplates` owns routine loading and persistence; editing and selection remain UI responsibilities.
 - `ClockContext` is the single owner of workout/rest timers and their lifecycle. Do not add a second countdown in a screen hook.
 - `useExerciseCardSwipe` owns card gestures and animation only. Keep thresholds/RTL/reduced-motion/cancellation/input suppression covered by the gym-flow browser tests. Workout records and page navigation stay outside this hook.

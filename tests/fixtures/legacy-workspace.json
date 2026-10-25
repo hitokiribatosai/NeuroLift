@@ -1,0 +1,16 @@
+{
+  "version": 4,
+  "dirty": false,
+  "data": {
+    "neuroLift_history": "[{\"id\":\"historic-workout\",\"date\":\"2026-10-01T12:00:00Z\",\"name\":\"Sunday\",\"durationSeconds\":600,\"totalVolume\":500,\"exercises\":[{\"name\":\"Bench Press\",\"sets\":[{\"id\":\"historic-set\",\"weight\":50,\"reps\":10,\"completed\":true}]}]}]",
+    "neuroLift_templates": "[{\"id\":\"routine\",\"name\":\"Sunday\",\"createdAt\":\"2026-10-01\",\"exercises\":[{\"name\":\"Bench Press\",\"targetSets\":3,\"targetReps\":\"8-10\"}]}]",
+    "neuroLift_weekly_schedule": "{\"0\":\"routine\"}",
+    "neuroLift_tracker_phase": "active",
+    "neuroLift_tracker_active_exercises": "[{\"name\":\"Bench Press\",\"sets\":[{\"id\":\"current-set\",\"weight\":55,\"reps\":10,\"completed\":true}]}]",
+    "neuroLift_workout_active": "true",
+    "neuroLift_workout_start_time": "1790000000000",
+    "neuroLift_rest_end_time": "1790000120000",
+    "neuroLift_rest_seconds": "120",
+    "language": "fr"
+  }
+}

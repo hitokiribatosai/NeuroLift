@@ -2,6 +2,11 @@ import { Language } from '../types';
 
 // Shared interface copy. Preserve placeholder numbers across all languages.
 export const interfaceCopy = {
+  "workout_save_failed": {
+    "en": "Workout could not be saved. Your session has not been discarded. Check device storage and try again; if this continues, export a backup before making changes.",
+    "fr": "La séance n’a pas pu être enregistrée. Elle n’a pas été supprimée. Vérifiez le stockage et réessayez ; si le problème persiste, exportez une sauvegarde avant toute modification.",
+    "ar": "تعذر حفظ التمرين. لم يتم حذف جلستك. تحقق من مساحة التخزين وحاول مجدداً؛ إذا استمرت المشكلة، صدّر نسخة احتياطية قبل إجراء تغييرات."
+  },
   "help_tour": {
     "en": "Help & tour",
     "fr": "Aide et visite",

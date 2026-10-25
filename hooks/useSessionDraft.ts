@@ -7,6 +7,7 @@ import {
 } from "../utils/sessionDraft";
 import { safeStorage } from "../utils/storage";
 import { useInterfaceState } from "./useInterfaceState";
+import { ensureSessionIdentity } from "../utils/workoutCompletion";
 
 /** Device-local draft state. Saved workouts and the global clock have separate owners. */
 export function useSessionDraft() {
@@ -70,6 +71,7 @@ export function useSessionDraft() {
 
   useEffect(() => {
     if (phase === "summary") return;
+    if (phase === "active") ensureSessionIdentity();
     safeStorage.setItem("neuroLift_tracker_phase", phase);
     safeStorage.setItem(
       "neuroLift_tracker_muscles",

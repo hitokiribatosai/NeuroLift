@@ -4,14 +4,47 @@ Last reviewed: **2026-10-25**. Read `AGENTS.md` first on recovery.
 
 ### Data architecture migration started — 2026-10-25
 
+**First implementation checkpoint complete; overall architecture migration is NOT
+complete.** `workoutCompletion.ts` now assigns a stable ID to active sessions
+(including restored legacy drafts), rejects stale owner/session callbacks, refuses
+to overwrite unreadable history, and commits history + draft/workout-clock removal
++ snapshot dirty marker in one localStorage write. Retrying the same ID does not
+duplicate or overwrite history and cannot clear a newer session. Tracker guards
+concurrent finish taps, copies the submission's sets, stops clocks/shows success
+only after commit, and surfaces a localized error on failure. Discard now clears
+draft keys in one write too. Existing snapshot API and saved record formats remain
+compatible; localStorage is still canonical and there is no record outbox yet.
+
+Verification: `npm run check` passed (55 unit tests, typecheck, lint, build).
+Targeted Chromium/mobile-WebKit completion + refinement suite: 40/40 passed.
+Final full browser run: **201/202 passed**, with only the previously recorded
+WebKit PWA offline reload internal browser error. Synthetic web/Android/iOS modes
+verified injected completion-write failure, intact session/timer, reload, retry,
+one saved workout and clean next startup. Added synthetic legacy workspace fixture
+and unit coverage for retry, quota failure, corrupt history, account/session
+switches, ID preservation and backup compatibility. No new physical-device,
+hosted account/email/sync, deployment or native build verification. Installed APK
+23 and iOS simulator build 21 remain unchanged and do NOT contain this stage.
+
+Next: stage 3 structured IndexedDB migration, including all Journal/planner/import
+and account mutation paths (inventory in DATA-ARCHITECTURE.md). Then additive Django
+record APIs, old-client compatibility gate, queued record sync, restore/operational
+testing and final native rebuilds. Do not label these remaining stages complete or
+silently enable a write-behind database mirror. Cross-tab races and immediate
+process termination before existing draft React effects persist remain outside the
+first completion checkpoint; stage 3 must address them with transactional writes.
+
+Contract checkpoint `18e466e` / `checkpoint-2026-10-25-data-contract` was pushed and
+remote branch/tag equality verified. Completion checkpoint:
+`checkpoint-2026-10-25-atomic-completion` (verify remote refs on recovery).
+
 Owner approved the six-stage architecture plan. Current source and remote main
 matched `755300d` at start; working tree was clean. Added
 `docs/DATA-ARCHITECTURE.md` with lifecycle/data ownership invariants, compatibility
 gates, failure matrix and rollout boundaries; AGENTS now requires it for data work.
 No database format, backend API, hosted service or native binary changed in this
-documentation checkpoint. The next code stage is stable, atomic workout completion
-on existing storage, before the IndexedDB and record-sync migrations. Tests for
-runtime changes are pending; this checkpoint is documentation only.
+documentation checkpoint. The code stage and its current evidence are recorded
+above; the earlier contract-only commit made no runtime changes.
 
 ### Refactor completed and native artifacts refreshed — 2026-10-17
 
