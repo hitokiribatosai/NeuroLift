@@ -17,6 +17,8 @@ The owner designated `/Users/rahalabdelilah/Desktop/NeuroLift` as the active pro
 
 Read `docs/FRONTEND-ARCHITECTURE.md` when changing shared workout UI, persistence, translations, theme roles or gestures.
 
+For persistence/session/sync changes also read `docs/DATA-ARCHITECTURE.md`. Follow its staged migration gates: no storage-format switch without fixtures and recovery tests, no success before durable commit, no legacy snapshot writes over migrated records. Keep pending stages explicit; source checkpoints are not data backups.
+
 - Preserve the approved shared UI and platform-specific native behavior. Do not add parallel legacy implementations or select presentation by platform unless the design actually differs.
 - Keep screen components focused on composition. Extract cohesive dialogs, selection controls and template workflows; put persistence and session transitions behind typed helpers/hooks. Avoid giant hooks or untyped prop bags that merely relocate complexity.
 - Share reset/cleanup rules, but keep finish (save + summary) distinct from discard. Preserve workspace keys and saved-data formats unless a tested migration is explicitly required.

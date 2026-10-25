@@ -1,6 +1,17 @@
 # NeuroLift project handover
 
-Last reviewed: **2026-10-17**. Read `AGENTS.md` first on recovery.
+Last reviewed: **2026-10-25**. Read `AGENTS.md` first on recovery.
+
+### Data architecture migration started — 2026-10-25
+
+Owner approved the six-stage architecture plan. Current source and remote main
+matched `755300d` at start; working tree was clean. Added
+`docs/DATA-ARCHITECTURE.md` with lifecycle/data ownership invariants, compatibility
+gates, failure matrix and rollout boundaries; AGENTS now requires it for data work.
+No database format, backend API, hosted service or native binary changed in this
+documentation checkpoint. The next code stage is stable, atomic workout completion
+on existing storage, before the IndexedDB and record-sync migrations. Tests for
+runtime changes are pending; this checkpoint is documentation only.
 
 ### Refactor completed and native artifacts refreshed — 2026-10-17
 
