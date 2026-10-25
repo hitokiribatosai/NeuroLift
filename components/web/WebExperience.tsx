@@ -1,4 +1,5 @@
 import { useCopy } from '../../hooks/useCopy';
+import { usePersistenceAction } from '../../hooks/usePersistenceAction';
 import React from 'react';
 import { Navbar } from '../Navbar';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -185,8 +186,14 @@ export function WebWelcome({ onComplete }: { onComplete: () => void }) {
 }
 
 export function WebGoals({ onComplete }: { onComplete: (goal: string | null) => void }) {
+  const persist = usePersistenceAction();
   const { t } = useLanguage();
   const c = useCopy();
   const [goal, setGoal] = React.useState<string | null>(null);
-  return <div className="website-redesign web-welcome"><header><strong className="web-brand">NeuroLift ↗</strong><span className="web-eyebrow">02 / 02</span></header><main><p className="web-eyebrow">{c('make_it_yours_2')}</p><h1>{t('goal_setting_title')}</h1><p className="web-lead">{t('goal_setting_subtitle')}</p><div className="web-goal-options">{(['strength', 'hypertrophy', 'endurance'] as const).map((id, index) => <button key={id} aria-pressed={goal === id} onClick={() => setGoal(id)}><span className="web-eyebrow">0{index + 1}</span><strong>{t(`goal_${id}_title`)}</strong><p>{t(`goal_${id}_desc`)}</p></button>)}</div><button className="web-primary" disabled={!goal} onClick={() => { if (goal) safeStorage.setItem('neuroLift_userGoal', goal); onComplete(goal); }}>{c('enter_your_workspace')} ↗</button></main></div>;
+  const finish = () => persist(async () => {
+    if (!goal) return;
+    await safeStorage.setItem('neuroLift_userGoal', goal);
+    onComplete(goal);
+  });
+  return <div className="website-redesign web-welcome"><header><strong className="web-brand">NeuroLift ↗</strong><span className="web-eyebrow">02 / 02</span></header><main><p className="web-eyebrow">{c('make_it_yours_2')}</p><h1>{t('goal_setting_title')}</h1><p className="web-lead">{t('goal_setting_subtitle')}</p><div className="web-goal-options">{(['strength', 'hypertrophy', 'endurance'] as const).map((id, index) => <button key={id} aria-pressed={goal === id} onClick={() => setGoal(id)}><span className="web-eyebrow">0{index + 1}</span><strong>{t(`goal_${id}_title`)}</strong><p>{t(`goal_${id}_desc`)}</p></button>)}</div><button className="web-primary" disabled={!goal} onClick={finish}>{c('enter_your_workspace')} ↗</button></main></div>;
 }

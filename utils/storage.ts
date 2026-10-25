@@ -1,19 +1,27 @@
 import { CompletedWorkout, JournalEntry, WorkoutTemplate } from '../types';
 import { dbStorage } from './db';
-import { readWorkspace, writeWorkspace, SYNC_KEYS, scope } from './workspace';
+import { readWorkspace, writeWorkspace, SYNC_KEYS, scope, flushWorkspace } from './workspace';
 
 export const safeStorage = {
  getItem(key: string): string | null { return readWorkspace().data[key] ?? null; },
  setItem(key: string, value: string): Promise<void> | void {
+  return safeStorage.setItems({ [key]: value });
+ },
+ /** Related keys commit together (day rollover, templates and schedules). */
+ setItems(values: Record<string, string | null>): Promise<void> {
   const state = readWorkspace();
-  if (state.data[key] === value) return;
-  state.data[key] = value;
-  state.dirty ||= (SYNC_KEYS as readonly string[]).includes(key);
+  const changed = Object.entries(values).filter(([key, value]) => value === null ? key in state.data : state.data[key] !== value);
+  if (!changed.length) return flushWorkspace();
+  for (const [key, value] of changed) {
+   if (value === null) delete state.data[key];
+   else state.data[key] = value;
+   state.dirty ||= (SYNC_KEYS as readonly string[]).includes(key);
+  }
   return writeWorkspace(state);
  },
  removeItem(key: string): Promise<void> | void {
   const state = readWorkspace();
-  if (!(key in state.data)) return;
+  if (!(key in state.data)) return flushWorkspace();
   delete state.data[key];
   state.dirty ||= (SYNC_KEYS as readonly string[]).includes(key);
   return writeWorkspace(state);
@@ -32,7 +40,12 @@ export const safeStorage = {
  async saveTemplate(id: string, template: WorkoutTemplate) { await upsert('neuroLift_templates', id, template); },
  async getTemplates(): Promise<WorkoutTemplate[]> { return safeStorage.getParsed('neuroLift_templates', []); },
  async deleteTemplate(id: string) {
-  await safeStorage.setItem('neuroLift_templates', JSON.stringify((await safeStorage.getTemplates()).filter(t => t.id !== id)));
+  const templates = safeStorage.getParsed<WorkoutTemplate[]>('neuroLift_templates', []);
+  const schedule = safeStorage.getParsed<Record<string, string>>('neuroLift_weekly_schedule', {});
+  await safeStorage.setItems({
+   neuroLift_templates: JSON.stringify(templates.filter(t => t.id !== id)),
+   neuroLift_weekly_schedule: JSON.stringify(Object.fromEntries(Object.entries(schedule).filter(([, value]) => value !== id))),
+  });
  },
 };
 function upsert<T extends { id: string }>(key: string, id: string, value: T) {

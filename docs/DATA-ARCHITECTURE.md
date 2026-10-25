@@ -122,6 +122,15 @@ recovery UI, full upgrade/import acceptance, cross-tab refresh while a write is
 pending, and supported legacy format fixtures. An optimistic view is not evidence
 of a saved write. Do not activate this adapter merely because its tests pass.
 
+Follow-up: explicit Journal/nutrition/schedule/onboarding/rest-picker actions now
+await writes. Related draft/clock, nutrition rollover, template/schedule deletion
+and demo-clear keys are grouped atomically. The initialized-DB path has localized
+saving/recovery notices and an owner-scoped recovery export retaining both pending
+and durable copies; ordinary backups reuse the export transport. Pending cross-tab
+notifications are retained until the queue drains. These are not boot-time recovery
+or full migration acceptance. Scope races, stable entry IDs during reorder,
+pre-effect draft persistence and old-client fixtures still gate activation.
+
 ### Stage 3 call-site inventory
 
 Before activation, convert `safeStorage` history/journal/template methods,

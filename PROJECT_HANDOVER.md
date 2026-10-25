@@ -2,6 +2,47 @@
 
 Last reviewed: **2026-10-25**. Read `AGENTS.md` first on recovery.
 
+### Durable UI actions and recovery — 2026-10-25
+
+Further stage 3b implementation; production storage remains localStorage (no
+bootstrap activation yet). Journal save/delete/template actions, nutrition
+add/reset, onboarding/goals, rest-duration selection, weekly scheduling and
+session reset now wait for writes before success/closing UI. A shared explicit
+action guard prevents duplicate submissions and reports failures. Journal set
+edits no longer mutate nested React state objects in place. Continuous typing is
+still optimistic and must be represented by the persistence status, not success.
+
+Added multi-key atomic writes. Draft core fields and clock fields now persist in
+groups; calorie-day rollover is atomic. Template deletion removes scheduled
+references in the same write. Clearing demo data is atomic across its collections
+and schedule. Same-value writes wait for pending persistence rather than pretending
+an optimistic value is already durable. Deferred cross-tab notifications are
+retained while writes are pending and refreshed after the queue drains.
+
+Added localized saving/recovery UI for the staged DB path, plus user-initiated
+recovery export containing this owner's original workspace, durable database
+snapshot and pending storage view. It excludes unrelated localStorage keys and
+does not modify or automatically restore anything. Recovery files are explicitly
+not normal importable backups. Shared file export supports browser download and
+native cache/share paths; native sharing is not newly device-tested.
+
+Checks: types/lint/build and 64 unit tests passed; 36 Chromium/WebKit persistence
+tests passed, including downloaded recovery JSON and phone-width layout. The
+isolated test harness needed the same viewport meta as the application; that was
+fixed after its initial mobile-WebKit sizing assertion failed. Full browser suite:
+201/202 passed. The only failure is the previously documented WebKit PWA offline
+reload internal browser error; Chromium offline and the remaining flows passed.
+This is not physical-device or complete Safari-offline acceptance.
+
+Remaining before activation: boot-time failure/reconciliation UI (the notice only
+covers initialized DB), full upgraded-app fixtures and recovery/import acceptance,
+scope-transition races, record-ID lifecycle during reorder, and pending refresh
+under sustained edits. React draft/timer effects still have a pre-effect crash
+window; grouped writes reduce transaction fragmentation but do not eliminate it.
+Record sync/outbox, operational acceptance and native rebuilds remain pending.
+No hosted schema or installed application data migrated. APK 23/iOS simulator 21
+remain unchanged. Checkpoint: `checkpoint-2026-10-25-durable-ui-recovery`.
+
 ### Async storage integration checkpoint — 2026-10-25
 
 Stage 3b is in progress, NOT fully enabled. The workspace facade now offers an

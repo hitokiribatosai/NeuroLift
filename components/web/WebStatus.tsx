@@ -3,13 +3,20 @@ import React, { useEffect, useState } from 'react';
 import { syncState } from '../../utils/sync';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { PwaStatus } from '../ui/PwaStatus';
+import { persistenceState } from '../../utils/workspace';
 
 export function WebStatus({ openAccount }: { openAccount: () => void }) {
   const { language } = useLanguage();
   const c = useCopy();
   const [online, setOnline] = useState(navigator.onLine);
   const [sync, setSync] = useState(syncState);
+  const [persistence, setPersistence] = useState(persistenceState);
   const [local, setLocal] = useState<'idle' | 'saved' | 'error'>('idle');
+  useEffect(() => {
+    const persistenceUpdate = () => setPersistence(persistenceState());
+    window.addEventListener('persistence-status', persistenceUpdate);
+    return () => window.removeEventListener('persistence-status', persistenceUpdate);
+  }, []);
   useEffect(() => {
     const network = () => setOnline(navigator.onLine);
     const update = () => setSync(syncState());
@@ -20,6 +27,6 @@ export function WebStatus({ openAccount }: { openAccount: () => void }) {
     return () => { window.removeEventListener('online', network); window.removeEventListener('offline', network); window.removeEventListener('sync-status', update); window.removeEventListener('workspace-write', saved); window.removeEventListener('storage-error', error); };
   }, []);
   const problem = ['error', 'conflict', 'offline'].includes(sync.status);
-  const syncText = sync.status === 'syncing' ? c('syncing_account_data') : sync.status === 'saved' ? c('account_data_synced') : problem ? c('sync_needs_attention') : sync.status === 'signed-out' ? c('saved_on_this_device') : c('account_connected');
+  const syncText = persistence.failure ? c('storage_failed') : persistence.pending ? c('storage_saving') : sync.status === 'syncing' ? c('syncing_account_data') : sync.status === 'saved' ? c('account_data_synced') : problem ? c('sync_needs_attention') : sync.status === 'signed-out' ? c('saved_on_this_device') : c('account_connected');
   return <div className="web-status-region"><div className="web-save-status" role="status" aria-live="polite"><span>{local === 'error' ? c('could_not_save_locally_export_a_backup') : !online ? c('offline_data_stays_on_this_device') : syncText}</span>{sync.status === 'signed-out' && online && <button onClick={openAccount}>{c('sign_in_to_sync')}</button>}{problem && <button onClick={openAccount}>{c('open_account')} ↗</button>}</div><PwaStatus /></div>;
 }

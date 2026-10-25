@@ -15,9 +15,49 @@ let queue: Promise<unknown> = Promise.resolve();
 let pending = 0;
 let failure = '';
 let channel: BroadcastChannel | undefined;
+let refreshRequested = false;
 export const persistenceState = () => ({ pending, failure });
 export const databaseEnabled = () => database !== null;
+/** Explicit recovery artifact; never treated as an ordinary import or uploaded. */
+export async function readRecoveryBundle() {
+ const owner = scope();
+ const legacy = localStorage.getItem('neuroLift_workspace_' + owner);
+ const unsavedView = views.get(owner) ? structuredClone(views.get(owner)) : null;
+ let durable: Awaited<ReturnType<NonNullable<typeof database>['read']>> = null;
+ let databaseReadable = false;
+ if (database) {
+  try { durable = await database.read(owner); databaseReadable = true; } catch { /* Preserve remaining copies. */ }
+ }
+ return { format: 'neurolift-recovery', version: 1, owner, createdAt: new Date().toISOString(),
+  legacy, unsavedView, durable, databaseReadable };
+}
 const announcePersistence = () => window.dispatchEvent(new Event('persistence-status'));
+export function reportPersistenceFailure(error: unknown) {
+ if (database) {
+  failure = error instanceof Error ? error.message : 'Unable to save locally';
+  announcePersistence();
+ }
+ window.dispatchEvent(new Event('storage-error'));
+}
+
+async function refreshFromDatabase() {
+ if (!refreshRequested || pending || failure || !database) return;
+ const owner = scope();
+ refreshRequested = false;
+ try {
+  const snapshot = await database.read(owner);
+  if (owner !== scope()) return;
+  if (pending) { refreshRequested = true; return; }
+  if (failure) return;
+  if (!snapshot) throw new Error('This account cache was removed in another tab. Reload to continue.');
+  views.set(owner, database.workspaceFrom(snapshot));
+  window.dispatchEvent(new Event('workspace-refreshed'));
+ } catch (error) {
+  if (owner !== scope()) return;
+  failure = error instanceof Error ? error.message : 'Unable to refresh local data';
+  announcePersistence();
+ }
+}
 
 function legacyWorkspace(owner: string): Workspace {
  const raw = localStorage.getItem('neuroLift_workspace_' + owner);
@@ -39,26 +79,18 @@ export async function initializeWorkspace() {
  }
  if (typeof BroadcastChannel !== 'undefined') {
   channel = new BroadcastChannel('neurolift-training-changes');
-  channel.onmessage = async event => {
-   if (event.data !== scope() || pending || failure || !database) return;
-   const owner = scope();
-   try {
-    const snapshot = await database.read(owner);
-    if (owner !== scope() || pending || failure) return;
-    if (!snapshot) throw new Error('This account cache was removed in another tab. Reload to continue.');
-    views.set(owner, database.workspaceFrom(snapshot));
-    window.dispatchEvent(new Event('workspace-refreshed'));
-   } catch (error) {
-    if (owner !== scope()) return;
-    failure = error instanceof Error ? error.message : 'Unable to refresh local data';
-    announcePersistence();
-   }
+  channel.onmessage = event => {
+   if (event.data !== scope()) return;
+   refreshRequested = true;
+   void refreshFromDatabase();
   };
  }
 }
-export async function flushWorkspace() {
- await queue;
- if (failure) throw new Error(failure);
+export function flushWorkspace() {
+ const flushed = queue.then(() => { if (failure) throw new Error(failure); });
+ // Effects may ignore the promise; awaited command callers still receive errors.
+ void flushed.catch(() => undefined);
+ return flushed;
 }
 export function readWorkspace(): Workspace {
  if (database) {
@@ -81,7 +113,9 @@ export function writeWorkspace(value: Workspace, notify = true) {
   }
   const owner = scope();
   const before = readWorkspace();
-  const submitted = database.normalizeWorkspace(owner, value);
+  let submitted: Workspace;
+  try { submitted = database.normalizeWorkspace(owner, value); }
+  catch (error) { reportPersistenceFailure(error); throw error; }
   views.set(owner, submitted);
   pending++; announcePersistence();
   const db = database;
@@ -96,7 +130,7 @@ export function writeWorkspace(value: Workspace, notify = true) {
   queue = job.catch(error => {
    failure = error instanceof Error ? error.message : 'Unable to save locally';
    window.dispatchEvent(new Event('storage-error'));
-  }).finally(() => { pending--; announcePersistence(); });
+  }).finally(() => { pending--; announcePersistence(); void refreshFromDatabase(); });
   return job;
  }
  // One atomic localStorage write: quota failures propagate instead of pretending to save.

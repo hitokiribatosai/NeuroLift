@@ -3,6 +3,35 @@ import fixture from '../fixtures/legacy-workspace.json' with { type: 'json' };
 
 test.beforeEach(async ({ page }) => { await page.goto('/tests/persistence/blank.html'); });
 
+test('recovery notice exports pending and durable copies without replacing data', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.evaluate(async () => {
+    const path = '/utils/workspace.ts';
+    const workspace = await import(path) as typeof import('../../utils/workspace');
+    await workspace.initializeWorkspace();
+    workspace.reportPersistenceFailure(new Error('Injected failure'));
+    const harness = '/tests/persistence/recoveryHarness.tsx';
+    const { showRecoveryNotice } = await import(harness) as typeof import('./recoveryHarness');
+    showRecoveryNotice();
+  });
+  const notice = page.getByRole('region', { name: 'Changes could not be saved' });
+  await expect(notice).toBeVisible();
+  await expect(notice).toContainText('before reloading');
+  const downloadPromise = page.waitForEvent('download');
+  await notice.getByRole('button', { name: 'Export recovery copy' }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe('neurolift-recovery.json');
+  const stream = await download.createReadStream();
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream!) chunks.push(chunk);
+  const exported = JSON.parse(Buffer.concat(chunks).toString());
+  expect(exported.format).toBe('neurolift-recovery');
+  expect(exported.durable.metadata.settings).toEqual({});
+  expect(exported.unsavedView.data).toEqual({});
+  const box = await notice.boundingBox();
+  expect(box!.x + box!.width).toBeLessThanOrEqual(390);
+});
+
 test('failed initialization never exposes an unhydrated database and permits recovery', async ({ page }) => {
   const result = await page.evaluate(async () => {
     localStorage.setItem('neuroLift_workspace_guest', 'broken');
@@ -179,12 +208,40 @@ test('failed queued write blocks following writes and flush without changing dur
     const db = await openTrainingDatabase();
     const saved = db.workspaceFrom((await db.read('guest'))!);
     db.close();
-    return { statuses: results.map(result => result.status), saved, failure, status: workspace.persistenceState() };
+    localStorage.setItem('unrelated-secret', 'must-not-export');
+    const recovery = await workspace.readRecoveryBundle();
+    return { statuses: results.map(result => result.status), saved, failure, status: workspace.persistenceState(), recovery };
   });
   expect(result.statuses).toEqual(['rejected', 'rejected']);
   expect(result.saved.data).toEqual({});
   expect(result.failure).toContain('Injected queue failure');
   expect(result.status.pending).toBe(0);
+  expect(result.recovery.unsavedView?.data.language).toBe('ar');
+  expect(result.recovery.durable?.metadata.settings).toEqual({});
+  expect(result.recovery.format).toBe('neurolift-recovery');
+  expect(JSON.stringify(result.recovery)).not.toContain('must-not-export');
+});
+
+test('cross-tab changes refresh the hydrated view without changing account scope', async ({ page, context }) => {
+  await page.evaluate(async () => {
+    const path = '/utils/workspace.ts';
+    const workspace = await import(path) as typeof import('../../utils/workspace');
+    await workspace.initializeWorkspace();
+  });
+  const other = await context.newPage();
+  await other.goto('/tests/persistence/blank.html');
+  await other.evaluate(async () => {
+    const path = '/utils/workspace.ts';
+    const workspace = await import(path) as typeof import('../../utils/workspace');
+    await workspace.initializeWorkspace();
+    await workspace.writeWorkspace({ data: { language: 'fr' }, version: 0, dirty: false });
+  });
+  await expect.poll(() => page.evaluate(async () => {
+    const path = '/utils/workspace.ts';
+    const workspace = await import(path) as typeof import('../../utils/workspace');
+    return { language: workspace.readWorkspace().data.language, scope: workspace.scope() };
+  })).toEqual({ language: 'fr', scope: 'guest' });
+  await other.close();
 });
 
 test('migration is durable, idempotent, account isolated and retains rollback source', async ({ page }) => {

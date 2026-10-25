@@ -245,9 +245,14 @@ export const clearDemoData = () => {
   const realTemplates = templates.filter(t => !t.isDemo);
 
   // Update storage
-  safeStorage.setItem('neuroLift_history', JSON.stringify(realHistory));
-  safeStorage.setItem('neuroLift_journal', JSON.stringify(realJournal));
-  safeStorage.setItem('neuroLift_templates', JSON.stringify(realTemplates));
+  const ids = new Set(realTemplates.map(template => template.id));
+  const schedule = safeStorage.getParsed<Record<string, string>>('neuroLift_weekly_schedule', {});
+  return safeStorage.setItems({
+    neuroLift_history: JSON.stringify(realHistory),
+    neuroLift_journal: JSON.stringify(realJournal),
+    neuroLift_templates: JSON.stringify(realTemplates),
+    neuroLift_weekly_schedule: JSON.stringify(Object.fromEntries(Object.entries(schedule).filter(([, id]) => ids.has(id)))),
+  });
 };
 
 // Check if demo data exists

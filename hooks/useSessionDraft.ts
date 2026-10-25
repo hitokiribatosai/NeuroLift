@@ -72,19 +72,12 @@ export function useSessionDraft() {
   useEffect(() => {
     if (phase === "summary") return;
     if (phase === "active") ensureSessionIdentity();
-    safeStorage.setItem("neuroLift_tracker_phase", phase);
-    safeStorage.setItem(
-      "neuroLift_tracker_muscles",
-      JSON.stringify(selectedMuscles),
-    );
-    safeStorage.setItem(
-      "neuroLift_tracker_selected_exercises",
-      JSON.stringify(selectedExercises),
-    );
-    safeStorage.setItem(
-      "neuroLift_tracker_active_exercises",
-      JSON.stringify(activeExercises),
-    );
+    safeStorage.setItems({
+      neuroLift_tracker_phase: phase,
+      neuroLift_tracker_muscles: JSON.stringify(selectedMuscles),
+      neuroLift_tracker_selected_exercises: JSON.stringify(selectedExercises),
+      neuroLift_tracker_active_exercises: JSON.stringify(activeExercises),
+    });
   }, [phase, selectedMuscles, selectedExercises, activeExercises]);
 
   useEffect(() => {

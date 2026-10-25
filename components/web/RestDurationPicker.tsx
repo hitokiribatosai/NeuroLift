@@ -3,9 +3,11 @@ import React, { useState } from 'react';
 import { Modal } from '../ui/Modal';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { safeStorage } from '../../utils/storage';
+import { usePersistenceAction } from '../../hooks/usePersistenceAction';
 
 const durations = [60, 90, 120, 180, 300];
 export function RestDurationPicker() {
+  const persist = usePersistenceAction();
   const { t, language } = useLanguage();
   const c = useCopy();
   const [open, setOpen] = useState(false);
@@ -24,7 +26,7 @@ export function RestDurationPicker() {
         <header><span className="web-eyebrow">{c('recovery')}</span><h2>{t('tracker_rest_between_sets')}</h2><p>{c('choose_your_default_rest_after_each_set')}</p></header>
         <div className="web-rest-options" role="group" aria-label={t('tracker_rest_between_sets')}>
           {durations.map(value => <button type="button" key={value} aria-pressed={seconds === value}
-            onClick={() => { setSeconds(value); safeStorage.setItem('neuroLift_rest_seconds', String(value)); setOpen(false); }}>
+            onClick={() => persist(async () => { await safeStorage.setItem('neuroLift_rest_seconds', String(value)); setSeconds(value); setOpen(false); })}>
             <strong>{duration(value)}</strong><span>{value} {c('seconds')}</span><span className="web-rest-check" aria-hidden="true">{seconds === value ? '✓' : ''}</span>
           </button>)}
         </div>

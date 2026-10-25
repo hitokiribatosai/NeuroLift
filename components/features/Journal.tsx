@@ -8,11 +8,13 @@ import { clearDemoData,hasDemoData } from '../../utils/demoData';
 import { getExerciseTranslation,getLocalizedMuscleName,getMuscleForExercise } from '../../utils/exerciseData';
 import { generateId } from '../../utils/id';
 import { safeStorage } from '../../utils/storage';
+import { usePersistenceAction } from '../../hooks/usePersistenceAction';
 import { Card } from '../ui/Card';
 import { ConfirmModal } from '../ui/ConfirmModal';
 import { SpotlightButton } from '../ui/SpotlightButton';
 
 export const Journal: React.FC = () => {
+  const persist = usePersistenceAction();
   const { t, language } = useLanguage();
   const [journalView, setJournalView] = useState<'workouts' | 'measurements'>('workouts');
   const [entries, setEntries] = useState<JournalEntry[]>([]);
@@ -54,15 +56,15 @@ export const Journal: React.FC = () => {
     setDeleteConfirm({ id, type: 'entry' });
   };
 
-  const performDeleteEntry = (id: string) => {
+  const performDeleteEntry = (id: string) => persist(async () => {
     const updated = entries.filter(ent => ent.id !== id);
+    await safeStorage.setItem('neuroLift_journal', JSON.stringify(updated));
     setEntries(updated);
-    safeStorage.setItem('neuroLift_journal', JSON.stringify(updated));
     if (editingId === id) resetFormContent();
     setDeleteConfirm(null);
-  };
+  });
 
-  const handleSave = () => {
+  const handleSave = () => persist(async () => {
     if (editingId) {
       const updatedEntries = entries.map(ent => {
         if (ent.id === editingId) {
@@ -74,8 +76,8 @@ export const Journal: React.FC = () => {
         }
         return ent;
       });
+      await safeStorage.setItem('neuroLift_journal', JSON.stringify(updatedEntries));
       setEntries(updatedEntries);
-      safeStorage.setItem('neuroLift_journal', JSON.stringify(updatedEntries));
 
 
     } else {
@@ -87,13 +89,13 @@ export const Journal: React.FC = () => {
       } as JournalEntry;
 
       const updated = [newEntry, ...entries];
+      await safeStorage.setItem('neuroLift_journal', JSON.stringify(updated));
       setEntries(updated);
-      safeStorage.setItem('neuroLift_journal', JSON.stringify(updated));
 
 
     }
     resetFormContent();
-  };
+  });
 
   const handleChange = (field: keyof JournalEntry, value: string) => {
     setFormData(prev => ({ ...prev, [field]: parseFloat(value) || 0 }));
@@ -116,20 +118,20 @@ export const Journal: React.FC = () => {
     setDeleteConfirm({ id, type: 'workout' });
   };
 
-  const handleClearDemoData = () => {
-    clearDemoData();
+  const handleClearDemoData = () => persist(async () => {
+    await clearDemoData();
     // Refresh the data
     setEntries(safeStorage.getParsed<JournalEntry[]>('neuroLift_journal', []));
     setHistory(safeStorage.getParsed<CompletedWorkout[]>('neuroLift_history', []));
     setClearDemoConfirm(false);
-  };
+  });
 
-  const performDeleteWorkout = (id: string) => {
+  const performDeleteWorkout = (id: string) => persist(async () => {
     const updated = history.filter(w => w.id !== id);
+    await safeStorage.setItem('neuroLift_history', JSON.stringify(updated));
     setHistory(updated);
-    safeStorage.setItem('neuroLift_history', JSON.stringify(updated));
     setDeleteConfirm(null);
-  };
+  });
 
   const handleUpdateWorkoutSet = (workoutId: string, exIdx: number, setId: string, field: 'weight' | 'reps' | 'durationSeconds' | 'distanceKm', val: number) => {
     val = Number.isFinite(val) ? Math.max(0, field === 'reps' ? Math.floor(val) : val) : 0;
@@ -137,7 +139,7 @@ export const Journal: React.FC = () => {
       if (w.id === workoutId) {
         if (!w.exercises[exIdx]) return w;
         const newExs = [...w.exercises];
-        const newSets = [...newExs[exIdx].sets];
+        const newSets = newExs[exIdx].sets.map(set => ({ ...set }));
 
         // Find set by ID instead of using index
         const setIndex = newSets.findIndex(s => s.id === setId);
@@ -159,14 +161,14 @@ export const Journal: React.FC = () => {
     safeStorage.setItem('neuroLift_history', JSON.stringify(updatedHistory));
   };
 
-  const handleDeleteSet = (workoutId: string, exIdx: number, setId: string) => {
+  const handleDeleteSet = (workoutId: string, exIdx: number, setId: string) => persist(async () => {
     const updatedHistory = history.map(w => {
       if (w.id === workoutId) {
         const newExs = [...w.exercises];
         const setIndex = newExs[exIdx].sets.findIndex(s => s.id === setId);
         if (setIndex === -1) return w;
 
-        newExs[exIdx].sets.splice(setIndex, 1);
+        newExs[exIdx] = { ...newExs[exIdx], sets: newExs[exIdx].sets.filter(set => set.id !== setId) };
 
         // If no sets left, remove exercise? Optional. Keeping empty exercise is fine or we can remove it.
         // Let's just remove the set for now.
@@ -179,9 +181,9 @@ export const Journal: React.FC = () => {
       }
       return w;
     });
+    await safeStorage.setItem('neuroLift_history', JSON.stringify(updatedHistory));
     setHistory(updatedHistory);
-    safeStorage.setItem('neuroLift_history', JSON.stringify(updatedHistory));
-  };
+  });
 
   const handleShareWorkout = async (exercises: ActiveExercise[]) => {
     try {
@@ -206,7 +208,7 @@ export const Journal: React.FC = () => {
     }
   };
 
-  const handleSaveAsTemplate = () => {
+  const handleSaveAsTemplate = () => persist(async () => {
     if (!templateName.trim() || !workoutToTemplate) return;
 
     const newTemplate: WorkoutTemplate = {
@@ -224,12 +226,12 @@ export const Journal: React.FC = () => {
 
     const existingTemplates = safeStorage.getParsed<WorkoutTemplate[]>('neuroLift_templates', []);
     const updatedTemplates = [newTemplate, ...existingTemplates];
-    safeStorage.setItem('neuroLift_templates', JSON.stringify(updatedTemplates));
+    await safeStorage.setItem('neuroLift_templates', JSON.stringify(updatedTemplates));
 
     setShowSaveTemplateModal(false);
     setTemplateName('');
     setWorkoutToTemplate(null);
-  };
+  });
 
   const handleShareEntry = async (entry: JournalEntry) => {
     try {

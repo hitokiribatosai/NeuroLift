@@ -109,28 +109,19 @@ export const ClockProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     // Persistence
     useEffect(() => {
-        if (workoutStartTime) {
-            safeStorage.setItem('neuroLift_workout_start_time', workoutStartTime.toString());
-        } else {
-            safeStorage.removeItem('neuroLift_workout_start_time');
-        }
-        safeStorage.setItem('neuroLift_workout_paused_duration', pausedDuration.toString());
-        safeStorage.setItem('neuroLift_workout_active', isWorkoutActive.toString());
-
-        safeStorage.setItem('neuroLift_clock_mode', utilityMode);
-        safeStorage.setItem('neuroLift_clock_active', isUtilityActive.toString());
-        safeStorage.setItem('neuroLift_clock_duration', utilityDuration.toString());
-        safeStorage.setItem('neuroLift_clock_countdown', utilityCountdown?.toString() || '');
-
-        safeStorage.setItem('neuroLift_clock_mins', countdownMinutes);
-        safeStorage.setItem('neuroLift_clock_secs', countdownSeconds);
-        safeStorage.setItem('neuroLift_clock_laps', JSON.stringify(laps));
-
-        if (restEndTime) {
-            safeStorage.setItem('neuroLift_rest_end_time', restEndTime.toString());
-        } else {
-            safeStorage.removeItem('neuroLift_rest_end_time');
-        }
+        safeStorage.setItems({
+            neuroLift_workout_start_time: workoutStartTime ? workoutStartTime.toString() : null,
+            neuroLift_workout_paused_duration: pausedDuration.toString(),
+            neuroLift_workout_active: isWorkoutActive.toString(),
+            neuroLift_clock_mode: utilityMode,
+            neuroLift_clock_active: isUtilityActive.toString(),
+            neuroLift_clock_duration: utilityDuration.toString(),
+            neuroLift_clock_countdown: utilityCountdown?.toString() || '',
+            neuroLift_clock_mins: countdownMinutes,
+            neuroLift_clock_secs: countdownSeconds,
+            neuroLift_clock_laps: JSON.stringify(laps),
+            neuroLift_rest_end_time: restEndTime ? restEndTime.toString() : null,
+        });
     }, [workoutStartTime, pausedDuration, isWorkoutActive, utilityMode, isUtilityActive, utilityDuration, utilityCountdown, countdownMinutes, countdownSeconds, laps, restEndTime]);
 
     // Visibility Change Handler (for background resume)

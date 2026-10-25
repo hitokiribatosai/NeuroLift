@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { Card } from '../ui/Card';
 import { safeStorage } from '../../utils/storage';
+import { usePersistenceAction } from '../../hooks/usePersistenceAction';
 
 interface DailyLog {
   date: string;
@@ -9,6 +10,7 @@ interface DailyLog {
 }
 
 export const Nutrition: React.FC = () => {
+  const persist = usePersistenceAction();
   const { t } = useLanguage();
 
   const [dailyCalories, setDailyCalories] = useState(0);
@@ -30,9 +32,7 @@ export const Nutrition: React.FC = () => {
       const lastDayLog = { date: savedDate, calories: parseInt(savedDaily || '0') };
       const newHistory = [lastDayLog, ...savedHistory].slice(0, 7);
       setHistory(newHistory);
-      safeStorage.setItem('neuroLift_cal_history', JSON.stringify(newHistory));
-      safeStorage.setItem('neuroLift_cal_date', today);
-      safeStorage.setItem('neuroLift_daily_cal', '0');
+      safeStorage.setItems({ neuroLift_cal_history: JSON.stringify(newHistory), neuroLift_cal_date: today, neuroLift_daily_cal: '0' });
       setDailyCalories(0);
     } else {
       safeStorage.setItem('neuroLift_cal_date', today);
@@ -40,20 +40,20 @@ export const Nutrition: React.FC = () => {
     }
   }, [today]);
 
-  const addCalories = () => {
+  const addCalories = () => persist(async () => {
     const amount = parseInt(caloriesInput);
     if (Number.isFinite(amount) && amount > 0) {
       const newVal = dailyCalories + amount;
+      await safeStorage.setItem('neuroLift_daily_cal', newVal.toString());
       setDailyCalories(newVal);
-      safeStorage.setItem('neuroLift_daily_cal', newVal.toString());
       setCaloriesInput('');
     }
-  };
+  });
 
-  const resetDay = () => {
+  const resetDay = () => persist(async () => {
+    await safeStorage.setItem('neuroLift_daily_cal', '0');
     setDailyCalories(0);
-    safeStorage.setItem('neuroLift_daily_cal', '0');
-  };
+  });
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-24 min-h-[70vh] flex flex-col items-center">

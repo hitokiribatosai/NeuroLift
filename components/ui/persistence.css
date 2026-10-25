@@ -1,0 +1,18 @@
+.persistence-saving, .persistence-recovery {
+  position: fixed;
+  z-index: 10000;
+  inset-inline: 1rem;
+  top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
+  margin-inline: auto;
+  max-width: 34rem;
+  padding: 1rem;
+  color: var(--web-ink, #17252a);
+  background: var(--web-paper, #fff);
+  border: 1px solid var(--web-line, #d8ddd4);
+  border-radius: 1rem;
+  box-shadow: 0 4px 24px #0002;
+}
+.persistence-saving { pointer-events: none; width: fit-content; }
+.persistence-recovery h2 { font-size: 1.15rem; font-weight: 700; }
+.persistence-recovery p { margin-block: 0.75rem; }
+.persistence-recovery button { border: 1px solid currentColor; border-radius: 0.75rem; padding: 0.75rem; min-height: 44px; }

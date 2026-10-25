@@ -14,6 +14,9 @@ import { useIOSRestNotification } from './hooks/useIOSRestNotification';
 import { dismissTopOverlay } from './utils/overlays';
 import { safeStorage } from './utils/storage';
 import { startSync } from './utils/sync';
+import { usePersistenceAction } from './hooks/usePersistenceAction';
+import { PersistenceNotice } from './components/ui/PersistenceNotice';
+import { databaseEnabled } from './utils/workspace';
 // Secondary destinations are split into their own chunks to keep the startup
 // bundle smaller. The service worker precaches every built file, and native
 // builds bundle them locally, so these remain available offline.
@@ -25,6 +28,7 @@ const Privacy = React.lazy(() => import('./components/features/Privacy').then(m 
 const Account = React.lazy(() => import('./components/features/Account').then(m => ({ default: m.Account })));
 
 function AppInner() {
+  const persist = usePersistenceAction();
   useAndroidWorkoutNotification();
   useIOSRestNotification();
   const { theme } = useTheme();
@@ -142,12 +146,12 @@ function AppInner() {
     }
   }, []);
 
-  const handleOnboardingComplete = () => {
-    safeStorage.setItem('neuroLift_hasCompletedOnboarding', 'true');
+  const handleOnboardingComplete = () => persist(async () => {
+    await safeStorage.setItem('neuroLift_hasCompletedOnboarding', 'true');
 
     setShowOnboarding(false);
     setShowGoalSetting(true);
-  };
+  });
 
   const handleGoalSettingComplete = (goal: string | null) => {
     setShowGoalSetting(false);
@@ -181,7 +185,7 @@ function App() {
   const [version, setVersion] = useState(0);
   React.useEffect(() => {
     const refresh = () => setVersion(v => v + 1);
-    const storageError = () => window.alert('Unable to save locally. Export a backup and free device storage.');
+    const storageError = () => { if (!databaseEnabled()) window.alert('Unable to save locally. Export a backup and free device storage.'); };
     window.addEventListener('workspace-scope', refresh);
     window.addEventListener('workspace-refreshed', refresh);
     window.addEventListener('storage-error', storageError);
@@ -193,6 +197,6 @@ function App() {
       window.removeEventListener('storage-error', storageError);
     };
   }, []);
-  return <WorkspaceApp key={version} />;
+  return <><WorkspaceApp key={version} /><PersistenceNotice /></>;
 }
 export default App;

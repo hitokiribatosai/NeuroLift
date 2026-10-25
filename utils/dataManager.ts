@@ -1,6 +1,4 @@
-import { Capacitor } from '@capacitor/core';
-import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
-import { Share } from '@capacitor/share';
+import { exportJsonFile } from './exportFile';
 import { safeStorage } from './storage';
 import { SYNC_KEYS, flushWorkspace, readWorkspace, writeWorkspace } from './workspace';
 import { validateBackup } from './validateBackup';
@@ -46,38 +44,8 @@ export const DataManager = {
                 data: exportData
             };
 
-            const jsonString = JSON.stringify(backup, null, 2);
             const fileName = `${EXPORT_FILENAME}_${new Date().toISOString().split('T')[0]}.json`;
-
-            // 3. Write file
-            if (Capacitor.isNativePlatform()) {
-                // Only the dedicated export cache is exposed to the native share sheet.
-                const result = await Filesystem.writeFile({
-                    path: `exports/${fileName}`,
-                    data: jsonString,
-                    directory: Directory.Cache,
-                    recursive: true,
-                    encoding: Encoding.UTF8
-                });
-
-                // 4. Share file
-                await Share.share({
-                    title: 'NeuroLift Backup',
-                    text: 'Here is my NeuroLift data backup.',
-                    url: result.uri,
-                    dialogTitle: 'Export Backup'
-                });
-            } else {
-                const blob = new Blob([jsonString], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }
+            await exportJsonFile(fileName, backup);
 
             return true;
         } catch (error) {

@@ -35,6 +35,7 @@ import {
   ensureSessionIdentity,
 } from "../../utils/workoutCompletion";
 import { flushWorkspace, scope } from "../../utils/workspace";
+import { usePersistenceAction } from "../../hooks/usePersistenceAction";
 import {
   findNextScheduledWorkout,
   WeeklyWorkoutSchedule,
@@ -56,6 +57,7 @@ import { TrackerTemplateEditor } from "./TrackerTemplateEditor";
 import { TrackerTemplatePicker } from "./TrackerTemplatePicker";
 
 export const Tracker: React.FC = () => {
+  const persist = usePersistenceAction();
   const {
     phase,
     setPhase,
@@ -348,13 +350,13 @@ export const Tracker: React.FC = () => {
     return new Intl.DateTimeFormat(locale, { weekday: "short" }).format(date);
   });
 
-  const assignTemplateDay = (day: number, templateId: string) => {
+  const assignTemplateDay = (day: number, templateId: string) => persist(async () => {
     const next = { ...weeklySchedule };
     if (next[String(day)] === templateId) delete next[String(day)];
     else next[String(day)] = templateId;
+    await safeStorage.setItem("neuroLift_weekly_schedule", JSON.stringify(next));
     setWeeklySchedule(next);
-    safeStorage.setItem("neuroLift_weekly_schedule", JSON.stringify(next));
-  };
+  });
 
   // Load Templates
 
@@ -609,14 +611,14 @@ export const Tracker: React.FC = () => {
     resetClock();
   };
 
-  const resetSession = async () => {
+  const resetSession = () => persist(async () => {
     await clearSessionDraft();
     clearCurrentSession();
     setPhase("setup");
     setCompletedWorkout(null);
     setShowResetSessionConfirm(false);
     hapticFeedback.medium();
-  };
+  });
 
   // Keep old reset for summary screen
   const reset = () => {
@@ -711,23 +713,15 @@ export const Tracker: React.FC = () => {
     }
   };
 
-  const confirmDeleteTemplate = async () => {
+  const confirmDeleteTemplate = () => persist(async () => {
     if (templateDeleteConfirm) {
       await removeTemplate(templateDeleteConfirm.id);
-      const nextSchedule = Object.fromEntries(
-        Object.entries(weeklySchedule).filter(
-          ([, id]) => id !== templateDeleteConfirm.id,
-        ),
-      );
+      const nextSchedule = safeStorage.getParsed<WeeklyWorkoutSchedule>("neuroLift_weekly_schedule", {});
       setWeeklySchedule(nextSchedule);
-      safeStorage.setItem(
-        "neuroLift_weekly_schedule",
-        JSON.stringify(nextSchedule),
-      );
       setTemplateDeleteConfirm(null);
       hapticFeedback.medium();
     }
-  };
+  });
 
   const editTemplate = (template: WorkoutTemplate) => {
     setEditingTemplate(template);

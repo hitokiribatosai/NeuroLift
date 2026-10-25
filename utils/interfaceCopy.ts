@@ -2,6 +2,11 @@ import { Language } from '../types';
 
 // Shared interface copy. Preserve placeholder numbers across all languages.
 export const interfaceCopy = {
+  "storage_saving": { "en": "Saving on this device…", "fr": "Enregistrement sur cet appareil…", "ar": "جارٍ الحفظ على هذا الجهاز…" },
+  "storage_failed": { "en": "Changes could not be saved", "fr": "Les modifications n’ont pas pu être enregistrées", "ar": "تعذر حفظ التغييرات" },
+  "storage_recovery_help": { "en": "Stop editing. Keep this page open and export a recovery copy before reloading. It includes saved data and pending changes; it is not a normal backup for automatic import.", "fr": "Arrêtez les modifications. Gardez cette page ouverte et exportez une copie de récupération avant de la recharger. Elle contient les données enregistrées et les modifications en attente ; ce n’est pas une sauvegarde pour importation automatique.", "ar": "توقف عن التعديل. أبقِ هذه الصفحة مفتوحة وصدّر نسخة استرداد قبل إعادة تحميلها. تتضمن البيانات المحفوظة والتغييرات المعلقة؛ وليست نسخة احتياطية للاستيراد التلقائي." },
+  "storage_export_recovery": { "en": "Export recovery copy", "fr": "Exporter une copie de récupération", "ar": "تصدير نسخة استرداد" },
+  "storage_export_failed": { "en": "Export failed. Keep this page open and free device storage before trying again.", "fr": "Échec de l’exportation. Gardez cette page ouverte et libérez de l’espace avant de réessayer.", "ar": "فشل التصدير. أبقِ هذه الصفحة مفتوحة ووفر مساحة تخزين قبل المحاولة مجددًا." },
   "workout_save_failed": {
     "en": "Workout could not be saved. Your session has not been discarded. Check device storage and try again; if this continues, export a backup before making changes.",
     "fr": "La séance n’a pas pu être enregistrée. Elle n’a pas été supprimée. Vérifiez le stockage et réessayez ; si le problème persiste, exportez une sauvegarde avant toute modification.",
