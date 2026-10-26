@@ -56,3 +56,32 @@ test('corrupt startup shows recovery, exports raw source and does not open the w
   expect(JSON.parse(Buffer.concat(chunks).toString()).legacy).toBe('invalid-source');
   await expect(page.getByRole('button', { name: /Finish Workout/ })).toHaveCount(0);
 });
+
+test('changed source requires export and an explicit choice before app startup', async ({ page }) => {
+  await page.goto('/tests/persistence/blank.html');
+  await page.evaluate(async fixture => {
+    const path = '/utils/persistence/trainingDatabase.ts';
+    const { openTrainingDatabase } = await import(path) as typeof import('../../utils/persistence/trainingDatabase');
+    const db = await openTrainingDatabase();
+    await db.activate('guest', fixture);
+    db.close();
+    localStorage.setItem('neuroLift_workspace_guest', JSON.stringify({ ...fixture,
+      data: { ...fixture.data, neuroLift_units: 'lbs' } }));
+  }, fixture);
+  await start(page);
+  const choose = page.getByRole('button', { name: 'Open database copy', exact: true });
+  await expect(choose).toBeDisabled();
+  const downloading = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export recovery copy' }).click();
+  await downloading;
+  await expect(choose).toBeEnabled();
+  await choose.click();
+  await expect(page.getByLabel('KG — SET 1', { exact: true })).toHaveValue('55');
+  const archives = await page.evaluate(async () => {
+    const path = '/utils/workspace.ts';
+    const { readRecoveryBundle } = await import(path) as typeof import('../../utils/workspace');
+    return (await readRecoveryBundle()).previousRecoveries;
+  });
+  expect(archives).toHaveLength(1);
+  expect(archives[0].legacy.data.neuroLift_units).toBe('lbs');
+});

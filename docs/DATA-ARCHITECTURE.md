@@ -142,6 +142,12 @@ The additive server foundation is now implemented separately; see RECORD-SYNC.md
 It defaults to legacy snapshots until explicit account migration. No client
 outbox/record synchronization is activated, and default local storage is unchanged.
 
+Changed-source startup recovery now offers an explicit choice after export. Schema
+2 stores both versions in an owner-isolated archive in the same transaction as the
+choice. Original migration source is retained separately from the accepted source.
+Stale generation and transaction failure reject without replacement. This closes
+the changed-source choice gap, not the remaining full-runtime activation gates.
+
 ### Stage 3 call-site inventory
 
 Before activation, convert `safeStorage` history/journal/template methods,

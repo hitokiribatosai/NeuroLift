@@ -26,14 +26,38 @@ export async function readRecoveryBundle() {
  const unsavedView = views.get(owner) ? structuredClone(views.get(owner)) : null;
  let durable: Awaited<ReturnType<NonNullable<typeof database>['read']>> = null;
  let databaseReadable = false;
+ let previousRecoveries: Awaited<ReturnType<NonNullable<typeof database>['recoveryCopies']>> = [];
  let recoveryConnection: Awaited<ReturnType<typeof openTrainingDatabase>> | null = null;
  try {
   recoveryConnection = database || await openTrainingDatabase();
   durable = await recoveryConnection.read(owner); databaseReadable = true;
+  previousRecoveries = await recoveryConnection.recoveryCopies(owner);
  } catch { /* Preserve remaining copies even when IndexedDB cannot open. */ }
  finally { if (recoveryConnection && recoveryConnection !== database) recoveryConnection.close(); }
  return { format: 'neurolift-recovery', version: 1, owner, createdAt: new Date().toISOString(),
-  legacy, unsavedView, durable, databaseReadable };
+  legacy, unsavedView, durable, previousRecoveries, databaseReadable };
+}
+
+/** Only used by startup recovery; never automatically chooses a winning copy. */
+export async function reconciliationOptions() {
+ if (database) return null;
+ const owner = scope();
+ const source = legacyWorkspace(owner);
+ const candidate = await openTrainingDatabase();
+ try {
+  candidate.normalizeWorkspace(owner, source);
+  const snapshot = await candidate.read(owner);
+  if (!snapshot || JSON.stringify(snapshot.metadata.acceptedSource ?? snapshot.metadata.source) === JSON.stringify(source)) return null;
+  return { owner, source, generation: snapshot.metadata.generation };
+ } finally { candidate.close(); }
+}
+export async function reconcileWorkspace(options: NonNullable<Awaited<ReturnType<typeof reconciliationOptions>>>, choice: 'database' | 'legacy') {
+ if (database || options.owner !== scope() || JSON.stringify(legacyWorkspace(options.owner)) !== JSON.stringify(options.source)) {
+  throw new Error('Workspace changed. Reload and review recovery again.');
+ }
+ const candidate = await openTrainingDatabase();
+ try { await candidate.reconcile(options.owner, options.source, choice, options.generation); }
+ finally { candidate.close(); }
 }
 const announcePersistence = () => window.dispatchEvent(new Event('persistence-status'));
 export function reportPersistenceFailure(error: unknown) {

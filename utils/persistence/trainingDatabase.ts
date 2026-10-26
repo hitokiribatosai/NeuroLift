@@ -14,6 +14,7 @@ interface CandidateMetadata {
   dirty: boolean;
   settings: Record<string, string>;
   source: Workspace;
+  acceptedSource?: Workspace;
   workspaceVersion?: number;
   orders?: Partial<Record<RecordKind, string[]>>;
   collectionKeys?: string[];
@@ -22,6 +23,7 @@ interface TrainingDatabase extends DBSchema {
   records: { key: [string, RecordKind, string]; value: TrainingRecord; indexes: { owner: string } };
   drafts: { key: string; value: { owner: string; data: Record<string, string>; revision: number } };
   metadata: { key: string; value: CandidateMetadata };
+  recovery: { key: number; value: { owner: string; createdAt: string; legacy: Workspace; snapshot: CandidateSnapshot }; indexes: { owner: string } };
 }
 
 export type CandidateSnapshot = {
@@ -35,12 +37,15 @@ export type CandidateSnapshot = {
  * mutation path awaits commits. Explicit owners prevent writes following a login.
  */
 export async function openTrainingDatabase(name = 'neurolift-training-v1') {
-  const connection = await openDB<TrainingDatabase>(name, 1, {
-    upgrade(db) {
+  const connection = await openDB<TrainingDatabase>(name, 2, {
+    upgrade(db, oldVersion) {
+      if (oldVersion < 1) {
       const records = db.createObjectStore('records', { keyPath: ['owner', 'kind', 'id'] });
       records.createIndex('owner', 'owner');
       db.createObjectStore('drafts', { keyPath: 'owner' });
       db.createObjectStore('metadata', { keyPath: 'owner' });
+      }
+      if (oldVersion < 2) db.createObjectStore('recovery', { autoIncrement: true }).createIndex('owner', 'owner');
     },
     blocking() { connection?.close(); },
   });
@@ -142,13 +147,46 @@ export async function openTrainingDatabase(name = 'neurolift-training-v1') {
     let snapshot = await read(owner);
     if (!snapshot) { await migrate(owner, source); snapshot = await read(owner); }
     if (!snapshot) throw new Error('Migration did not complete');
-    if (JSON.stringify(snapshot.metadata.source) !== JSON.stringify(source)) throw new Error('Legacy data changed after migration. Preserve both copies before continuing.');
+    if (JSON.stringify(snapshot.metadata.acceptedSource ?? snapshot.metadata.source) !== JSON.stringify(source)) throw new Error('Legacy data changed after migration. Preserve both copies before continuing.');
     const tx = connection.transaction('metadata', 'readwrite');
     const metadata = await tx.store.get(owner);
     if (!metadata) throw new Error('Missing workspace');
     await tx.store.put({ ...metadata, status: 'active' });
     await tx.done;
     return workspaceFrom(snapshot);
+  }
+
+  /** Explicit recovery choice. Preserve BOTH copies atomically before changing data. */
+  async function reconcile(owner: string, source: Workspace, choice: 'database' | 'legacy', expectedGeneration: number) {
+    const candidate = prepareLegacyMigration(owner, source);
+    const tx = connection.transaction(['metadata', 'records', 'drafts', 'recovery'], 'readwrite');
+    try {
+      const metadata = await tx.objectStore('metadata').get(owner);
+      const draft = await tx.objectStore('drafts').get(owner);
+      const records = await tx.objectStore('records').index('owner').getAll(owner);
+      if (!metadata || !draft || metadata.generation !== expectedGeneration) throw new Error('Saved data changed. Review the recovery choices again.');
+      await tx.objectStore('recovery').add({ owner, createdAt: new Date().toISOString(), legacy: candidate.source,
+        snapshot: { metadata, draft, records } });
+      if (choice === 'legacy') {
+        for (const row of records) await tx.objectStore('records').delete([owner, row.kind, row.id]);
+        for (const row of candidate.records) await tx.objectStore('records').put(row);
+        await tx.objectStore('drafts').put({ owner, data: candidate.draft, revision: draft.revision + 1 });
+      }
+      await tx.objectStore('metadata').put({ ...metadata,
+        ...(choice === 'legacy' ? { settings: candidate.settings, orders: undefined,
+          collectionKeys: Object.keys(source.data), workspaceVersion: source.version, dirty: source.dirty } : {}),
+        acceptedSource: candidate.source, generation: metadata.generation + 1 });
+      await tx.done;
+    } catch (error) {
+      try { tx.abort(); } catch { /* Already finished. */ }
+      await tx.done.catch(() => undefined);
+      throw error;
+    }
+  }
+
+  async function recoveryCopies(owner: string) {
+    assertOwner(owner);
+    return connection.getAllFromIndex('recovery', 'owner', owner);
   }
 
   /** Patch only changed keys, rejecting concurrent edits to those same keys. */
@@ -205,10 +243,11 @@ export async function openTrainingDatabase(name = 'neurolift-training-v1') {
 
   async function deleteWorkspace(owner: string) {
     assertOwner(owner);
-    const tx = connection.transaction(['records', 'drafts', 'metadata'], 'readwrite');
+    const tx = connection.transaction(['records', 'drafts', 'metadata', 'recovery'], 'readwrite');
     for (const key of await tx.objectStore('records').index('owner').getAllKeys(owner)) await tx.objectStore('records').delete(key);
     await tx.objectStore('drafts').delete(owner);
     await tx.objectStore('metadata').delete(owner);
+    for (const key of await tx.objectStore('recovery').index('owner').getAllKeys(owner)) await tx.objectStore('recovery').delete(key);
     await tx.done;
   }
 
@@ -244,5 +283,5 @@ export async function openTrainingDatabase(name = 'neurolift-training-v1') {
     }
   }
 
-  return { migrate, read, saveDraft, completeWorkout, activate, patchWorkspace, workspaceFrom, normalizeWorkspace, deleteWorkspace, close: () => connection.close() };
+  return { migrate, read, saveDraft, completeWorkout, activate, reconcile, recoveryCopies, patchWorkspace, workspaceFrom, normalizeWorkspace, deleteWorkspace, close: () => connection.close() };
 }

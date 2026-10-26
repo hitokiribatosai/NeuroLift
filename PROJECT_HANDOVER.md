@@ -2,6 +2,23 @@
 
 Last reviewed: **2026-10-26**. Read `AGENTS.md` first on recovery.
 
+### Explicit migration reconciliation — 2026-10-26
+
+Database schema 2 adds owner-isolated recovery archives. When the old workspace
+changes after migration, startup offers an explicit database/older-storage choice
+only after recovery export. The choice atomically archives both versions and
+records the accepted source; the original migration source stays immutable.
+Generation checks reject stale choices, and transaction failure rolls everything
+back. Recovery export includes previous archives; explicit account-cache deletion
+also removes that account's archives. No automatic merging or default activation.
+
+Verification: types/lint/build and 65 unit tests passed; database recovery tests
+cover both choices, reopening, stale-choice rejection and injected rollback in
+Chromium and WebKit. The startup export/choice flow is also browser-tested.
+Checkpoint: `checkpoint-2026-10-26-migration-reconciliation`.
+Client record outbox/conflict UI, full rollout acceptance, hosted PostgreSQL/load
+verification and fresh native builds remain outstanding.
+
 ### Additive Django record-sync foundation — 2026-10-26
 
 Added migration 0002, account-mode/cursor fields, account-keyed TrainingRecord and
