@@ -148,6 +148,14 @@ choice. Original migration source is retained separately from the accepted sourc
 Stale generation and transaction failure reject without replacement. This closes
 the changed-source choice gap, not the remaining full-runtime activation gates.
 
+Oct 26 follow-up: the staged client now has transactional outbox/retry/cursor
+application and per-record conflict comparison/resolution, tested in both engines.
+See RECORD-SYNC.md for the remaining enrollment and activation gates. Production
+bootstrap still passes false; rebuilt Android 24 and iOS simulator 22 keep legacy
+mode. The final existing browser suite is green (202 tests) after replacing the
+WebKit offline-toggle test with a disconnected-origin test that retains offline
+reload/media/API-cache/reopening assertions. This is not real-device acceptance.
+
 ### Stage 3 call-site inventory
 
 Before activation, convert `safeStorage` history/journal/template methods,

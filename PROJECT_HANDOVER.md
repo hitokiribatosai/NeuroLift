@@ -2,6 +2,39 @@
 
 Last reviewed: **2026-10-26**. Read `AGENTS.md` first on recovery.
 
+### Rebuilt native artifacts and green offline regression — 2026-10-26
+
+Current artifacts (ignored by Git; source is checkpointed):
+- Android **1.3.21 / 24**: `builds/android/NeuroLift-1.3.21-build24-android-test.apk`.
+  SHA-256 `b6c9d03e9214e545af9115743af2ff5c286cf91f3bf0eecb340987a3b3ba193a`.
+  Gradle assembleDebug succeeded; packaged manifest confirms version/SDK values;
+  release WebView assets and public HTTPS API configuration verified. Debug-signed
+  sideload test build, not a store-signed release. No physical Android run this turn.
+- iOS **1.3.21 / 22**: `builds/ios/NeuroLift-1.3.21-build22-ios-simulator.app`.
+  Executable SHA-256 `dd3ef75603095a865b2bdc29598d0bf7456248ad3ca487d0b8d1bdd2b93efc82`.
+  Fresh derived-data build succeeded with signing disabled. GitHub dependency
+  fetch timed out; rebuilt using existing package caches whose revisions exactly
+  match Package.resolved, with package updates disabled. Installed and launched
+  on the existing iPhone 17 simulator without erasing data; Home and the previous
+  draft's Resume entry rendered. This is a launch smoke test, not a full native
+  workout/account-sync acceptance run or an installable physical-iPhone IPA.
+
+Old Android build23 and iOS build21 artifacts were moved to macOS Trash with
+2026-10-26 suffixes (recoverable); build folders contain only the latest artifacts.
+Native apps retain legacy storage/snapshot mode, just like the website. New record
+sync remains staged until the enrollment and migration acceptance gates pass.
+
+The PWA test now uses an isolated origin that drops connections; Chromium also
+uses its offline toggle. WebKit no longer depends on the toggle that bypassed SW
+interception and caused an internal navigation error. Assertions still cover
+reload, cached exercise images, no cached API data, failed API requests and new-tab
+reopening. No app offline code was changed for this test fix. Independent
+verify-offline.mjs also passed on both engines. Final full browser run: **202/202
+passed**; typecheck/lint passed. Previous stage: 65 unit, 64 persistence and 16
+Django tests passed. Real airplane-mode/device testing remains separate.
+
+Checkpoint: `checkpoint-2026-10-26-native-builds-offline-tests`.
+
 ### Staged record-sync client — 2026-10-26
 
 Implemented the durable record outbox in the training database transaction,
