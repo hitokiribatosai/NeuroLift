@@ -2,6 +2,38 @@
 
 Last reviewed: **2026-10-26**. Read `AGENTS.md` first on recovery.
 
+### Staged record-sync client — 2026-10-26
+
+Implemented the durable record outbox in the training database transaction,
+immutable upload IDs/retries, baseline revisions, tombstones, atomic pull/cursor
+application, queued post-send edits, and explicit per-record conflict decisions
+retaining both versions. Added account transport and localized comparison UI;
+record-mode accounts never use snapshots. Online/foreground events and visible
+pending-work retries resume sync. Recovery export includes outbox/conflict data.
+
+Default production bootstrap remains legacy. The attachment API requires a full
+matching server baseline and unchanged generation; automatic/resumable enrollment
+is NOT implemented. Do not manually migrate a live account to test this yet.
+Remaining: interrupted enrollment/recovery, full canonical-storage acceptance,
+expired-auth/account-switch upload scenarios, live two-device acceptance,
+PostgreSQL concurrency/load and backup restoration. No production-scale claim.
+
+During verification an intermittent WebKit startup edit failed (55 remained
+instead of 60). Guarded delayed navigation focus against stealing focus from an
+already engaged control; 10 repeated WebKit edit/finish runs then passed. Tracker
+set edits now clone nested data before mutation. Broader regression results and
+native artifact status are recorded below after completion.
+
+Read-only hosted checks: /api/health/ returned 200 with status ok;
+/api/records/changes/ returned 401 without credentials, confirming the route is
+deployed and protected, not confirming authenticated live migration.
+Verification: types/lint/build and 65 unit tests passed; all 64 persistence/browser
+checks passed. The existing full browser suite passed 201/202; only the previously
+known automated WebKit PWA offline-reload internal error remains. All 16 Django
+API tests passed on SQLite; no migration drift. PostgreSQL is not installed on
+this machine and no hosted load test was run.
+Checkpoint: `checkpoint-2026-10-26-record-sync-client`.
+
 ### Explicit migration reconciliation — 2026-10-26
 
 Database schema 2 adds owner-isolated recovery archives. When the old workspace

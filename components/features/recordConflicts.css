@@ -1,0 +1,8 @@
+.record-conflicts { border: 1px solid var(--web-line); background: var(--web-paper); color: var(--web-ink); border-radius: 1rem; padding: 1rem; }
+.record-conflicts h2, .record-conflicts h3, .record-conflicts h4 { font-weight: 700; overflow-wrap: anywhere; }
+.record-conflicts p, .record-conflicts details { margin-block: .75rem; }
+.record-conflicts article { border-top: 1px solid var(--web-line); margin-top: 1rem; padding-top: 1rem; }
+.record-conflicts pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 18rem; overflow-y: auto; font-size: .85rem; padding: .75rem; background: var(--web-canvas); }
+.record-conflicts button { min-height: 44px; padding: .75rem; border: 1px solid var(--web-line); border-radius: .75rem; }
+.record-conflicts button:disabled { opacity: .5; }
+.record-conflict-actions { display: flex; flex-wrap: wrap; gap: .5rem; }

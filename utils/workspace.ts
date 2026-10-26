@@ -19,6 +19,34 @@ let refreshRequested = false;
 let scopeQueue: Promise<void> = Promise.resolve();
 export const persistenceState = () => ({ pending, failure });
 export const databaseEnabled = () => database !== null;
+export async function recordSyncSnapshot(owner = scope()) {
+ await flushWorkspace();
+ if (owner !== scope()) throw new Error('Account changed during synchronization');
+ return database ? database.read(owner) : null;
+}
+/** Serializes sync transactions with local commands and never changes their owner. */
+export function recordSyncCommand<T>(owner: string, command: (db: NonNullable<typeof database>) => Promise<T>) {
+ if (!database || owner !== scope()) return Promise.reject(new Error('Account database is not available'));
+ const db = database;
+ pending++; announcePersistence();
+ const job = queue.then(async () => {
+  if (failure) throw new Error(failure);
+  if (owner !== scope()) throw new Error('Account changed during synchronization');
+  const previousView = views.get(owner);
+  const result = await command(db);
+  const snapshot = await db.read(owner);
+  if (!snapshot) throw new Error('Account database was removed');
+  if (owner === scope() && views.get(owner) === previousView) {
+   const next = db.workspaceFrom(snapshot);
+   views.set(owner, next);
+   if (JSON.stringify(previousView?.data) !== JSON.stringify(next.data)) window.dispatchEvent(new Event('workspace-refreshed'));
+  }
+  channel?.postMessage(owner);
+  return result;
+ });
+ queue = job.catch(() => undefined).finally(() => { pending--; announcePersistence(); void refreshFromDatabase(); });
+ return job;
+}
 /** Explicit recovery artifact; never treated as an ordinary import or uploaded. */
 export async function readRecoveryBundle() {
  const owner = scope();

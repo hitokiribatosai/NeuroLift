@@ -489,14 +489,14 @@ export const Tracker: React.FC = () => {
 
   const removeSet = (exerciseIndex: number, setIndex: number) => {
     if (!activeExercises[exerciseIndex]) return;
-    const newExs = [...activeExercises];
+    const newExs = structuredClone(activeExercises);
     newExs[exerciseIndex].sets.splice(setIndex, 1);
     setActiveExercises(newExs);
   };
 
   const addSet = (exerciseIndex: number) => {
     if (!activeExercises[exerciseIndex]) return;
-    const newExs = [...activeExercises];
+    const newExs = structuredClone(activeExercises);
     newExs[exerciseIndex].sets.push({
       id: generateId(),
       weight: 0,
@@ -513,7 +513,7 @@ export const Tracker: React.FC = () => {
     val: string,
   ) => {
     if (!activeExercises[exIdx]?.sets[setIdx]) return;
-    const newExs = [...activeExercises];
+    const newExs = structuredClone(activeExercises);
     const parsed = parseFloat(val);
     const value = Number.isFinite(parsed)
       ? Math.max(0, field === "reps" ? Math.floor(parsed) : parsed)
@@ -526,7 +526,7 @@ export const Tracker: React.FC = () => {
 
   const toggleSetComplete = (exIdx: number, setIdx: number) => {
     if (!activeExercises[exIdx]?.sets[setIdx]) return;
-    const newExs = [...activeExercises];
+    const newExs = structuredClone(activeExercises);
     const isNowCompleted = !newExs[exIdx].sets[setIdx].completed;
     if (isNowCompleted && !hasSetEffort(newExs[exIdx].sets[setIdx])) return;
     newExs[exIdx].sets[setIdx].completed = isNowCompleted;

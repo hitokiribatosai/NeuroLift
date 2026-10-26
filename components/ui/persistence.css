@@ -14,5 +14,6 @@
 }
 .persistence-saving { pointer-events: none; width: fit-content; }
 .persistence-recovery h2 { font-size: 1.15rem; font-weight: 700; }
+.persistence-recovery { max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 2rem); overflow-y: auto; }
 .persistence-recovery p { margin-block: 0.75rem; }
 .persistence-recovery button { border: 1px solid currentColor; border-radius: 0.75rem; padding: 0.75rem; min-height: 44px; }

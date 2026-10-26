@@ -4,6 +4,8 @@ import { removeSessionData } from '../sessionDraft';
 import { normalizeCompletedWorkout } from '../workoutCompletion';
 import { SYNC_KEYS, Workspace } from '../workspace';
 import { assertOwner, MigrationCandidate, prepareLegacyMigration, RecordKind, TrainingRecord } from './legacyMigration';
+import { acknowledge, CloudOperation, CloudRecord, cloudValues, enqueueChanges, materializeRecords, nextOperation,
+  receivePage, recordKey, RecordSyncState, rejectOperation, resolveRecord, sameValue } from './recordSyncState';
 
 interface CandidateMetadata {
   owner: string;
@@ -18,6 +20,7 @@ interface CandidateMetadata {
   workspaceVersion?: number;
   orders?: Partial<Record<RecordKind, string[]>>;
   collectionKeys?: string[];
+  recordSync?: RecordSyncState;
 }
 interface TrainingDatabase extends DBSchema {
   records: { key: [string, RecordKind, string]; value: TrainingRecord; indexes: { owner: string } };
@@ -165,6 +168,7 @@ export async function openTrainingDatabase(name = 'neurolift-training-v1') {
       const draft = await tx.objectStore('drafts').get(owner);
       const records = await tx.objectStore('records').index('owner').getAll(owner);
       if (!metadata || !draft || metadata.generation !== expectedGeneration) throw new Error('Saved data changed. Review the recovery choices again.');
+      if (metadata.recordSync) throw new Error('Record sync is active. Export both copies and resolve through record recovery, not legacy replacement.');
       await tx.objectStore('recovery').add({ owner, createdAt: new Date().toISOString(), legacy: candidate.source,
         snapshot: { metadata, draft, records } });
       if (choice === 'legacy') {
@@ -203,6 +207,7 @@ export async function openTrainingDatabase(name = 'neurolift-training-v1') {
       const rows = await tx.objectStore('records').index('owner').getAll(owner);
       if (!metadata || !draft || metadata.status !== 'active') throw new Error('Workspace not active');
       const current = workspaceFrom({ metadata, draft, records: rows });
+      const original = structuredClone(current);
       // A stale cloud acknowledgement must never clear another tab's unsynced work.
       if (!submitted.dirty && SYNC_KEYS.some(key => current.data[key] !== baseline.data[key])) {
         throw new Error('Local data changed during synchronization. Retry before acknowledging.');
@@ -217,6 +222,7 @@ export async function openTrainingDatabase(name = 'neurolift-training-v1') {
         current.version = submitted.version;
       }
       const candidate = prepareLegacyMigration(owner, current);
+      if (metadata.recordSync) enqueueChanges(metadata.recordSync, original, current);
       const records = tx.objectStore('records');
       const rowKey = (row: TrainingRecord) => JSON.stringify([row.kind, row.id]);
       const previous = new Map(rows.map(row => [rowKey(row), row]));
@@ -230,7 +236,7 @@ export async function openTrainingDatabase(name = 'neurolift-training-v1') {
         .map(kind => [kind, candidate.records.filter(row => row.kind === kind).map(row => row.id)]));
       await tx.objectStore('drafts').put({ owner, data: candidate.draft, revision: draft.revision + 1 });
       const updated = { ...metadata, orders, collectionKeys: Object.keys(current.data), settings: candidate.settings, generation: metadata.generation + 1,
-        dirty: submitted.dirty, workspaceVersion: current.version };
+        dirty: metadata.recordSync ? Object.keys(metadata.recordSync.pending).length > 0 : submitted.dirty, workspaceVersion: current.version };
       await tx.objectStore('metadata').put(updated);
       await tx.done;
       return workspaceFrom({ metadata: updated, draft: { owner, data: candidate.draft, revision: draft.revision + 1 }, records: candidate.records });
@@ -240,6 +246,75 @@ export async function openTrainingDatabase(name = 'neurolift-training-v1') {
       throw error;
     }
   }
+
+  /** One repository transaction for outbox, remote records and pull cursor. */
+  async function updateRecordSync<T>(owner: string, update: (state: RecordSyncState, workspace: Workspace) => T) {
+    assertOwner(owner);
+    const tx = connection.transaction(['metadata', 'records', 'drafts'], 'readwrite');
+    try {
+      const metadata = await tx.objectStore('metadata').get(owner);
+      const draft = await tx.objectStore('drafts').get(owner);
+      const rows = await tx.objectStore('records').index('owner').getAll(owner);
+      if (!metadata?.recordSync || !draft || metadata.status !== 'active') throw new Error('Record sync is not initialized');
+      const workspace = workspaceFrom({ metadata, draft, records: rows });
+      const result = update(metadata.recordSync, workspace);
+      const materialized = materializeRecords(metadata.recordSync, workspace);
+      const candidate = prepareLegacyMigration(owner, materialized);
+      // Validate before changing records; the entire transaction rolls back on failure.
+      for (const row of rows) await tx.objectStore('records').delete([owner, row.kind, row.id]);
+      for (const row of candidate.records) {
+        const previous = rows.find(old => old.kind === row.kind && old.id === row.id);
+        await tx.objectStore('records').put({ ...row, revision: previous
+          ? previous.revision + (JSON.stringify(previous.value) === JSON.stringify(row.value) ? 0 : 1) : 1 });
+      }
+      await tx.objectStore('metadata').put({ ...metadata, settings: candidate.settings,
+        orders: Object.fromEntries((['workouts', 'journal', 'templates', 'schedule'] as const)
+          .map(kind => [kind, candidate.records.filter(row => row.kind === kind).map(row => row.id)])),
+        collectionKeys: Object.keys(materialized.data), dirty: materialized.dirty, generation: metadata.generation + 1 });
+      await tx.done;
+      return result;
+    } catch (error) {
+      try { tx.abort(); } catch { /* Already finished. */ }
+      await tx.done.catch(() => undefined);
+      throw error;
+    }
+  }
+
+  /** Only attach after a complete, reconciled snapshot and a full server pull. */
+  async function attachRecordSync(owner: string, records: CloudRecord[], cursor: number, expectedGeneration: number) {
+    assertOwner(owner);
+    if (owner === 'guest') throw new Error('Guest data cannot be uploaded');
+    const tx = connection.transaction(['metadata', 'records', 'drafts'], 'readwrite');
+    try {
+      const metadata = await tx.objectStore('metadata').get(owner);
+      const draft = await tx.objectStore('drafts').get(owner);
+      const rows = await tx.objectStore('records').index('owner').getAll(owner);
+      if (!metadata || !draft || metadata.status !== 'active' || metadata.generation !== expectedGeneration
+        || metadata.recordSync) throw new Error('Workspace changed during record-sync setup');
+      const state: RecordSyncState = { cursor: 0, baseline: {}, pending: {}, resolutions: [] };
+      receivePage(state, records, cursor);
+      const workspace = workspaceFrom({ metadata, draft, records: rows });
+      const local = cloudValues(workspace);
+      const remote = cloudValues(normalizeWorkspace(owner, materializeRecords(state, workspace)));
+      if (Object.keys(local).length !== Object.keys(remote).length
+        || Object.entries(local).some(([key, value]) => !remote[key] || !sameValue(value, remote[key]))) {
+        throw new Error('Reconcile local and remote data before enabling record sync');
+      }
+      await tx.objectStore('metadata').put({ ...metadata, recordSync: state, dirty: false, generation: metadata.generation + 1 });
+      await tx.done;
+    } catch (error) {
+      try { tx.abort(); } catch { /* Already finished. */ }
+      await tx.done.catch(() => undefined);
+      throw error;
+    }
+  }
+
+  const prepareOperation = (owner: string) => updateRecordSync(owner, state => nextOperation(state, () => crypto.randomUUID()));
+  const acknowledgeOperation = (owner: string, operation: CloudOperation, record: CloudRecord) => updateRecordSync(owner, state => acknowledge(state, operation, record));
+  const rejectRecordOperation = (owner: string, operation: CloudOperation, record: CloudRecord) => updateRecordSync(owner, state => rejectOperation(state, operation, record));
+  const applyRecordPage = (owner: string, records: CloudRecord[], cursor: number) => updateRecordSync(owner, state => receivePage(state, records, cursor));
+  const resolveRecordConflict = (owner: string, kind: CloudRecord['kind'], id: string, choice: 'local' | 'remote', revision: number) =>
+    updateRecordSync(owner, state => resolveRecord(state, recordKey({ kind, id }), choice, revision));
 
   async function deleteWorkspace(owner: string) {
     assertOwner(owner);
@@ -270,6 +345,14 @@ export async function openTrainingDatabase(name = 'neurolift-training-v1') {
       if (draft.revision !== expectedDraftRevision) throw new Error('Draft revision conflict');
       if (draft.data.neuroLift_tracker_session_id !== submitted.id) throw new Error('Session changed while finishing');
       const completed = normalizeCompletedWorkout(submitted);
+      if (metadata.recordSync) {
+        const rows = await records.index('owner').getAll(owner);
+        const before = workspaceFrom({ metadata, draft, records: rows });
+        const after = structuredClone(before);
+        const history = JSON.parse(after.data.neuroLift_history || '[]');
+        after.data.neuroLift_history = JSON.stringify([...history, completed]);
+        enqueueChanges(metadata.recordSync, before, after);
+      }
       removeSessionData(draft.data);
       await records.add({ owner, kind: 'workouts', id: completed.id, revision: 1, deleted: false, value: completed });
       await tx.objectStore('drafts').put({ ...draft, revision: draft.revision + 1 });
@@ -283,5 +366,7 @@ export async function openTrainingDatabase(name = 'neurolift-training-v1') {
     }
   }
 
-  return { migrate, read, saveDraft, completeWorkout, activate, reconcile, recoveryCopies, patchWorkspace, workspaceFrom, normalizeWorkspace, deleteWorkspace, close: () => connection.close() };
+  return { migrate, read, saveDraft, completeWorkout, activate, reconcile, recoveryCopies, patchWorkspace, workspaceFrom, normalizeWorkspace, deleteWorkspace,
+    attachRecordSync, prepareOperation, acknowledgeOperation, rejectRecordOperation, applyRecordPage, resolveRecordConflict,
+    close: () => connection.close() };
 }

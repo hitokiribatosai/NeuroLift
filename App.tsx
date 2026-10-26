@@ -55,7 +55,12 @@ function AppInner() {
   React.useLayoutEffect(() => {
 
     const frame = requestAnimationFrame(() => {
-      document.getElementById('web-content')?.focus({ preventScroll: true });
+      const content = document.getElementById('web-content');
+      // A user may start typing before this delayed navigation callback runs.
+      // Do not steal focus or scroll away from an already engaged control.
+      if (document.activeElement !== content && content?.contains(document.activeElement)
+        && document.activeElement?.matches('input, textarea, select, button, a, [contenteditable="true"]')) return;
+      content?.focus({ preventScroll: true });
       window.scrollTo(0, scrollPositions.current[currentView] || 0);
     });
     return () => cancelAnimationFrame(frame);

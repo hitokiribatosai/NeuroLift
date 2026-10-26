@@ -4,6 +4,7 @@ import { syncNow, syncState } from '../../utils/sync';
 import { changeScope, scope, readWorkspace } from '../../utils/workspace';
 import { DataManager } from '../../utils/dataManager';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { RecordConflicts } from './RecordConflicts';
 
 const copy = {
  en: { account:'Account & sync', login:'Sign in', signup:'Create account', email:'Email', password:'Password', verify:'Resend verification', forgot:'Forgot password', confirm:'Confirm', reset:'Set new password', sync:'Sync now', logout:'Sign out', export:'Export backup', remove:'Delete account', local:'Keep this device’s data', remote:'Use server data', conflict:'Both devices changed data. Export a backup, then choose which version to keep. A recovery copy is also saved on this device.', guest:'Continue with guest data', cache:'Saved on this device. Sign in to sync. Account sessions end when the app closes.', deleteNote:'Delete your account and all server data? Enter your password to confirm. Other devices may retain offline copies.', notice:'Use at least 10 characters for a new password. Check your inbox after registration.', credentials:'Passwords and session tokens are never included in data backups.' },
@@ -50,7 +51,8 @@ export function Account() {
     <button className={buttonClass} disabled={busy || sync.status === 'syncing'} onClick={() => void syncNow()}>{c.sync}</button>
     <button className={buttonClass} disabled={busy} onClick={() => void run(() => authService.signOut())}>{c.logout}</button>
    </div>
-   {sync.status === 'conflict' && <div className="border border-amber-500 rounded-xl p-4 space-y-3"><p>{c.conflict}</p>
+   {sync.recordConflicts.length > 0 && <RecordConflicts records={sync.recordConflicts} />}
+   {sync.status === 'conflict' && sync.recordConflicts.length === 0 && <div className="border border-amber-500 rounded-xl p-4 space-y-3"><p>{c.conflict}</p>
     <button className={buttonClass} onClick={() => void syncNow('local')}>{c.local}</button>{' '}
     <button className={buttonClass} onClick={() => void syncNow('remote')}>{c.remote}</button>
    </div>}

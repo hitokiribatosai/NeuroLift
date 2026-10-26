@@ -3,7 +3,7 @@ export interface AuthUser { id: string; email: string; emailVerified: boolean }
 let accessToken = '';
 let currentUser: AuthUser | null = null;
 const apiBase = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
-export class ApiError extends Error { constructor(message: string, public status: number) { super(message); } }
+export class ApiError extends Error { constructor(message: string, public status: number, public details?: unknown) { super(message); } }
 export const accountState = () => currentUser;
 export const signedIn = () => !!accessToken;
 function announce() { window.dispatchEvent(new Event('account-changed')); }
@@ -19,7 +19,7 @@ export async function api<T>(path: string, method = 'GET', data?: unknown): Prom
  const result = await response.json().catch(() => ({}));
  if (!response.ok) {
   if (response.status === 401 && accessToken === requestToken) { accessToken = ''; currentUser = null; announce(); }
-  throw new ApiError(result.error || 'The service is unavailable. Your local data is still saved.', response.status);
+  throw new ApiError(result.error || 'The service is unavailable. Your local data is still saved.', response.status, result);
  }
  return result;
 }

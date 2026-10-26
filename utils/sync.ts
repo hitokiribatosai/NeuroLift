@@ -1,12 +1,15 @@
 import { api, signedIn, ApiError } from './authService';
-import { flushWorkspace, readWorkspace, writeWorkspace, syncedData, applyRemote, scope } from './workspace';
+import { flushWorkspace, readWorkspace, writeWorkspace, syncedData, applyRemote, scope, recordSyncSnapshot, recordSyncCommand } from './workspace';
+import { synchronizeRecords } from './recordSync';
+import { PendingRecord } from './persistence/recordSyncState';
 export type ServerSnapshot = { version: number; data: Record<string, string> };
 export type SyncStatus = 'signed-out' | 'idle' | 'syncing' | 'saved' | 'offline' | 'conflict' | 'error';
 let status: SyncStatus = 'signed-out';
 let problem = '';
 let busy = false;
 let conflict: ServerSnapshot | null = null;
-export const syncState = () => ({ status, problem, conflict });
+let recordConflicts: PendingRecord[] = [];
+export const syncState = () => ({ status, problem, conflict, recordConflicts });
 function announce(next: SyncStatus, message = '') {
  status = next; problem = message; window.dispatchEvent(new Event('sync-status'));
 }
@@ -20,6 +23,13 @@ export async function syncNow(resolution?: 'local' | 'remote', pushOnly = false)
  try {
   await flushWorkspace();
   if (owner !== scope()) return;
+  if ((await recordSyncSnapshot(owner))?.metadata.recordSync) {
+   const records = await synchronizeRecords(owner);
+   if (owner !== scope()) return;
+   recordConflicts = Object.values(records.pending).filter(record => record.conflict);
+   announce(recordConflicts.length ? 'conflict' : Object.keys(records.pending).length ? 'idle' : 'saved');
+   return;
+  }
   const remote = await api<ServerSnapshot>('/snapshot/');
   if (owner !== scope()) return;
   const local = readWorkspace();
@@ -54,12 +64,34 @@ export async function syncNow(resolution?: 'local' | 'remote', pushOnly = false)
   if (status === 'idle' && signedIn() && readWorkspace().dirty) setTimeout(() => void syncNow(undefined, true), 1500);
  }
 }
+export async function resolveSyncRecord(record: PendingRecord, choice: 'local' | 'remote') {
+ if (!record.conflict || busy) return;
+ const owner = scope();
+ busy = true;
+ try {
+  await recordSyncCommand(owner, db => db.resolveRecordConflict(owner, record.desired.kind, record.desired.id, choice, record.conflict!.revision));
+  recordConflicts = [];
+ } catch (error) {
+  announce('error', error instanceof Error ? error.message : 'Unable to resolve conflict');
+  return;
+ } finally { busy = false; }
+ await syncNow();
+}
 let timer: ReturnType<typeof setTimeout>;
 export function startSync() {
  const push = () => { clearTimeout(timer); timer = setTimeout(() => { if (readWorkspace().dirty) void syncNow(undefined, true); }, 1500); };
- const reset = () => { conflict = null; announce(signedIn() ? 'idle' : 'signed-out'); };
+ const reset = () => { conflict = null; recordConflicts = []; announce(signedIn() ? 'idle' : 'signed-out'); };
+ const online = () => { if (signedIn()) void syncNow(); };
+ const foreground = () => { if (document.visibilityState === 'visible') online(); };
+ // Retry durable pending work after transient server failures without requiring
+ // another edit. Do not keep a sleeping preview server awake for idle accounts.
+ const retry = setInterval(() => {
+  if (document.visibilityState !== 'visible' || !signedIn() || !navigator.onLine || busy || status === 'conflict') return;
+  try { if (readWorkspace().dirty) void syncNow(undefined, true); } catch { /* Recovery UI owns unreadable storage. */ }
+ }, 30000);
  window.addEventListener('workspace-write', push);
- window.addEventListener('online', push);
+ window.addEventListener('online', online);
  window.addEventListener('account-changed', reset);
- return () => { clearTimeout(timer); window.removeEventListener('workspace-write', push); window.removeEventListener('online', push); window.removeEventListener('account-changed', reset); };
+ document.addEventListener('visibilitychange', foreground);
+ return () => { clearTimeout(timer); clearInterval(retry); document.removeEventListener('visibilitychange', foreground); window.removeEventListener('workspace-write', push); window.removeEventListener('online', online); window.removeEventListener('account-changed', reset); };
 }
