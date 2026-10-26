@@ -2,6 +2,27 @@
 
 Last reviewed: **2026-10-26**. Read `AGENTS.md` first on recovery.
 
+### Additive Django record-sync foundation — 2026-10-26
+
+Added migration 0002, account-mode/cursor fields, account-keyed TrainingRecord and
+SyncReceipt models, and authenticated migrate/operation/changes endpoints. Snapshot
+mode stays the default. An explicit version-checked migration preserves the old
+snapshot and blocks legacy GET/PUT with 426. Operations enforce record revisions,
+immutable operation IDs, atomic receipt/cursor/record writes, tombstones, account
+isolation, pagination and preview size limits. See `docs/RECORD-SYNC.md` for the
+wire contract and rollout constraints.
+
+Verification: all 16 Django API tests passed on local SQLite; makemigrations
+--check --dry-run reports no model drift. No live account was opted in, no hosted
+database was manually migrated, and PostgreSQL concurrency/load was not measured.
+The client does NOT use record sync yet: persistent outbox, conflict-resolution UI,
+transactional cursor application, upgrade/restore acceptance and native rebuilds
+remain required. Receipt growth/retention and multi-record batches are not solved.
+Do not claim end-to-end record sync or full architecture completion.
+
+Checkpoint: `checkpoint-2026-10-26-record-sync-server`. GitHub/Render deployment
+status must be verified independently; a push is not evidence of hosted migration.
+
 ### Startup recovery and whole-app migration canary — 2026-10-26
 
 Resumed the Oct 25 edits after the approval service's usage-limit interruption.

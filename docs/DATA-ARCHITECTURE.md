@@ -138,6 +138,10 @@ account switches serialize and drain outstanding writes. Corrupted startup retai
 raw source and can export an existing candidate. This is not automatic repair or
 changed-source reconciliation. The full migration gate remains open.
 
+The additive server foundation is now implemented separately; see RECORD-SYNC.md.
+It defaults to legacy snapshots until explicit account migration. No client
+outbox/record synchronization is activated, and default local storage is unchanged.
+
 ### Stage 3 call-site inventory
 
 Before activation, convert `safeStorage` history/journal/template methods,

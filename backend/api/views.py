@@ -208,6 +208,8 @@ def confirm_link(request, flow):
 def snapshot(request):
     if request.method == "GET":
         state, _ = Snapshot.objects.get_or_create(user=request.api_user)
+        if state.records_enabled:
+            return error("This account requires the updated record-sync client.", 426)
         return JsonResponse({"version": state.version, "data": state.data})
     data = request.payload.get("data")
     version = request.payload.get("version")
@@ -215,10 +217,12 @@ def snapshot(request):
         return error("A valid base version is required.")
     validate_snapshot(data)
     # Compare-and-swap in one SQL UPDATE prevents lost updates on SQLite and Postgres.
-    updated = Snapshot.objects.filter(user=request.api_user, version=version).update(
+    updated = Snapshot.objects.filter(user=request.api_user, version=version, records_enabled=False).update(
         data=data, version=F("version") + 1, updated_at=timezone.now()
     )
     if not updated:
+        if Snapshot.objects.filter(user=request.api_user, records_enabled=True).exists():
+            return error("This account requires the updated record-sync client.", 426)
         return error("Data changed on another device. Resolve the conflict before syncing.", 409)
     return JsonResponse({"version": version + 1, "data": data})
 

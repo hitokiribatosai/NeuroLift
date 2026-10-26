@@ -1,7 +1,11 @@
 from django.urls import path
 from api import views
+from api import record_views
 
 urlpatterns = [
+ path("api/records/migrate/", record_views.migrate),
+ path("api/records/operation/", record_views.operation),
+ path("api/records/changes/", record_views.changes),
  path("api/health/", views.health),
  path("api/auth/register/", views.register),
  path("api/auth/login/", views.login),
