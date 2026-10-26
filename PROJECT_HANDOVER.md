@@ -1,6 +1,36 @@
 # NeuroLift project handover
 
-Last reviewed: **2026-10-25**. Read `AGENTS.md` first on recovery.
+Last reviewed: **2026-10-26**. Read `AGENTS.md` first on recovery.
+
+### Startup recovery and whole-app migration canary — 2026-10-26
+
+Resumed the Oct 25 edits after the approval service's usage-limit interruption.
+Production bootstrap now catches unreadable workspace startup and offers localized
+retry/recovery export without deleting data. The shared bootstrap's structured
+storage argument remains FALSE in index.tsx; the full-app test harness enables
+it explicitly. Recovery export can inspect a previously created database even
+when initialization failed, retaining the raw legacy source separately.
+
+Active exercise updates now enqueue persistence in the input handler, before
+React effects, with stable entry IDs retained across reorder and a captured-owner
+guard. This does not make IndexedDB synchronous or eliminate process termination
+before transaction commit. Account switches are serialized and drain outgoing
+writes before refreshing the target workspace. Other draft/clock state still has
+effect-driven persistence; full migration acceptance remains incomplete.
+
+Checks: types/lint/build and 65 unit tests passed; 40 persistence tests passed.
+The new full-app canary edits a restored workout, finishes it, reloads on IndexedDB
+and checks that the original localStorage source is unchanged. Startup corruption
+exports the raw source without opening the workout. An initial WebKit timing
+failure produced the pre-edit volume; the test now explicitly waits for the edit
+to appear in the storage view before finishing (not a claimed product-bug fix).
+Repeated canary runs passed 12/12. Full existing browser suite: 201/202 passed;
+only the known WebKit PWA offline-reload internal error remains. Native artifacts
+are unchanged. Checkpoint: `checkpoint-2026-10-26-startup-migration-canary`.
+
+Still required: explicit changed-source reconciliation/restore acceptance, full
+runtime migration coverage and default activation, client record outbox/conflict
+UI, PostgreSQL concurrency/load evidence, and Android/iOS rebuilds/device checks.
 
 ### Durable UI actions and recovery — 2026-10-25
 

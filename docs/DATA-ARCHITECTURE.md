@@ -131,6 +131,13 @@ notifications are retained until the queue drains. These are not boot-time recov
 or full migration acceptance. Scope races, stable entry IDs during reorder,
 pre-effect draft persistence and old-client fixtures still gate activation.
 
+Oct 26: the shared bootstrap now offers startup recovery and is exercised with
+the real App on IndexedDB in `tests/persistence/app-migration.spec.ts`. Production
+still passes false. Active exercise edits enqueue before render with stable IDs;
+account switches serialize and drain outstanding writes. Corrupted startup retains
+raw source and can export an existing candidate. This is not automatic repair or
+changed-source reconciliation. The full migration gate remains open.
+
 ### Stage 3 call-site inventory
 
 Before activation, convert `safeStorage` history/journal/template methods,

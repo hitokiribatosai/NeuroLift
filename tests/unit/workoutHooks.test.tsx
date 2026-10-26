@@ -5,6 +5,8 @@ import { useSessionDraft } from "../../hooks/useSessionDraft";
 import { useWorkoutTemplates } from "../../hooks/useWorkoutTemplates";
 import { safeStorage } from "../../utils/storage";
 import { changeScope } from "../../utils/workspace";
+import { usePersistentExercises } from '../../hooks/usePersistentExercises';
+import { ActiveExercise } from '../../types';
 
 beforeEach(() => {
   localStorage.clear();
@@ -44,6 +46,25 @@ test("draft hook restores and persists a session without touching saved history"
   } finally {
     hook.close();
   }
+});
+
+test('exercise edits persist before React effects and preserve IDs through reorder', async () => {
+  const hook = await mountHook(usePersistentExercises);
+  try {
+    act(() => {
+      hook.value[1]([{ name: 'Press', sets: [] }, { name: 'Row', sets: [] }]);
+      // Read in the same event, before React commits or runs an effect.
+      expect(safeStorage.getParsed<ActiveExercise[]>('neuroLift_tracker_active_exercises', [])).toHaveLength(2);
+    });
+    const ids = hook.value[0].map(exercise => exercise.id);
+    expect(new Set(ids).size).toBe(2);
+    act(() => hook.value[1](previous => [...previous].reverse()));
+    expect(hook.value[0].map(exercise => exercise.id)).toEqual([...ids].reverse());
+    expect(safeStorage.getParsed<ActiveExercise[]>('neuroLift_tracker_active_exercises', []).map(exercise => exercise.id)).toEqual([...ids].reverse());
+    await changeScope('1');
+    act(() => hook.value[1]([{ name: 'Must not cross accounts', sets: [] }]));
+    expect(safeStorage.getItem('neuroLift_tracker_active_exercises')).toBeNull();
+  } finally { hook.close(); }
 });
 
 test("completed legacy drafts recover before other draft initializers run", async () => {

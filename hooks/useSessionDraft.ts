@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { ActiveExercise, WorkoutTemplate } from "../types";
+import { WorkoutTemplate } from "../types";
+import { usePersistentExercises } from './usePersistentExercises';
 import {
   clearSessionDraft,
   isTrackerPhase,
@@ -58,14 +59,7 @@ export function useSessionDraft() {
     () => safeStorage.getItem("neuroLift_tracker_active_template_name"),
   );
 
-  const [activeExercises, setActiveExercises] = useState<ActiveExercise[]>(
-    () => {
-      return safeStorage.getParsed<ActiveExercise[]>(
-        "neuroLift_tracker_active_exercises",
-        [],
-      );
-    },
-  );
+  const [activeExercises, setActiveExercises] = usePersistentExercises();
 
   const [searchQuery, setSearchQuery] = useInterfaceState("picker_search", "");
 

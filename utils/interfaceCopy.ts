@@ -2,6 +2,9 @@ import { Language } from '../types';
 
 // Shared interface copy. Preserve placeholder numbers across all languages.
 export const interfaceCopy = {
+  "storage_startup_failed": { "en": "Your saved data needs attention", "fr": "Vos données enregistrées nécessitent une vérification", "ar": "تحتاج بياناتك المحفوظة إلى مراجعة" },
+  "storage_startup_help": { "en": "The app could not safely open your saved data. Nothing has been deleted or replaced. Export a recovery copy before clearing storage or reinstalling. If another tab is open, close it and retry.", "fr": "L’application n’a pas pu ouvrir vos données en toute sécurité. Rien n’a été supprimé ni remplacé. Exportez une copie de récupération avant d’effacer le stockage ou de réinstaller. Fermez les autres onglets et réessayez.", "ar": "تعذر فتح بياناتك بأمان. لم يُحذف أو يُستبدل أي شيء. صدّر نسخة استرداد قبل مسح التخزين أو إعادة التثبيت. أغلق علامات التبويب الأخرى وحاول مجددًا." },
+  "storage_retry": { "en": "Retry opening", "fr": "Réessayer l’ouverture", "ar": "إعادة محاولة الفتح" },
   "storage_saving": { "en": "Saving on this device…", "fr": "Enregistrement sur cet appareil…", "ar": "جارٍ الحفظ على هذا الجهاز…" },
   "storage_failed": { "en": "Changes could not be saved", "fr": "Les modifications n’ont pas pu être enregistrées", "ar": "تعذر حفظ التغييرات" },
   "storage_recovery_help": { "en": "Stop editing. Keep this page open and export a recovery copy before reloading. It includes saved data and pending changes; it is not a normal backup for automatic import.", "fr": "Arrêtez les modifications. Gardez cette page ouverte et exportez une copie de récupération avant de la recharger. Elle contient les données enregistrées et les modifications en attente ; ce n’est pas une sauvegarde pour importation automatique.", "ar": "توقف عن التعديل. أبقِ هذه الصفحة مفتوحة وصدّر نسخة استرداد قبل إعادة تحميلها. تتضمن البيانات المحفوظة والتغييرات المعلقة؛ وليست نسخة احتياطية للاستيراد التلقائي." },

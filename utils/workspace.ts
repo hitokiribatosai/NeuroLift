@@ -16,6 +16,7 @@ let pending = 0;
 let failure = '';
 let channel: BroadcastChannel | undefined;
 let refreshRequested = false;
+let scopeQueue: Promise<void> = Promise.resolve();
 export const persistenceState = () => ({ pending, failure });
 export const databaseEnabled = () => database !== null;
 /** Explicit recovery artifact; never treated as an ordinary import or uploaded. */
@@ -25,9 +26,12 @@ export async function readRecoveryBundle() {
  const unsavedView = views.get(owner) ? structuredClone(views.get(owner)) : null;
  let durable: Awaited<ReturnType<NonNullable<typeof database>['read']>> = null;
  let databaseReadable = false;
- if (database) {
-  try { durable = await database.read(owner); databaseReadable = true; } catch { /* Preserve remaining copies. */ }
- }
+ let recoveryConnection: Awaited<ReturnType<typeof openTrainingDatabase>> | null = null;
+ try {
+  recoveryConnection = database || await openTrainingDatabase();
+  durable = await recoveryConnection.read(owner); databaseReadable = true;
+ } catch { /* Preserve remaining copies even when IndexedDB cannot open. */ }
+ finally { if (recoveryConnection && recoveryConnection !== database) recoveryConnection.close(); }
  return { format: 'neurolift-recovery', version: 1, owner, createdAt: new Date().toISOString(),
   legacy, unsavedView, durable, databaseReadable };
 }
@@ -144,7 +148,11 @@ export function syncedData(data = readWorkspace().data) {
 }
 export function changeScope(owner: string) {
  if (!/^(guest|[0-9]+)$/.test(owner)) throw new Error('Invalid account scope');
- if (database) return switchDatabaseScope(owner);
+ if (database) {
+  const next = scopeQueue.then(() => switchDatabaseScope(owner));
+  scopeQueue = next.catch(() => undefined);
+  return next;
+ }
  localStorage.setItem('neuroLift_active_owner', owner);
  activeOwner = owner;
  window.dispatchEvent(new Event('workspace-scope'));
@@ -152,8 +160,14 @@ export function changeScope(owner: string) {
 }
 async function switchDatabaseScope(owner: string) {
  await flushWorkspace();
- const view = await database!.activate(owner, legacyWorkspace(owner));
- views.set(owner, view);
+ await database!.activate(owner, legacyWorkspace(owner));
+ // Writes made while opening the target remain owned by the outgoing account.
+ // Drain before refreshing the target so a same-account switch cannot regress it.
+ let observed: Promise<unknown>;
+ do { observed = queue; await flushWorkspace(); } while (observed !== queue);
+ const snapshot = await database!.read(owner);
+ if (!snapshot) throw new Error('Target workspace disappeared during account switch');
+ views.set(owner, database!.workspaceFrom(snapshot));
  localStorage.setItem('neuroLift_active_owner', owner);
  activeOwner = owner;
  window.dispatchEvent(new Event('workspace-scope'));

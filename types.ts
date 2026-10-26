@@ -78,6 +78,8 @@ export interface WorkoutSet {
 }
 
 export interface ActiveExercise {
+  /** Stable session-entry identity, independent of title and reorder position. */
+  id?: string;
   name: string;
   sets: WorkoutSet[];
   /** A plan cue only; set entries remain blank until the user logs them. */
