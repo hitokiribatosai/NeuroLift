@@ -1,6 +1,6 @@
 import { api, signedIn, ApiError } from './authService';
 import { flushWorkspace, readWorkspace, writeWorkspace, syncedData, applyRemote, scope, recordSyncSnapshot, recordSyncCommand } from './workspace';
-import { synchronizeRecords } from './recordSync';
+import { resumeRecordEnrollment, synchronizeRecords } from './recordSync';
 import { PendingRecord } from './persistence/recordSyncState';
 export type ServerSnapshot = { version: number; data: Record<string, string> };
 export type SyncStatus = 'signed-out' | 'idle' | 'syncing' | 'saved' | 'offline' | 'conflict' | 'error';
@@ -19,11 +19,15 @@ export async function syncNow(resolution?: 'local' | 'remote', pushOnly = false)
  if (!navigator.onLine) { announce('offline'); return; }
  if (conflict && !resolution) { announce('conflict'); return; }
  const owner = scope();
+ let recordProtocol = false;
  busy = true; announce('syncing');
  try {
   await flushWorkspace();
   if (owner !== scope()) return;
-  if ((await recordSyncSnapshot(owner))?.metadata.recordSync) {
+  const snapshot = await recordSyncSnapshot(owner);
+  recordProtocol = !!(snapshot?.metadata.recordSync || snapshot?.metadata.enrollment);
+  if (snapshot?.metadata.enrollment) await resumeRecordEnrollment(owner);
+  if (recordProtocol) {
    const records = await synchronizeRecords(owner);
    if (owner !== scope()) return;
    recordConflicts = Object.values(records.pending).filter(record => record.conflict);
@@ -57,7 +61,7 @@ export async function syncNow(resolution?: 'local' | 'remote', pushOnly = false)
   conflict = null; announce(dirty ? 'idle' : 'saved');
  } catch (e) {
   if (owner !== scope()) return;
-  if (e instanceof ApiError && e.status === 409) { conflict = { version: -1, data: {} }; announce('conflict'); }
+  if (!recordProtocol && e instanceof ApiError && e.status === 409) { conflict = { version: -1, data: {} }; announce('conflict'); }
   else announce(navigator.onLine ? 'error' : 'offline', e instanceof Error ? e.message : 'Sync failed');
  } finally {
   busy = false;
@@ -87,7 +91,10 @@ export function startSync() {
  // another edit. Do not keep a sleeping preview server awake for idle accounts.
  const retry = setInterval(() => {
   if (document.visibilityState !== 'visible' || !signedIn() || !navigator.onLine || busy || status === 'conflict') return;
-  try { if (readWorkspace().dirty) void syncNow(undefined, true); } catch { /* Recovery UI owns unreadable storage. */ }
+  try {
+   if (readWorkspace().dirty) void syncNow(undefined, true);
+   else void recordSyncSnapshot().then(snapshot => { if (snapshot?.metadata.enrollment) void syncNow(); }).catch(() => undefined);
+  } catch { /* Recovery UI owns unreadable storage. */ }
  }, 30000);
  window.addEventListener('workspace-write', push);
  window.addEventListener('online', online);

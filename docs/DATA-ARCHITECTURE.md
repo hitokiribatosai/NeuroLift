@@ -156,6 +156,14 @@ mode. The final existing browser suite is green (202 tests) after replacing the
 WebKit offline-toggle test with a disconnected-origin test that retains offline
 reload/media/API-cache/reopening assertions. This is not real-device acceptance.
 
+Oct 27: staged record enrollment now persists its pre-network checkpoint and every
+pull page, resumes lost migration responses, preserves later local edits with a
+three-way merge, and atomically finalizes record mode. Browser tests cover failed
+finalization, rejected version, expired authentication and account switches during
+upload. Production remains legacy. Fresh-device joining of migrated accounts,
+user-facing opt-in/recovery and full canonical-storage acceptance are still open;
+do not enable migration merely because the isolated enrollment tests pass.
+
 ### Stage 3 call-site inventory
 
 Before activation, convert `safeStorage` history/journal/template methods,

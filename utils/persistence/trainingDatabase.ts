@@ -4,7 +4,7 @@ import { removeSessionData } from '../sessionDraft';
 import { normalizeCompletedWorkout } from '../workoutCompletion';
 import { SYNC_KEYS, Workspace } from '../workspace';
 import { assertOwner, MigrationCandidate, prepareLegacyMigration, RecordKind, TrainingRecord } from './legacyMigration';
-import { acknowledge, CloudOperation, CloudRecord, cloudValues, enqueueChanges, materializeRecords, nextOperation,
+import { acknowledge, CloudOperation, CloudRecord, cloudValues, enqueueChanges, finishEnrollment, materializeRecords, nextOperation,
   receivePage, recordKey, RecordSyncState, rejectOperation, resolveRecord, sameValue } from './recordSyncState';
 
 interface CandidateMetadata {
@@ -21,6 +21,7 @@ interface CandidateMetadata {
   orders?: Partial<Record<RecordKind, string[]>>;
   collectionKeys?: string[];
   recordSync?: RecordSyncState;
+  enrollment?: { baseline: Workspace; pulled: RecordSyncState; complete: boolean };
 }
 interface TrainingDatabase extends DBSchema {
   records: { key: [string, RecordKind, string]; value: TrainingRecord; indexes: { owner: string } };
@@ -168,7 +169,7 @@ export async function openTrainingDatabase(name = 'neurolift-training-v1') {
       const draft = await tx.objectStore('drafts').get(owner);
       const records = await tx.objectStore('records').index('owner').getAll(owner);
       if (!metadata || !draft || metadata.generation !== expectedGeneration) throw new Error('Saved data changed. Review the recovery choices again.');
-      if (metadata.recordSync) throw new Error('Record sync is active. Export both copies and resolve through record recovery, not legacy replacement.');
+      if (metadata.recordSync || metadata.enrollment) throw new Error('Record sync is active or enrolling. Export both copies and resolve through record recovery, not legacy replacement.');
       await tx.objectStore('recovery').add({ owner, createdAt: new Date().toISOString(), legacy: candidate.source,
         snapshot: { metadata, draft, records } });
       if (choice === 'legacy') {
@@ -248,15 +249,23 @@ export async function openTrainingDatabase(name = 'neurolift-training-v1') {
   }
 
   /** One repository transaction for outbox, remote records and pull cursor. */
-  async function updateRecordSync<T>(owner: string, update: (state: RecordSyncState, workspace: Workspace) => T) {
+  async function updateRecordSync<T>(owner: string, update: (state: RecordSyncState, workspace: Workspace) => T, finish = false) {
     assertOwner(owner);
     const tx = connection.transaction(['metadata', 'records', 'drafts'], 'readwrite');
     try {
       const metadata = await tx.objectStore('metadata').get(owner);
       const draft = await tx.objectStore('drafts').get(owner);
       const rows = await tx.objectStore('records').index('owner').getAll(owner);
-      if (!metadata?.recordSync || !draft || metadata.status !== 'active') throw new Error('Record sync is not initialized');
+      if (!metadata || !draft || metadata.status !== 'active') throw new Error('Workspace is not active');
       const workspace = workspaceFrom({ metadata, draft, records: rows });
+      if (finish && !metadata.recordSync) {
+        if (!metadata.enrollment?.complete) throw new Error('Enrollment pull is incomplete');
+        const { baseline, pulled } = metadata.enrollment;
+        const remote = normalizeWorkspace(owner, materializeRecords(pulled, workspace));
+        metadata.recordSync = finishEnrollment(pulled, baseline, workspace, remote);
+        delete metadata.enrollment;
+      }
+      if (!metadata.recordSync) throw new Error('Record sync is not initialized');
       const result = update(metadata.recordSync, workspace);
       const materialized = materializeRecords(metadata.recordSync, workspace);
       const candidate = prepareLegacyMigration(owner, materialized);
@@ -280,6 +289,67 @@ export async function openTrainingDatabase(name = 'neurolift-training-v1') {
     }
   }
 
+  async function beginRecordEnrollment(owner: string, expectedVersion: number) {
+    assertOwner(owner);
+    if (owner === 'guest') throw new Error('Guest data cannot be uploaded');
+    const tx = connection.transaction(['metadata', 'records', 'drafts'], 'readwrite');
+    try {
+      const metadata = await tx.objectStore('metadata').get(owner);
+      const draft = await tx.objectStore('drafts').get(owner);
+      const records = await tx.objectStore('records').index('owner').getAll(owner);
+      if (!metadata || !draft || metadata.status !== 'active') throw new Error('Workspace is not active');
+      if (!metadata.recordSync && !metadata.enrollment) {
+        const baseline = workspaceFrom({ metadata, draft, records });
+        if (baseline.dirty || baseline.version !== expectedVersion) throw new Error('Synchronize and reconcile the snapshot before enrolling');
+        metadata.enrollment = { baseline, pulled: { cursor: 0, baseline: {}, pending: {}, resolutions: [] }, complete: false };
+        await tx.objectStore('metadata').put({ ...metadata, generation: metadata.generation + 1 });
+      }
+      await tx.done;
+    } catch (error) {
+      try { tx.abort(); } catch { /* Already finished. */ }
+      await tx.done.catch(() => undefined);
+      throw error;
+    }
+  }
+
+  async function saveEnrollmentPage(owner: string, records: CloudRecord[], cursor: number, hasMore: boolean, expectedCursor: number) {
+    assertOwner(owner);
+    const tx = connection.transaction('metadata', 'readwrite');
+    try {
+      const metadata = await tx.store.get(owner);
+      if (!metadata?.enrollment || metadata.enrollment.complete || metadata.enrollment.pulled.cursor !== expectedCursor) throw new Error('Enrollment changed. Retry from its saved checkpoint');
+      if (typeof hasMore !== 'boolean' || (hasMore && cursor <= expectedCursor)) throw new Error('Invalid enrollment page');
+      receivePage(metadata.enrollment.pulled, records, cursor);
+      metadata.enrollment.complete = !hasMore;
+      await tx.store.put({ ...metadata, generation: metadata.generation + 1 });
+      await tx.done;
+    } catch (error) {
+      try { tx.abort(); } catch { /* Already finished. */ }
+      await tx.done.catch(() => undefined);
+      throw error;
+    }
+  }
+
+  const finalizeRecordEnrollment = (owner: string) => updateRecordSync(owner, () => undefined, true);
+
+  /** Only after the migrate endpoint explicitly rejects the snapshot version. */
+  async function cancelRejectedEnrollment(owner: string, version: number) {
+    assertOwner(owner);
+    const tx = connection.transaction('metadata', 'readwrite');
+    try {
+      const metadata = await tx.store.get(owner);
+      if (!metadata?.enrollment || metadata.recordSync || metadata.enrollment.baseline.version !== version
+        || metadata.enrollment.pulled.cursor !== 0 || metadata.enrollment.complete) throw new Error('Enrollment already advanced; it cannot be cancelled');
+      delete metadata.enrollment;
+      await tx.store.put({ ...metadata, generation: metadata.generation + 1 });
+      await tx.done;
+    } catch (error) {
+      try { tx.abort(); } catch { /* Already finished. */ }
+      await tx.done.catch(() => undefined);
+      throw error;
+    }
+  }
+
   /** Only attach after a complete, reconciled snapshot and a full server pull. */
   async function attachRecordSync(owner: string, records: CloudRecord[], cursor: number, expectedGeneration: number) {
     assertOwner(owner);
@@ -290,7 +360,7 @@ export async function openTrainingDatabase(name = 'neurolift-training-v1') {
       const draft = await tx.objectStore('drafts').get(owner);
       const rows = await tx.objectStore('records').index('owner').getAll(owner);
       if (!metadata || !draft || metadata.status !== 'active' || metadata.generation !== expectedGeneration
-        || metadata.recordSync) throw new Error('Workspace changed during record-sync setup');
+        || metadata.recordSync || metadata.enrollment) throw new Error('Workspace changed during record-sync setup');
       const state: RecordSyncState = { cursor: 0, baseline: {}, pending: {}, resolutions: [] };
       receivePage(state, records, cursor);
       const workspace = workspaceFrom({ metadata, draft, records: rows });
@@ -368,5 +438,6 @@ export async function openTrainingDatabase(name = 'neurolift-training-v1') {
 
   return { migrate, read, saveDraft, completeWorkout, activate, reconcile, recoveryCopies, patchWorkspace, workspaceFrom, normalizeWorkspace, deleteWorkspace,
     attachRecordSync, prepareOperation, acknowledgeOperation, rejectRecordOperation, applyRecordPage, resolveRecordConflict,
+    beginRecordEnrollment, saveEnrollmentPage, finalizeRecordEnrollment, cancelRejectedEnrollment,
     close: () => connection.close() };
 }

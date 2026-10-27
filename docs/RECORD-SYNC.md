@@ -3,8 +3,8 @@
 The additive Django migration defaults every existing account to snapshot mode.
 The frontend can synchronize an explicitly attached record-mode database, but
 production still initializes legacy storage. No automatic account migration is
-enabled. Do not migrate live accounts until the resumable enrollment/restore and
-full canonical-storage acceptance gates pass.
+enabled. Do not migrate live accounts until fresh-device joining, user-facing
+recovery/opt-in and full canonical-storage acceptance gates pass.
 
 All endpoints require the existing bearer token. Ownership always comes from that
 token, never a user ID supplied in the body.
@@ -67,14 +67,20 @@ resume synchronization. The account screen has EN/FR/AR record comparison and
 resolution controls. Guest data cannot attach to cloud sync. Account ownership is
 checked around every network response and serialized local command.
 
-The attachment API deliberately requires the complete server record set to match
-validated local data and an unchanged local generation. This is NOT a resumable
-enrollment coordinator: interruption after server migration and before local
-attachment still needs an explicit recovery path before rollout. Tests attach only
-synthetic accounts. No live account was migrated. Native builds keep legacy mode.
+The direct attachment API deliberately requires the complete server record set to
+match validated local data and an unchanged local generation. The separate staged
+enrollment coordinator now checkpoints a clean snapshot before POST migrate, saves
+each downloaded page and cursor, and resumes idempotently after interruption.
+Finalization performs a three-way merge against the saved snapshot, retaining
+later local edits and explicit conflicts. A failed final transaction leaves the
+checkpoint intact. Snapshot-version rejection can clear only an untouched pull;
+ordinary network/authentication failures never clear it. Tests use synthetic
+accounts only. No live account was migrated. Native builds keep legacy mode.
 
 The browser tests cover durable queue reload, immutable retry, post-send edits,
 both conflict choices, unrelated-record merges, tombstones, transaction rollback,
 lost-upload transport replay and a phone-sized conflict comparison. They do not
-replace live two-device testing, authentication-expiry/switch-during-upload
-acceptance, PostgreSQL concurrency measurements or hosted backup restoration.
+replace live two-device testing, PostgreSQL concurrency measurements or hosted
+backup restoration. Authentication expiry and switching during upload now have
+browser acceptance tests. Fresh-device joining of migrated accounts and full
+canonical-storage/restore acceptance still gate any default activation.

@@ -227,6 +227,10 @@ async function switchDatabaseScope(owner: string) {
 export async function applyRemote(data: Record<string, string>, version: number, owner = scope()) {
  await flushWorkspace();
  if (owner !== scope()) throw new Error('Account changed during synchronization');
+ if (database) {
+  const snapshot = await database.read(owner);
+  if (snapshot?.metadata.recordSync || snapshot?.metadata.enrollment) throw new Error('Legacy snapshots cannot replace record-mode data');
+ }
  const state = readWorkspace();
  const next = { ...state.data };
  for (const k of SYNC_KEYS) delete next[k];

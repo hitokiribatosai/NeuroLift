@@ -1,6 +1,41 @@
 # NeuroLift project handover
 
-Last reviewed: **2026-10-26**. Read `AGENTS.md` first on recovery.
+Last reviewed: **2026-10-27**. Read `AGENTS.md` first on recovery.
+
+### Resumable enrollment and authentication isolation — 2026-10-27
+
+The previously pending native-build commit `4a0a2fd` and its checkpoint are now
+verified on GitHub. The first retry pushed successfully but its verification timed
+out; a later ls-remote confirmed both references at the exact commit.
+
+Added a staged explicit enrollment entry point: a clean snapshot checkpoint is
+committed before the server migration request. Lost responses replay the server's
+idempotent migration; pull pages/cursors persist independently and resume after
+reopening. Finalization atomically installs record mode, preserves the device
+draft, merges later local edits against the checkpoint, and retains same-record
+conflicts. Incomplete pulls or transaction failures cannot partially activate.
+Only an explicit server version-rejection permits clearing an untouched enrollment
+checkpoint; it does not discard edits. Legacy snapshot application is blocked
+while enrolling or in record mode. Account sync resumes an existing checkpoint;
+online/foreground/pending-enrollment retries do not create a new one implicitly.
+
+Tests exercise interrupted pages, lost migration responses, later local edits,
+conflicts, failed finalization, rejection, expired authentication and account
+switch during an upload. Expired tokens leave operations durable; a late response
+does not acknowledge the outgoing account's queue or modify the new account.
+
+Production initialization is STILL legacy and no live account was migrated.
+Remaining rollout work includes fresh-device joining of an already-migrated
+account, user-facing opt-in/recovery routing, comprehensive canonical-storage
+upgrade/import/unsaved-form acceptance, PostgreSQL concurrency/load and real-device
+two-account/two-device testing. Older status sections below are historical.
+The Oct 26 Android24/iOS22 artifacts predate this additional gated enrollment code;
+they remain the latest test binaries, not binaries containing this new checkpoint.
+Checkpoint: `checkpoint-2026-10-27-resumable-record-enrollment`.
+Verification: `npm run check` passed (types, lint, 65 unit tests and production
+build); all **76** real Chromium/WebKit persistence tests passed. The full 202-test
+browser suite last passed at the preceding native/offline checkpoint; it was not
+re-run wholesale for this gated enrollment-only change. No backend model changes.
 
 ### Rebuilt native artifacts and green offline regression — 2026-10-26
 

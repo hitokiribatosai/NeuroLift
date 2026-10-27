@@ -150,3 +150,26 @@ export function materializeRecords(state: RecordSyncState, workspace: Workspace)
   result.dirty = Object.keys(state.pending).length > 0;
   return result;
 }
+
+/** Three-way enrollment merge: preserve edits made after the snapshot checkpoint. */
+export function finishEnrollment(pulled: RecordSyncState, baseline: Workspace, current: Workspace, normalizedRemote: Workspace) {
+  const state = structuredClone(pulled);
+  enqueueChanges(state, baseline, current);
+  const original = cloudValues(baseline), local = cloudValues(current), remote = cloudValues(normalizedRemote);
+  for (const key of new Set([...Object.keys(original), ...Object.keys(local)])) {
+    const before = original[key] || tombstone(local[key]);
+    const desired = local[key] || tombstone(original[key]);
+    if (sameValue(before, desired)) continue;
+    const serverValue = remote[key] || tombstone(desired);
+    if (sameValue(desired, serverValue) && state.baseline[key]) {
+      delete state.pending[key];
+      continue;
+    }
+    // Retain a deletion even when its server record is temporarily absent from
+    // the state feed; a later pull must not resurrect the locally deleted row.
+    const pending: PendingRecord = { desired: structuredClone(desired) };
+    if (!sameValue(before, serverValue) && state.baseline[key]) pending.conflict = state.baseline[key];
+    state.pending[key] = pending;
+  }
+  return state;
+}
