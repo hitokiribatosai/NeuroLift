@@ -2,6 +2,37 @@
 
 Last reviewed: **2026-10-27**. Read `AGENTS.md` first on recovery.
 
+### Fresh-device record joining — 2026-10-27
+
+The staged IndexedDB account-sync path now handles a migrated server's 426
+snapshot rejection. A clean, empty, version-zero account gets a durable `join`
+checkpoint; it pulls records without calling server migration or writing a
+snapshot. Interrupted pages resume after a real page reload. Later local edits
+survive and overlapping server values become explicit conflicts. Guest workspaces
+and device-only drafts remain separate. Old checkpoints without a mode still use
+the original upgrade protocol.
+
+Existing account caches, nonzero versions and dirty workspaces are blocked without
+mutation. They are NOT automatically reconciled by this change. A legacy-storage
+client stays legacy and reports 426 safely. Production `bootstrap(root, false)` is
+unchanged; no live account was migrated and no new native artifacts were built.
+The latest binaries remain Android24/iOS22 documented below.
+
+Verification: `npm run check` passed (65 unit tests, types, lint, production build).
+All 84 real Chromium/mobile-WebKit persistence tests passed, including clean
+history/routine/schedule restoration, interrupted join + reload + concurrent edits,
+guest isolation, rejection of nonempty caches, and the production legacy guard.
+The initial new rejection fixture used invalid nonnumeric account IDs; corrected
+the fixture and reran the complete persistence suite successfully.
+Full production-build browser regression passed: **202/202** Chromium and mobile
+WebKit tests. This is browser/native-mode emulation, not physical-device evidence.
+
+Remaining rollout gates: explicit existing-cache reconciliation and account opt-in,
+full canonical-storage import/restore/unsaved-form/draft-effect acceptance,
+PostgreSQL concurrency/load/restore evidence and real two-device acceptance.
+This completes the empty fresh-device join, not the whole architecture rollout.
+Checkpoint: `checkpoint-2026-10-27-fresh-device-join`.
+
 ### Resumable enrollment and authentication isolation — 2026-10-27
 
 The previously pending native-build commit `4a0a2fd` and its checkpoint are now

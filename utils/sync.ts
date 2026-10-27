@@ -1,6 +1,6 @@
 import { api, signedIn, ApiError } from './authService';
 import { flushWorkspace, readWorkspace, writeWorkspace, syncedData, applyRemote, scope, recordSyncSnapshot, recordSyncCommand } from './workspace';
-import { resumeRecordEnrollment, synchronizeRecords } from './recordSync';
+import { joinRecordSync, resumeRecordEnrollment, synchronizeRecords } from './recordSync';
 import { PendingRecord } from './persistence/recordSyncState';
 export type ServerSnapshot = { version: number; data: Record<string, string> };
 export type SyncStatus = 'signed-out' | 'idle' | 'syncing' | 'saved' | 'offline' | 'conflict' | 'error';
@@ -25,16 +25,28 @@ export async function syncNow(resolution?: 'local' | 'remote', pushOnly = false)
   await flushWorkspace();
   if (owner !== scope()) return;
   const snapshot = await recordSyncSnapshot(owner);
+  const syncRecords = async () => {
+   const records = await synchronizeRecords(owner);
+   if (owner !== scope()) return;
+   conflict = null;
+   recordConflicts = Object.values(records.pending).filter(record => record.conflict);
+   announce(recordConflicts.length ? 'conflict' : Object.keys(records.pending).length ? 'idle' : 'saved');
+  };
   recordProtocol = !!(snapshot?.metadata.recordSync || snapshot?.metadata.enrollment);
   if (snapshot?.metadata.enrollment) await resumeRecordEnrollment(owner);
   if (recordProtocol) {
-   const records = await synchronizeRecords(owner);
-   if (owner !== scope()) return;
-   recordConflicts = Object.values(records.pending).filter(record => record.conflict);
-   announce(recordConflicts.length ? 'conflict' : Object.keys(records.pending).length ? 'idle' : 'saved');
+   await syncRecords();
    return;
   }
-  const remote = await api<ServerSnapshot>('/snapshot/');
+  let remote: ServerSnapshot;
+  try { remote = await api<ServerSnapshot>('/snapshot/'); }
+  catch (error) {
+   if (!(error instanceof ApiError) || error.status !== 426 || !snapshot || owner !== scope()) throw error;
+   recordProtocol = true;
+   await joinRecordSync(owner);
+   await syncRecords();
+   return;
+  }
   if (owner !== scope()) return;
   const local = readWorkspace();
   if (resolution === 'remote') {

@@ -166,6 +166,14 @@ do not enable migration merely because the isolated enrollment tests pass.
 
 ### Stage 3 call-site inventory
 
+Oct 27 fresh-device follow-up: staged account sync handles a server 426 by
+checkpointing a join for an empty, clean version-zero account. It downloads and
+resumes without migrating the server or sending snapshots, preserves guest and
+device-local data, and retains edits made during download as pending/conflicted
+records. Existing caches are intentionally rejected unchanged: an explicit
+old-cache reconciliation route, full runtime/restore acceptance and production
+opt-in are still pending. Production bootstrap remains disabled.
+
 Before activation, convert `safeStorage` history/journal/template methods,
 `useSessionDraft`, `useWorkoutTemplates`, direct Journal history/journal/template
 edits, planner schedule mutations, account cache deletion, `DataManager` restore,

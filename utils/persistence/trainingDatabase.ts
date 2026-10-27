@@ -21,7 +21,7 @@ interface CandidateMetadata {
   orders?: Partial<Record<RecordKind, string[]>>;
   collectionKeys?: string[];
   recordSync?: RecordSyncState;
-  enrollment?: { baseline: Workspace; pulled: RecordSyncState; complete: boolean };
+  enrollment?: { mode?: 'upgrade' | 'join'; baseline: Workspace; pulled: RecordSyncState; complete: boolean };
 }
 interface TrainingDatabase extends DBSchema {
   records: { key: [string, RecordKind, string]; value: TrainingRecord; indexes: { owner: string } };
@@ -289,7 +289,7 @@ export async function openTrainingDatabase(name = 'neurolift-training-v1') {
     }
   }
 
-  async function beginRecordEnrollment(owner: string, expectedVersion: number) {
+  async function beginRecordEnrollment(owner: string, expectedVersion: number, mode: 'upgrade' | 'join' = 'upgrade') {
     assertOwner(owner);
     if (owner === 'guest') throw new Error('Guest data cannot be uploaded');
     const tx = connection.transaction(['metadata', 'records', 'drafts'], 'readwrite');
@@ -301,7 +301,12 @@ export async function openTrainingDatabase(name = 'neurolift-training-v1') {
       if (!metadata.recordSync && !metadata.enrollment) {
         const baseline = workspaceFrom({ metadata, draft, records });
         if (baseline.dirty || baseline.version !== expectedVersion) throw new Error('Synchronize and reconcile the snapshot before enrolling');
-        metadata.enrollment = { baseline, pulled: { cursor: 0, baseline: {}, pending: {}, resolutions: [] }, complete: false };
+        // A new device has no trustworthy baseline for old cached data. Never
+        // infer deletions or overwrite that data from a fresh server download.
+        if (mode === 'join' && (baseline.version !== 0 || Object.keys(cloudValues(baseline)).length)) {
+          throw new Error('This device has existing account data. Export a recovery copy before reconciling it with the upgraded account; automatic replacement is blocked.');
+        }
+        metadata.enrollment = { mode, baseline, pulled: { cursor: 0, baseline: {}, pending: {}, resolutions: [] }, complete: false };
         await tx.objectStore('metadata').put({ ...metadata, generation: metadata.generation + 1 });
       }
       await tx.done;
@@ -339,7 +344,7 @@ export async function openTrainingDatabase(name = 'neurolift-training-v1') {
     try {
       const metadata = await tx.store.get(owner);
       if (!metadata?.enrollment || metadata.recordSync || metadata.enrollment.baseline.version !== version
-        || metadata.enrollment.pulled.cursor !== 0 || metadata.enrollment.complete) throw new Error('Enrollment already advanced; it cannot be cancelled');
+        || metadata.enrollment.mode === 'join' || metadata.enrollment.pulled.cursor !== 0 || metadata.enrollment.complete) throw new Error('Enrollment already advanced; it cannot be cancelled');
       delete metadata.enrollment;
       await tx.store.put({ ...metadata, generation: metadata.generation + 1 });
       await tx.done;

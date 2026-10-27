@@ -3,8 +3,9 @@
 The additive Django migration defaults every existing account to snapshot mode.
 The frontend can synchronize an explicitly attached record-mode database, but
 production still initializes legacy storage. No automatic account migration is
-enabled. Do not migrate live accounts until fresh-device joining, user-facing
-recovery/opt-in and full canonical-storage acceptance gates pass.
+enabled. Fresh, empty devices can now join in the staged database path. Do not
+migrate live accounts until existing-cache recovery, user-facing opt-in and full
+canonical-storage acceptance gates pass.
 
 All endpoints require the existing bearer token. Ownership always comes from that
 token, never a user ID supplied in the body.
@@ -82,5 +83,22 @@ both conflict choices, unrelated-record merges, tombstones, transaction rollback
 lost-upload transport replay and a phone-sized conflict comparison. They do not
 replace live two-device testing, PostgreSQL concurrency measurements or hosted
 backup restoration. Authentication expiry and switching during upload now have
-browser acceptance tests. Fresh-device joining of migrated accounts and full
-canonical-storage/restore acceptance still gate any default activation.
+browser acceptance tests. Full canonical-storage/restore acceptance still gates
+any default activation.
+
+## Fresh-device joining
+
+In the initialized database path, GET `/snapshot/` returning 426 starts a durable
+`join` enrollment only for a clean, version-zero account with no cloud records.
+It never calls POST migrate or writes snapshots. The checkpoint/page mechanism
+downloads records from cursor zero and resumes after reload. Finalization retains
+device-local draft state and treats edits made during download as local changes;
+overlapping server values become explicit conflicts, not silent replacements.
+Guest data remains in its own workspace.
+
+A dirty account, nonzero snapshot version or existing cloud records block this
+automatic path without modifying data. Those devices need explicit exported
+recovery/reconciliation; that workflow remains a rollout gate. A production
+legacy-storage client still reports the upgrade rejection rather than attempting
+an unsafe storage switch. Older enrollment checkpoints with no `mode` retain the
+original snapshot-upgrade behavior.
