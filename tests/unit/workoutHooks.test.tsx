@@ -67,6 +67,25 @@ test('exercise edits persist before React effects and preserve IDs through reord
   } finally { hook.close(); }
 });
 
+test('draft selections persist in the event and stale handlers cannot write into a new account', async () => {
+  const hook = await mountHook(useSessionDraft);
+  try {
+    act(() => {
+      hook.value.setSelectedMuscles(['Chest']);
+      hook.value.setSelectedExercises(['Bench Press']);
+      hook.value.setActiveTemplateName('Sunday');
+      hook.value.setPhase('selection');
+      expect(safeStorage.getItem('neuroLift_tracker_muscles')).toBe('["Chest"]');
+      expect(safeStorage.getItem('neuroLift_tracker_selected_exercises')).toBe('["Bench Press"]');
+      expect(safeStorage.getItem('neuroLift_tracker_active_template_name')).toBe('Sunday');
+      expect(safeStorage.getItem('neuroLift_tracker_phase')).toBe('selection');
+    });
+    await changeScope('1');
+    act(() => hook.value.setSelectedMuscles(['Back']));
+    expect(safeStorage.getItem('neuroLift_tracker_muscles')).toBeNull();
+  } finally { hook.close(); }
+});
+
 test("completed legacy drafts recover before other draft initializers run", async () => {
   safeStorage.setItem("neuroLift_tracker_phase", "summary");
   safeStorage.setItem("neuroLift_tracker_muscles", '["Back"]');

@@ -17,6 +17,22 @@ let failure = '';
 let channel: BroadcastChannel | undefined;
 let refreshRequested = false;
 let scopeQueue: Promise<void> = Promise.resolve();
+const editingOwners = new Map<string, number>();
+export const workspaceEditing = () => (editingOwners.get(scope()) || 0) > 0;
+/** Editing screens release on exit; remote refresh must not erase an open form. */
+export function holdWorkspaceRefresh() {
+ const owner = scope();
+ editingOwners.set(owner, (editingOwners.get(owner) || 0) + 1);
+ let released = false;
+ return () => {
+  if (released) return;
+  released = true;
+  const count = (editingOwners.get(owner) || 1) - 1;
+  if (count) editingOwners.set(owner, count); else editingOwners.delete(owner);
+  void refreshFromDatabase();
+  if (!count && owner === scope()) queueMicrotask(() => window.dispatchEvent(new Event('workspace-editing-ended')));
+ };
+}
 export const persistenceState = () => ({ pending, failure });
 export const databaseEnabled = () => database !== null;
 export async function recordSyncSnapshot(owner = scope()) {
@@ -38,8 +54,12 @@ export function recordSyncCommand<T>(owner: string, command: (db: NonNullable<ty
   if (!snapshot) throw new Error('Account database was removed');
   if (owner === scope() && views.get(owner) === previousView) {
    const next = db.workspaceFrom(snapshot);
-   views.set(owner, next);
-   if (JSON.stringify(previousView?.data) !== JSON.stringify(next.data)) window.dispatchEvent(new Event('workspace-refreshed'));
+   const changed = JSON.stringify(previousView?.data) !== JSON.stringify(next.data);
+   if (changed && workspaceEditing()) refreshRequested = true;
+   else {
+    views.set(owner, next);
+    if (changed) window.dispatchEvent(new Event('workspace-refreshed'));
+   }
   }
   channel?.postMessage(owner);
   return result;
@@ -97,13 +117,13 @@ export function reportPersistenceFailure(error: unknown) {
 }
 
 async function refreshFromDatabase() {
- if (!refreshRequested || pending || failure || !database) return;
+ if (!refreshRequested || pending || failure || !database || workspaceEditing()) return;
  const owner = scope();
  refreshRequested = false;
  try {
   const snapshot = await database.read(owner);
   if (owner !== scope()) return;
-  if (pending) { refreshRequested = true; return; }
+  if (pending || workspaceEditing()) { refreshRequested = true; return; }
   if (failure) return;
   if (!snapshot) throw new Error('This account cache was removed in another tab. Reload to continue.');
   views.set(owner, database.workspaceFrom(snapshot));
@@ -227,6 +247,7 @@ async function switchDatabaseScope(owner: string) {
 export async function applyRemote(data: Record<string, string>, version: number, owner = scope()) {
  await flushWorkspace();
  if (owner !== scope()) throw new Error('Account changed during synchronization');
+ if (workspaceEditing()) throw new Error('Close the editing screen before synchronizing downloaded changes.');
  if (database) {
   const snapshot = await database.read(owner);
   if (snapshot?.metadata.recordSync || snapshot?.metadata.enrollment) throw new Error('Legacy snapshots cannot replace record-mode data');

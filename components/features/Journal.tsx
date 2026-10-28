@@ -9,11 +9,13 @@ import { getExerciseTranslation,getLocalizedMuscleName,getMuscleForExercise } fr
 import { generateId } from '../../utils/id';
 import { safeStorage } from '../../utils/storage';
 import { usePersistenceAction } from '../../hooks/usePersistenceAction';
+import { useWorkspaceEditing } from '../../hooks/useWorkspaceEditing';
 import { Card } from '../ui/Card';
 import { ConfirmModal } from '../ui/ConfirmModal';
 import { SpotlightButton } from '../ui/SpotlightButton';
 
 export const Journal: React.FC = () => {
+  useWorkspaceEditing();
   const persist = usePersistenceAction();
   const { t, language } = useLanguage();
   const [journalView, setJournalView] = useState<'workouts' | 'measurements'>('workouts');

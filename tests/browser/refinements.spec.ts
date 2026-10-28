@@ -105,7 +105,8 @@ test('old completed-session drafts are discarded on upgrade', async ({ page }) =
   await page.goto('/#tracker');
   await expect(page.getByRole('button', { name: 'Chest', exact: true })).toHaveAttribute('aria-pressed', 'false');
   const data = await page.evaluate(() => JSON.parse(localStorage.getItem('neuroLift_workspace_guest')!).data);
-  expect(JSON.parse(data.neuroLift_tracker_active_exercises)).toEqual([]);
+  // Completed drafts are removed, not recreated by a mount effect.
+  expect(data.neuroLift_tracker_active_exercises).toBeUndefined();
   expect(JSON.parse(data.ui_picker_search)).toBe('');
 });
 test('finish then reopen tomorrow starts a clean muscle selection without losing history', async ({ page }) => {
@@ -126,7 +127,7 @@ test('finish then reopen tomorrow starts a clean muscle selection without losing
   await expect(page.locator('.web-workout-picker input').first()).toHaveValue('');
   await expect(page.locator('.web-mobile-filters')).toContainText('Chest');
   const data = await page.evaluate(() => JSON.parse(localStorage.getItem('neuroLift_workspace_guest')!).data);
-  expect(JSON.parse(data.neuroLift_tracker_selected_exercises)).toEqual([]);
+  expect(data.neuroLift_tracker_selected_exercises).toBeUndefined();
   expect(JSON.parse(data.neuroLift_history)).toHaveLength(1);
 });
 

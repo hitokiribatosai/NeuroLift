@@ -1,6 +1,73 @@
 # NeuroLift project handover
 
-Last reviewed: **2026-10-27**. Read `AGENTS.md` first on recovery.
+Last reviewed: **2026-10-28**. Read `AGENTS.md` first on recovery.
+
+### Native build 25/23 and final regression results — 2026-10-28
+
+- Android **1.3.22 / 25** compiled successfully with release web assets/public
+  HTTPS API and debug signing for sideload testing. Packaged manifest verified.
+  `builds/android/NeuroLift-1.3.22-build25-android-test.apk`
+  SHA-256: `a35cb8207cce5b1e85c387f0a56f6be9ab6463596562386a6ee63949feb8976c`.
+- iOS **1.3.22 / 23** compiled from a fresh derived-data folder using pinned cached
+  packages, signing disabled. Simulator-only, not an installable physical IPA.
+  `builds/ios/NeuroLift-1.3.22-build23-ios-simulator.app`
+  App executable SHA-256: `63b760c4920e66caae858993a41f858b27cc7a28cecfb1297e5c020e3e7ffd0d`.
+  Installed over the existing iPhone 17 app and launched successfully. Screenshot
+  shows the preserved dark-theme Home and Resume workout entry with safe areas.
+  Native input testing is blocked: CUA coordinate clicks repeatedly returned
+  `noWindowsAvailable`, including after re-binding and raising the window. No
+  complete native workout/navigation/notification test is claimed.
+
+The superseded Android24/iOS22 artifacts were moved to macOS Trash with Oct 28
+suffixes and are recoverable. Newest build folders now contain only build25/23.
+Physical testing belongs to the owner; see `docs/DEVICE-ACCEPTANCE.md`.
+
+Final verification: 66 unit tests, types/lint/build, all **98 persistence tests**
+and all **202 UI browser tests** passed. The initial UI run had four failures in
+two tests across both engines: assertions expected empty draft arrays recreated
+by mount effects. They now require removed completed-session keys; all associated
+UI/history assertions remain, and the full suite passed after this correction.
+Native assets validated for both platforms. PostgreSQL validation remains blocked
+by the absent local server/engine; no hosted database was changed.
+
+Production storage remains legacy. New recovery/upgrade controls are gated to
+the initialized-database path; these binaries do NOT activate record migration.
+Shared draft-save/editor protections are active. Clock-effect persistence and
+full canonical-runtime acceptance remain before a default switch, in addition to
+PostgreSQL and real-device record-sync acceptance. This is not a completed rollout.
+Checkpoint: `checkpoint-2026-10-28-recovery-editor-native-builds`.
+
+### Account recovery and editor acceptance — 2026-10-28
+
+Added explicit old-cache reconciliation in staged database mode. Account sync
+offers an export-first recovery flow after server 426. The repository archives
+the old cache in the same transaction as the enrollment checkpoint, rejects stale
+export generations, downloads resumably, preserves local-only records and marks
+different server values (including deletions) for explicit per-record choice.
+Missing local records do not delete server data. The archive and checkpoint roll
+back together on failure. A separate export-first account upgrade control is
+available only to clean, synchronized staged-database accounts; older-client
+incompatibility is explained before consent. No live account was migrated.
+
+Workout, journal, planner and nutrition screens hold background refresh while
+editing. Leaving releases the hold and retries synchronization. Late downloads
+cannot remount an unfinished form; database conflict checks still reject stale
+same-key writes. A real-app test preserves a typed measurement during a second
+connection's update and applies that update after leaving the editor.
+
+Session muscle/exercise selections, phase and routine metadata now queue writes
+in event handlers rather than delayed React effects. Stale handlers cannot write
+into a different account. Empty exercise state is removed rather than resurrected
+after finish. Backup round-trip and failed-restore rollback have browser coverage.
+
+Verification: see final regression and native-build entry above. Production
+bootstrap remains `false` (legacy storage).
+
+Still open: clock-state effect persistence and comprehensive canonical runtime
+acceptance before default activation; PostgreSQL concurrency/load/restore evidence.
+Docker CLI exists but no engine/socket or Docker.app was available, and no local
+PostgreSQL binary was found. Hosted databases were not touched. The owner will
+perform physical Samsung/iPhone testing; simulator evidence is separate.
 
 ### Fresh-device record joining — 2026-10-27
 

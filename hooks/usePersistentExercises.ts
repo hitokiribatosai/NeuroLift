@@ -16,7 +16,7 @@ export function usePersistentExercises(): [ActiveExercise[], Dispatch<SetStateAc
     const next = (typeof action === 'function' ? action(current.current) : action)
       .map(exercise => ({ ...exercise, id: exercise.id || generateId() }));
     // The storage view updates synchronously; its pending status lasts until commit.
-    safeStorage.setItem('neuroLift_tracker_active_exercises', JSON.stringify(next));
+    safeStorage.setItems({ neuroLift_tracker_active_exercises: next.length ? JSON.stringify(next) : null });
     current.current = next;
     setExercises(next);
   }, []);

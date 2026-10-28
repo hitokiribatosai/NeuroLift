@@ -5,6 +5,14 @@ import '../../components/web/website.css';
 import { RecordConflicts } from '../../components/features/RecordConflicts';
 import { LanguageProvider } from '../../contexts/LanguageContext';
 import { PendingRecord } from '../../utils/persistence/recordSyncState';
+import { Account } from '../../components/features/Account';
+
+export function showAccount() {
+  const host = document.createElement('div');
+  host.className = 'website-redesign';
+  document.body.appendChild(host);
+  createRoot(host).render(<LanguageProvider><Account /></LanguageProvider>);
+}
 
 export function showRecoveryNotice() {
   const host = document.createElement('div');

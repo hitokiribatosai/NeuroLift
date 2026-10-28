@@ -1,4 +1,5 @@
 import { useWorkoutTemplates } from "../../hooks/useWorkoutTemplates";
+import { useWorkspaceEditing } from '../../hooks/useWorkspaceEditing';
 import { Capacitor } from "@capacitor/core";
 import { Share } from "@capacitor/share";
 import { AnimatePresence, motion } from "framer-motion";
@@ -57,6 +58,7 @@ import { TrackerTemplateEditor } from "./TrackerTemplateEditor";
 import { TrackerTemplatePicker } from "./TrackerTemplatePicker";
 
 export const Tracker: React.FC = () => {
+  useWorkspaceEditing();
   const persist = usePersistenceAction();
   const {
     phase,

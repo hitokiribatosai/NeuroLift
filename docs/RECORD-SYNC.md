@@ -97,8 +97,17 @@ overlapping server values become explicit conflicts, not silent replacements.
 Guest data remains in its own workspace.
 
 A dirty account, nonzero snapshot version or existing cloud records block this
-automatic path without modifying data. Those devices need explicit exported
-recovery/reconciliation; that workflow remains a rollout gate. A production
+automatic path without modifying data. Account now offers an explicit export-first
+recovery flow for those devices in staged database mode. It archives the old cache
+transactionally, checks the exported generation, downloads resumably, retains
+local-only data and flags different server versions including tombstones for
+choice. Missing local records never delete remote records. Clean staged accounts
+also have an explicit export-first upgrade control explaining old-client blocking.
+A production
 legacy-storage client still reports the upgrade rejection rather than attempting
 an unsafe storage switch. Older enrollment checkpoints with no `mode` retain the
 original snapshot-upgrade behavior.
+
+Editing screens defer synchronization/refresh until exit so unfinished forms are
+not remounted by downloads. Pending writes stay local; this is not a promise that
+data synchronizes while the workout editor remains open.

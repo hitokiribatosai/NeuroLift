@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useStoredDraftValue } from './useStoredDraftValue';
 import { WorkoutTemplate } from "../types";
 import { usePersistentExercises } from './usePersistentExercises';
 import {
@@ -12,26 +12,30 @@ import { ensureSessionIdentity } from "../utils/workoutCompletion";
 
 /** Device-local draft state. Saved workouts and the global clock have separate owners. */
 export function useSessionDraft() {
-  const [phase, setPhase] = useState<TrackerPhase>(() => {
+  const [phase, setPhase] = useStoredDraftValue<TrackerPhase>('neuroLift_tracker_phase', () => {
     const saved = safeStorage.getItem("neuroLift_tracker_phase");
     // Recover drafts left behind by older builds after a completed workout.
     if (saved === "summary") {
       clearSessionDraft();
       return "setup";
     }
+    if (saved === 'active') ensureSessionIdentity();
     return isTrackerPhase(saved) ? saved : "setup";
+  }, phase => {
+    if (phase === 'active') ensureSessionIdentity();
+    return phase === 'summary' || phase === 'setup' ? null : phase;
   });
 
-  const [selectedMuscles, setSelectedMuscles] = useState<string[]>(() => {
+  const [selectedMuscles, setSelectedMuscles] = useStoredDraftValue<string[]>('neuroLift_tracker_muscles', () => {
     return safeStorage.getParsed<string[]>("neuroLift_tracker_muscles", []);
-  });
+  }, values => values.length ? JSON.stringify(values) : null);
 
-  const [selectedExercises, setSelectedExercises] = useState<string[]>(() => {
+  const [selectedExercises, setSelectedExercises] = useStoredDraftValue<string[]>('neuroLift_tracker_selected_exercises', () => {
     return safeStorage.getParsed<string[]>(
       "neuroLift_tracker_selected_exercises",
       [],
     );
-  });
+  }, values => values.length ? JSON.stringify(values) : null);
 
   const [pickerMuscle, setPickerMuscle] = useInterfaceState(
     "picker_muscle",
@@ -44,64 +48,25 @@ export function useSessionDraft() {
   );
 
   const [selectedTemplate, setSelectedTemplate] =
-    useState<WorkoutTemplate | null>(() =>
+    useStoredDraftValue<WorkoutTemplate | null>('neuroLift_tracker_selected_template', () =>
       safeStorage.getParsed<WorkoutTemplate | null>(
         "neuroLift_tracker_selected_template",
         null,
       ),
-    );
+    value => value ? JSON.stringify(value) : null);
 
-  const [activeTemplateId, setActiveTemplateId] = useState<string | null>(() =>
+  const [activeTemplateId, setActiveTemplateId] = useStoredDraftValue<string | null>('neuroLift_tracker_active_template', () =>
     safeStorage.getItem("neuroLift_tracker_active_template"),
-  );
+  value => value);
 
-  const [activeTemplateName, setActiveTemplateName] = useState<string | null>(
+  const [activeTemplateName, setActiveTemplateName] = useStoredDraftValue<string | null>('neuroLift_tracker_active_template_name',
     () => safeStorage.getItem("neuroLift_tracker_active_template_name"),
-  );
+  value => value);
 
   const [activeExercises, setActiveExercises] = usePersistentExercises();
 
   const [searchQuery, setSearchQuery] = useInterfaceState("picker_search", "");
 
-  useEffect(() => {
-    if (phase === "summary") return;
-    if (phase === "active") ensureSessionIdentity();
-    safeStorage.setItems({
-      neuroLift_tracker_phase: phase,
-      neuroLift_tracker_muscles: JSON.stringify(selectedMuscles),
-      neuroLift_tracker_selected_exercises: JSON.stringify(selectedExercises),
-      neuroLift_tracker_active_exercises: JSON.stringify(activeExercises),
-    });
-  }, [phase, selectedMuscles, selectedExercises, activeExercises]);
-
-  useEffect(() => {
-    if (selectedTemplate) {
-      safeStorage.setItem(
-        "neuroLift_tracker_selected_template",
-        JSON.stringify(selectedTemplate),
-      );
-    } else {
-      safeStorage.removeItem("neuroLift_tracker_selected_template");
-    }
-  }, [selectedTemplate]);
-
-  useEffect(() => {
-    if (activeTemplateId)
-      safeStorage.setItem(
-        "neuroLift_tracker_active_template",
-        activeTemplateId,
-      );
-    else safeStorage.removeItem("neuroLift_tracker_active_template");
-  }, [activeTemplateId]);
-
-  useEffect(() => {
-    if (activeTemplateName)
-      safeStorage.setItem(
-        "neuroLift_tracker_active_template_name",
-        activeTemplateName,
-      );
-    else safeStorage.removeItem("neuroLift_tracker_active_template_name");
-  }, [activeTemplateName]);
   return {
     phase,
     setPhase,

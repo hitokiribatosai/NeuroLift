@@ -21,7 +21,7 @@ interface CandidateMetadata {
   orders?: Partial<Record<RecordKind, string[]>>;
   collectionKeys?: string[];
   recordSync?: RecordSyncState;
-  enrollment?: { mode?: 'upgrade' | 'join'; baseline: Workspace; pulled: RecordSyncState; complete: boolean };
+  enrollment?: { mode?: 'upgrade' | 'join' | 'recover'; baseline: Workspace; pulled: RecordSyncState; complete: boolean };
 }
 interface TrainingDatabase extends DBSchema {
   records: { key: [string, RecordKind, string]; value: TrainingRecord; indexes: { owner: string } };
@@ -262,7 +262,16 @@ export async function openTrainingDatabase(name = 'neurolift-training-v1') {
         if (!metadata.enrollment?.complete) throw new Error('Enrollment pull is incomplete');
         const { baseline, pulled } = metadata.enrollment;
         const remote = normalizeWorkspace(owner, materializeRecords(pulled, workspace));
-        metadata.recordSync = finishEnrollment(pulled, baseline, workspace, remote);
+        const recovering = metadata.enrollment.mode === 'recover';
+        metadata.recordSync = finishEnrollment(pulled, recovering ? { data: {}, version: 0, dirty: false } : baseline, workspace, remote);
+        if (recovering) {
+          // There is no trustworthy common baseline for an older cache. Even a
+          // server tombstone needs an explicit choice before resurrection.
+          for (const [key, pending] of Object.entries(metadata.recordSync.pending)) {
+            const server = pulled.baseline[key];
+            if (server && !sameValue(pending.desired, server)) pending.conflict = structuredClone(server);
+          }
+        }
         delete metadata.enrollment;
       }
       if (!metadata.recordSync) throw new Error('Record sync is not initialized');
@@ -289,10 +298,10 @@ export async function openTrainingDatabase(name = 'neurolift-training-v1') {
     }
   }
 
-  async function beginRecordEnrollment(owner: string, expectedVersion: number, mode: 'upgrade' | 'join' = 'upgrade') {
+  async function beginRecordEnrollment(owner: string, expectedVersion: number, mode: 'upgrade' | 'join' | 'recover' = 'upgrade', expectedGeneration?: number) {
     assertOwner(owner);
     if (owner === 'guest') throw new Error('Guest data cannot be uploaded');
-    const tx = connection.transaction(['metadata', 'records', 'drafts'], 'readwrite');
+    const tx = connection.transaction(['metadata', 'records', 'drafts', 'recovery'], 'readwrite');
     try {
       const metadata = await tx.objectStore('metadata').get(owner);
       const draft = await tx.objectStore('drafts').get(owner);
@@ -300,7 +309,12 @@ export async function openTrainingDatabase(name = 'neurolift-training-v1') {
       if (!metadata || !draft || metadata.status !== 'active') throw new Error('Workspace is not active');
       if (!metadata.recordSync && !metadata.enrollment) {
         const baseline = workspaceFrom({ metadata, draft, records });
-        if (baseline.dirty || baseline.version !== expectedVersion) throw new Error('Synchronize and reconcile the snapshot before enrolling');
+        if ((mode !== 'recover' && baseline.dirty) || baseline.version !== expectedVersion) throw new Error('Synchronize and reconcile the snapshot before enrolling');
+        if (mode === 'recover') {
+          if (expectedGeneration !== metadata.generation) throw new Error('Saved data changed. Export and review recovery again.');
+          await tx.objectStore('recovery').add({ owner, createdAt: new Date().toISOString(), legacy: baseline,
+            snapshot: { metadata: structuredClone(metadata), draft, records } });
+        }
         // A new device has no trustworthy baseline for old cached data. Never
         // infer deletions or overwrite that data from a fresh server download.
         if (mode === 'join' && (baseline.version !== 0 || Object.keys(cloudValues(baseline)).length)) {
@@ -344,7 +358,7 @@ export async function openTrainingDatabase(name = 'neurolift-training-v1') {
     try {
       const metadata = await tx.store.get(owner);
       if (!metadata?.enrollment || metadata.recordSync || metadata.enrollment.baseline.version !== version
-        || metadata.enrollment.mode === 'join' || metadata.enrollment.pulled.cursor !== 0 || metadata.enrollment.complete) throw new Error('Enrollment already advanced; it cannot be cancelled');
+        || (metadata.enrollment.mode && metadata.enrollment.mode !== 'upgrade') || metadata.enrollment.pulled.cursor !== 0 || metadata.enrollment.complete) throw new Error('Enrollment already advanced; it cannot be cancelled');
       delete metadata.enrollment;
       await tx.store.put({ ...metadata, generation: metadata.generation + 1 });
       await tx.done;

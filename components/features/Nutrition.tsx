@@ -3,6 +3,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { Card } from '../ui/Card';
 import { safeStorage } from '../../utils/storage';
 import { usePersistenceAction } from '../../hooks/usePersistenceAction';
+import { useWorkspaceEditing } from '../../hooks/useWorkspaceEditing';
 
 interface DailyLog {
   date: string;
@@ -10,6 +11,7 @@ interface DailyLog {
 }
 
 export const Nutrition: React.FC = () => {
+  useWorkspaceEditing();
   const persist = usePersistenceAction();
   const { t } = useLanguage();
 

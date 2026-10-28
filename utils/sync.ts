@@ -1,6 +1,6 @@
 import { api, signedIn, ApiError } from './authService';
-import { flushWorkspace, readWorkspace, writeWorkspace, syncedData, applyRemote, scope, recordSyncSnapshot, recordSyncCommand } from './workspace';
-import { joinRecordSync, resumeRecordEnrollment, synchronizeRecords } from './recordSync';
+import { flushWorkspace, readWorkspace, writeWorkspace, syncedData, applyRemote, scope, recordSyncSnapshot, recordSyncCommand, workspaceEditing } from './workspace';
+import { beginRecordSync, joinRecordSync, recoverRecordSync, resumeRecordEnrollment, synchronizeRecords } from './recordSync';
 import { PendingRecord } from './persistence/recordSyncState';
 export type ServerSnapshot = { version: number; data: Record<string, string> };
 export type SyncStatus = 'signed-out' | 'idle' | 'syncing' | 'saved' | 'offline' | 'conflict' | 'error';
@@ -9,13 +9,15 @@ let problem = '';
 let busy = false;
 let conflict: ServerSnapshot | null = null;
 let recordConflicts: PendingRecord[] = [];
-export const syncState = () => ({ status, problem, conflict, recordConflicts });
+let recoveryRequired = false;
+export const syncState = () => ({ status, problem, conflict, recordConflicts, recoveryRequired });
 function announce(next: SyncStatus, message = '') {
  status = next; problem = message; window.dispatchEvent(new Event('sync-status'));
 }
 export async function syncNow(resolution?: 'local' | 'remote', pushOnly = false) {
  if (busy) return;
  if (!signedIn()) { announce('signed-out'); return; }
+ if (workspaceEditing()) { announce('idle'); return; }
  if (!navigator.onLine) { announce('offline'); return; }
  if (conflict && !resolution) { announce('conflict'); return; }
  const owner = scope();
@@ -29,6 +31,7 @@ export async function syncNow(resolution?: 'local' | 'remote', pushOnly = false)
    const records = await synchronizeRecords(owner);
    if (owner !== scope()) return;
    conflict = null;
+   recoveryRequired = false;
    recordConflicts = Object.values(records.pending).filter(record => record.conflict);
    announce(recordConflicts.length ? 'conflict' : Object.keys(records.pending).length ? 'idle' : 'saved');
   };
@@ -43,6 +46,7 @@ export async function syncNow(resolution?: 'local' | 'remote', pushOnly = false)
   catch (error) {
    if (!(error instanceof ApiError) || error.status !== 426 || !snapshot || owner !== scope()) throw error;
    recordProtocol = true;
+   recoveryRequired = true;
    await joinRecordSync(owner);
    await syncRecords();
    return;
@@ -77,8 +81,33 @@ export async function syncNow(resolution?: 'local' | 'remote', pushOnly = false)
   else announce(navigator.onLine ? 'error' : 'offline', e instanceof Error ? e.message : 'Sync failed');
  } finally {
   busy = false;
-  if (status === 'idle' && signedIn() && readWorkspace().dirty) setTimeout(() => void syncNow(undefined, true), 1500);
+  if (status === 'idle' && signedIn() && !workspaceEditing() && readWorkspace().dirty) setTimeout(() => void syncNow(undefined, true), 1500);
  }
+}
+export async function recoverAccountRecords(owner: string, version: number, generation: number) {
+ if (busy || !recoveryRequired || !signedIn() || owner !== scope()) throw new Error('Account recovery is not available');
+ busy = true; announce('syncing');
+ try {
+  await recoverRecordSync(owner, version, generation);
+  recoveryRequired = false;
+ } catch (error) {
+  if (owner === scope()) announce('error', error instanceof Error ? error.message : 'Recovery failed');
+  throw error;
+ } finally { busy = false; }
+ await syncNow();
+}
+export async function upgradeAccountRecords(owner: string, version: number, generation: number) {
+ if (busy || recoveryRequired || !signedIn() || owner !== scope()) throw new Error('Account upgrade is not available');
+ busy = true; announce('syncing');
+ try {
+  const snapshot = await recordSyncSnapshot(owner);
+  if (!snapshot || snapshot.metadata.generation !== generation || snapshot.metadata.dirty) throw new Error('Saved data changed. Synchronize and export again.');
+  await beginRecordSync(owner, version);
+ } catch (error) {
+  if (owner === scope()) announce('error', error instanceof Error ? error.message : 'Upgrade failed');
+  throw error;
+ } finally { busy = false; }
+ await syncNow();
 }
 export async function resolveSyncRecord(record: PendingRecord, choice: 'local' | 'remote') {
  if (!record.conflict || busy) return;
@@ -96,7 +125,7 @@ export async function resolveSyncRecord(record: PendingRecord, choice: 'local' |
 let timer: ReturnType<typeof setTimeout>;
 export function startSync() {
  const push = () => { clearTimeout(timer); timer = setTimeout(() => { if (readWorkspace().dirty) void syncNow(undefined, true); }, 1500); };
- const reset = () => { conflict = null; recordConflicts = []; announce(signedIn() ? 'idle' : 'signed-out'); };
+ const reset = () => { conflict = null; recordConflicts = []; recoveryRequired = false; announce(signedIn() ? 'idle' : 'signed-out'); };
  const online = () => { if (signedIn()) void syncNow(); };
  const foreground = () => { if (document.visibilityState === 'visible') online(); };
  // Retry durable pending work after transient server failures without requiring
@@ -110,7 +139,8 @@ export function startSync() {
  }, 30000);
  window.addEventListener('workspace-write', push);
  window.addEventListener('online', online);
+ window.addEventListener('workspace-editing-ended', online);
  window.addEventListener('account-changed', reset);
  document.addEventListener('visibilitychange', foreground);
- return () => { clearTimeout(timer); clearInterval(retry); document.removeEventListener('visibilitychange', foreground); window.removeEventListener('workspace-write', push); window.removeEventListener('online', online); window.removeEventListener('account-changed', reset); };
+ return () => { clearTimeout(timer); clearInterval(retry); document.removeEventListener('visibilitychange', foreground); window.removeEventListener('workspace-write', push); window.removeEventListener('online', online); window.removeEventListener('workspace-editing-ended', online); window.removeEventListener('account-changed', reset); };
 }

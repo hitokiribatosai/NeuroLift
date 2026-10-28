@@ -1,4 +1,5 @@
 import { useCopy } from '../../hooks/useCopy';
+import { useWorkspaceEditing } from '../../hooks/useWorkspaceEditing';
 import React,{ useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useInterfaceState } from '../../hooks/useInterfaceState';
@@ -36,6 +37,7 @@ function LibraryCard({ name, detail, onOpen }: { name: string; detail?: string; 
 }
 
 export const ProgramPlanner: React.FC<{ initialMuscle?: string }> = ({ initialMuscle }) => {
+  useWorkspaceEditing();
   const c = useCopy();
   const { t, language } = useLanguage();
   const [selectedMuscle, setSelectedMuscle] = useInterfaceState<string | null>('library_muscle', initialMuscle && Object.hasOwn(getExerciseDatabase(language), initialMuscle) ? initialMuscle : 'Chest');

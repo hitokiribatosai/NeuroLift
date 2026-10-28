@@ -166,6 +166,13 @@ do not enable migration merely because the isolated enrollment tests pass.
 
 ### Stage 3 call-site inventory
 
+Oct 28: explicit exported-cache reconciliation and clean-account opt-in are
+implemented in the staged database path. Archive rollback, stale generation,
+server deletion conflicts, backup round-trip/failed restore and unfinished journal
+form preservation have browser coverage. Session draft selections/routine metadata
+now enqueue before render with captured ownership. Clock persistence still uses
+effects and requires further acceptance; default activation remains disabled.
+
 Oct 27 fresh-device follow-up: staged account sync handles a server 426 by
 checkpointing a join for an empty, clean version-zero account. It downloads and
 resumes without migrating the server or sending snapshots, preserves guest and

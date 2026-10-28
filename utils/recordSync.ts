@@ -15,13 +15,19 @@ export async function joinRecordSync(owner: string) {
   await resumeRecordEnrollment(owner);
 }
 
+/** Explicit user-approved reconciliation, guarded against edits after export. */
+export async function recoverRecordSync(owner: string, version: number, generation: number) {
+  await recordSyncCommand(owner, db => db.beginRecordEnrollment(owner, version, 'recover', generation));
+  await resumeRecordEnrollment(owner);
+}
+
 export async function resumeRecordEnrollment(owner: string) {
   const guard = () => { if (owner !== scope()) throw new Error('Account changed during enrollment'); };
   const initial = await recordSyncSnapshot(owner);
   if (initial?.metadata.recordSync) return;
   if (!initial?.metadata.enrollment) throw new Error('No saved enrollment checkpoint');
   // A lost response is safe: the server's migration endpoint is idempotent.
-  if (initial.metadata.enrollment.mode !== 'join') {
+  if (!initial.metadata.enrollment.mode || initial.metadata.enrollment.mode === 'upgrade') {
     const version = initial.metadata.enrollment.baseline.version;
     let migrated: { protocol: number };
     try { migrated = await api('/records/migrate/', 'POST', { version }); }
